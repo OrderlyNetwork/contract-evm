@@ -107,8 +107,45 @@ contract OperatorManager {
 
     // event upload data
     function event_upload_data(
-        uint batch_id
+        Types.EventUpload calldata data
     ) internal {
-        // TODO
+        require(data.batch_id == event_upload_batch_id, "batch_id not match");
+        Types.EventUploadData[] memory events = data.events; // gas saving
+        require(events.length == data.count, "count not match");
+        require(events.sequence.length == data.count, "count not match");
+        // process each event upload
+        for (uint i = 0; i < data.count; i++) {
+            _process_event_upload(events[i]);
+        }
+        // update_event_upload_batch_id
+        // TODO use math safe add
+        event_upload_batch_id += 1;
+    }
+
+    // process each event upload
+    function _process_event_upload(
+        Types.EventUploadData calldata data
+    ) internal {
+        uint index_withdraw = 0;
+        uint index_settlement = 0;
+        uint index_liquidation = 0;
+        // iterate sequence to process each event. The sequence decides the event type.
+        for (uint i = 0; i < data.sequence.length; i++) {
+            if (data.sequence[i] == 0) {
+                // withdraw
+                // orderly_dex.execute_withdraw_action(data.withdraws[index_withdraw]);
+                index_withdraw += 1;
+            } else if (data.sequence[i] == 1) {
+                // settlement
+                orderly_dex.execute_settlement(data.settlements[index_settlement], data.event_id);
+                index_settlement += 1;
+            } else if (data.sequence[i] == 2) {
+                // liquidation
+                orderly_dex.execute_liquidation(data.liquidations[index_liquidation], data.event_id);
+                index_liquidation += 1;
+            } else {
+                revert("invalid sequence");
+            }
+        }
     }
 }

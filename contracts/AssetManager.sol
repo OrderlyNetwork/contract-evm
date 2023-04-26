@@ -4,13 +4,13 @@ import "./interface/IERC20.sol";
 
 /**
  * AssetManager is responsible for saving user's USDC (where USDC which is a IERC20 token).
- * EACH CHAIN SHOULD HAS ONE ASSETMANAGER CONTRACT.
+ * EACH CHAIN SHOULD HAVE ONE ASSETMANAGER CONTRACT.
  * User can deposit and withdraw USDC from AssetManager.
- * Only operator can approve withdraw request.
+ * Only xchain_operator can approve withdraw request.
  */
 contract AssetManager {
-    // operator address
-    address public operator;
+    // cross-chain operator address
+    address public xchain_operator;
     // USDC contract
     IERC20 public usdc;
     // user's USDC balance (maybe not need this)
@@ -38,9 +38,9 @@ contract AssetManager {
         mapping (uint => WithdrawRequest) withdraw_requests;
     }
 
-    // only operator can call
-    modifier only_operator() {
-        require(msg.sender == operator, "only operator can call");
+    // only cross-chain operator can call
+    modifier only_xchain_operator() {
+        require(msg.sender == xchain_operator, "only operator can call");
         _;
     }
 
@@ -54,10 +54,10 @@ contract AssetManager {
     
     constructor(
         address usdc_address,
-        address operator_address
+        address _xchain_operator
     ) {
         usdc = IERC20(usdc_address);
-        operator = operator_address;
+        xchain_operator = _xchain_operator;
     }
 
     // user deposit USDC
@@ -89,13 +89,16 @@ contract AssetManager {
     }
 
     // withdraw approve
+    // Cefi send withdraw approve event to OperatorManager,
+    // and the message should cross-chain by xchain-operator,
+    // finally call this function to approve withdraw request
     function withdraw_approve(
         address user,
         uint amount,
         uint request_time,
         uint withdraw_id,
         uint event_id
-    ) public only_operator nonReentrant {
+    ) public only_xchain_operator nonReentrant {
         require(user_balance[user] >= amount, "insufficient balance");
         user_balance[user] -= amount;
         // TODO get withdraw_info by user. if not exist, create a new one
@@ -107,7 +110,6 @@ contract AssetManager {
         withdraw_info.pending_withdraw += amount;
         // emit withdraw approve event
         emit withdraw_approve_event(user, amount, withdraw_id, event_id);
-        // TODO maybe send a cross-chain tx, to update user's ledger in main contract. Or maybe this should be called in `withdraw(uint)`?
     }
 
     // withdraw reject
@@ -115,7 +117,7 @@ contract AssetManager {
         address user,
         uint withdraw_id,
         uint event_id
-    ) public only_operator nonReentrant {
+    ) public only_xchain_operator nonReentrant {
         // emit withdraw reject event
         emit withdraw_reject_event(user, withdraw_id, event_id);
     }

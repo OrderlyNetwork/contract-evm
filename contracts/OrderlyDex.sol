@@ -23,7 +23,7 @@ contract OrderlyDex is IOrderlyDex {
     }
 
     // require operator
-    modifier only_operator() {
+    modifier only_operator_manager() {
         require(msg.sender == operator_manager_address, "only operator can call");
         _;
     }
@@ -40,9 +40,19 @@ contract OrderlyDex is IOrderlyDex {
     }
 
     // update user ledger by trade upload
-    function update_user_ledger_by_trade_upload(Types.FuturesTradeUpLoad calldata trade) public only_operator {
+    function update_user_ledger_by_trade_upload(Types.FuturesTradeUpLoad calldata trade) public only_operator_manager {
         Account storage account = user_ledger[trade.account_id];
         account.last_perp_trade_id = trade.trade_id;
         // TODO update account.prep_position
+    }
+
+    // execute_settlement
+    function execute_settlement(Types.Settlement calldata settlement, uint event_id) public only_operator_manager {
+        // TODO
+    }
+
+    // execute_liquidation
+    function execute_liquidation(Types.Liquidation calldata liquidation, uint event_id) public only_operator_manager {
+        // TODO
     }
 }
