@@ -40,7 +40,7 @@ contract OrderlyDex is IOrderlyDex {
     }
 
     // update user ledger by trade upload
-    function update_user_ledger_by_trade_upload(Types.FuturesTradeUpLoad calldata trade) public only_operator_manager {
+    function update_user_ledger_by_trade_upload(Types.FuturesTradeUpload calldata trade) public only_operator_manager {
         Account storage account = user_ledger[trade.account_id];
         account.last_perp_trade_id = trade.trade_id;
         // TODO update account.prep_position
@@ -69,6 +69,8 @@ contract OrderlyDex is IOrderlyDex {
     // operator_withdraw_approve
     function _operator_withdraw_approve(Types.WithdrawData calldata withdraw, uint event_id) internal {
         // TODO
+        // Account storage account = user_ledger[withdraw.account_id];
+
     }
 
     // operator_reject_withdraw_request

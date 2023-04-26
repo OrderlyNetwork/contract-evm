@@ -22,5 +22,8 @@ interface IOrderlyDex {
         PerpPosition perp_position;
     }
 
-    function update_user_ledger_by_trade_upload(Types.FuturesTradeUpLoad calldata trade) external;    
+    function update_user_ledger_by_trade_upload(Types.FuturesTradeUpload calldata trade) external;
+    function execute_withdraw_action(Types.WithdrawData calldata withdraw, uint event_id) external;
+    function execute_settlement(Types.Settlement calldata settlement, uint event_id) external;
+    function execute_liquidation(Types.Liquidation calldata liquidation, uint event_id) external;
 }

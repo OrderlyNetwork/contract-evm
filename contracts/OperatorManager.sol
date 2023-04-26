@@ -50,10 +50,10 @@ contract OperatorManager {
 
     // futures trade upload data
     function futures_trade_upload_data(
-        Types.FuturesTradeUploadData calldata data
+        Types.FuturesTradeUploadData memory data
     ) internal {
         require(data.batch_id == futures_upload_batch_id, "batch_id not match");
-        Types.FuturesTradeUpLoad[] memory trades = data.trades; // gas saving
+        Types.FuturesTradeUpload[] memory trades = data.trades; // gas saving
         require(trades.length == data.count, "count not match");
         _validate_perp(trades);
         // process each validated perp trades
@@ -67,7 +67,7 @@ contract OperatorManager {
 
     // validate futres trade upload data
     function _validate_perp(
-        Types.FuturesTradeUpLoad[] calldata trades
+        Types.FuturesTradeUpload[] memory trades
     ) internal pure {
         for (uint i = 0; i < trades.length; i++) {
             // first, check signature is valid
@@ -78,7 +78,7 @@ contract OperatorManager {
     }
 
     function _verify_signature(
-        Types.FuturesTradeUpLoad calldata trade
+        Types.FuturesTradeUpload memory trade
     ) internal pure {
         // TODO ensure the parameters satisfy the real signature
         bytes32 sig = keccak256(abi.encodePacked(
@@ -100,19 +100,18 @@ contract OperatorManager {
 
     // process each validated perp trades
     function _process_validated_futures(
-        Types.FuturesTradeUpLoad calldata trade
+        Types.FuturesTradeUpload memory trade
     ) internal {
         orderly_dex.update_user_ledger_by_trade_upload(trade); 
     }
 
     // event upload data
     function event_upload_data(
-        Types.EventUpload calldata data
+        Types.EventUpload memory data
     ) internal {
         require(data.batch_id == event_upload_batch_id, "batch_id not match");
         Types.EventUploadData[] memory events = data.events; // gas saving
         require(events.length == data.count, "count not match");
-        require(events.sequence.length == data.count, "count not match");
         // process each event upload
         for (uint i = 0; i < data.count; i++) {
             _process_event_upload(events[i]);
@@ -124,7 +123,7 @@ contract OperatorManager {
 
     // process each event upload
     function _process_event_upload(
-        Types.EventUploadData calldata data
+        Types.EventUploadData memory data
     ) internal {
         uint index_withdraw = 0;
         uint index_settlement = 0;
@@ -133,7 +132,7 @@ contract OperatorManager {
         for (uint i = 0; i < data.sequence.length; i++) {
             if (data.sequence[i] == 0) {
                 // withdraw
-                // orderly_dex.execute_withdraw_action(data.withdraws[index_withdraw]);
+                orderly_dex.execute_withdraw_action(data.withdraws[index_withdraw], data.event_id);
                 index_withdraw += 1;
             } else if (data.sequence[i] == 1) {
                 // settlement
