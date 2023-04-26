@@ -46,6 +46,16 @@ contract OrderlyDex is IOrderlyDex {
         // TODO update account.prep_position
     }
 
+    // execute_withdraw_action
+    function execute_withdraw_action(Types.WithdrawData calldata withdraw, uint event_id) public only_operator_manager {
+        // TODO
+        if (withdraw.approval) {
+            _operator_withdraw_approve(withdraw, event_id);
+        } else {
+            _operator_reject_withdraw_request(withdraw, event_id);
+        }
+    }
+
     // execute_settlement
     function execute_settlement(Types.Settlement calldata settlement, uint event_id) public only_operator_manager {
         // TODO
@@ -53,6 +63,16 @@ contract OrderlyDex is IOrderlyDex {
 
     // execute_liquidation
     function execute_liquidation(Types.Liquidation calldata liquidation, uint event_id) public only_operator_manager {
+        // TODO
+    }
+
+    // operator_withdraw_approve
+    function _operator_withdraw_approve(Types.WithdrawData calldata withdraw, uint event_id) internal {
+        // TODO
+    }
+
+    // operator_reject_withdraw_request
+    function _operator_reject_withdraw_request(Types.WithdrawData calldata withdraw, uint event_id) internal {
         // TODO
     }
 }

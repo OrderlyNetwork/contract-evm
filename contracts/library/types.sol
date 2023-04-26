@@ -48,8 +48,10 @@ library Types {
 
     struct WithdrawData {
         address account_id;
+        bytes32 token;
         uint withdraw_id;
         bool approval;
+        uint chain_id;  // target withdraw chain
     }
 
     struct Settlement {
