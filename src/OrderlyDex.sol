@@ -1,7 +1,8 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
-import './interface/IOrderlyDex.sol';
-import './library/types.sol';
+
+import "./interface/IOrderlyDex.sol";
+import "./library/types.sol";
 
 /**
  * OrderlyDex is responsible for saving traders' Account (balance, perp_position, and other meta)
@@ -12,7 +13,7 @@ contract OrderlyDex is IOrderlyDex {
     // OperatorManager contract address
     address public operator_manager_address;
     // user_ledger
-    mapping (address => Account) public user_ledger;
+    mapping(address => Account) public user_ledger;
 
     // admin address
     address public admin;
@@ -47,7 +48,10 @@ contract OrderlyDex is IOrderlyDex {
     }
 
     // execute_withdraw_action
-    function execute_withdraw_action(Types.WithdrawData calldata withdraw, uint event_id) public only_operator_manager {
+    function execute_withdraw_action(Types.WithdrawData calldata withdraw, uint256 event_id)
+        public
+        only_operator_manager
+    {
         // TODO
         if (withdraw.approval) {
             _operator_withdraw_approve(withdraw, event_id);
@@ -57,24 +61,26 @@ contract OrderlyDex is IOrderlyDex {
     }
 
     // execute_settlement
-    function execute_settlement(Types.Settlement calldata settlement, uint event_id) public only_operator_manager {
+    function execute_settlement(Types.Settlement calldata settlement, uint256 event_id) public only_operator_manager {
         // TODO
     }
 
     // execute_liquidation
-    function execute_liquidation(Types.Liquidation calldata liquidation, uint event_id) public only_operator_manager {
+    function execute_liquidation(Types.Liquidation calldata liquidation, uint256 event_id)
+        public
+        only_operator_manager
+    {
         // TODO
     }
 
     // operator_withdraw_approve
-    function _operator_withdraw_approve(Types.WithdrawData calldata withdraw, uint event_id) internal {
+    function _operator_withdraw_approve(Types.WithdrawData calldata withdraw, uint256 event_id) internal {
         // TODO
         // Account storage account = user_ledger[withdraw.account_id];
-
     }
 
     // operator_reject_withdraw_request
-    function _operator_reject_withdraw_request(Types.WithdrawData calldata withdraw, uint event_id) internal {
+    function _operator_reject_withdraw_request(Types.WithdrawData calldata withdraw, uint256 event_id) internal {
         // TODO
     }
 }

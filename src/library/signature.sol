@@ -1,26 +1,17 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
 library Signature {
-    function getEthSignedMessageHash(
-        bytes32 _messageHash
-    ) public pure returns (bytes32) {
+    function getEthSignedMessageHash(bytes32 _messageHash) public pure returns (bytes32) {
         /*
         Signature is produced by signing a keccak256 hash with the following format:
         "\x19Ethereum Signed Message\n" + len(msg) + msg
         */
-        return
-            keccak256(
-                abi.encodePacked("\x19Ethereum Signed Message:\n32", _messageHash)
-            );
+        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _messageHash));
     }
 
     // verify
-    function verify(
-        bytes32 hash,
-        bytes memory signature,
-        address signer
-    ) internal pure returns (bool) {
+    function verify(bytes32 hash, bytes memory signature, address signer) internal pure returns (bool) {
         require(signature.length == 65, "invalid signature length");
 
         bytes32 r;
