@@ -1,0 +1,8 @@
+export RPC_URL_MAINNET="https://rpc.ankr.com/eth"
+export RPC_URL_GOERLI="https://rpc.ankr.com/eth_goerli"
+export RPC_URL_HYPERSPACE="https://rpc.ankr.com/filecoin_testnet"
+export RPC_URL_SEPOLIA="https://rpc.sepolia.org"
+export RPC_URL_FUJI="https://api.avax-test.network/ext/bc/C/rpc"
+export ETHERSCAN_KEY=XXX
+export PRIVATE_KEY=XXX
+export VERSION="0.1.0"

@@ -1,5 +1,6 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
+
 import "./interface/IERC20.sol";
 
 /**
@@ -14,28 +15,28 @@ contract AssetManager {
     // USDC contract
     IERC20 public usdc;
     // user's USDC balance (maybe not need this)
-    mapping (address => uint) public user_balance;
+    mapping(address => uint256) public user_balance;
     // user's pending_withdraw USDC balance
-    mapping (address => WithdrawInfo) public pending_withdraw_info;
+    mapping(address => WithdrawInfo) public pending_withdraw_info;
     // nonReentrant lock
     bool nonReentrantLock = false;
 
-    event deposit_event(address user, uint amount);
-    event withdraw_event(address user, uint amount, uint withdraw_id);
-    event withdraw_approve_event(address user, uint amount, uint withdraw_id, uint event_id);
-    event withdraw_reject_event(address user, uint withdraw_id, uint event_id);
-
+    event deposit_event(address user, uint256 amount);
+    event withdraw_event(address user, uint256 amount, uint256 withdraw_id);
+    event withdraw_approve_event(address user, uint256 amount, uint256 withdraw_id, uint256 event_id);
+    event withdraw_reject_event(address user, uint256 withdraw_id, uint256 event_id);
 
     struct WithdrawRequest {
-        uint amount;
-        uint request_time;
-        uint withdraw_id;
-        uint event_id;
+        uint256 amount;
+        uint256 request_time;
+        uint256 withdraw_id;
+        uint256 event_id;
     }
+
     struct WithdrawInfo {
-        uint pending_withdraw;
-        uint last_event_id;
-        mapping (uint => WithdrawRequest) withdraw_requests;
+        uint256 pending_withdraw;
+        uint256 last_event_id;
+        mapping(uint256 => WithdrawRequest) withdraw_requests;
     }
 
     // only cross-chain operator can call
@@ -51,17 +52,14 @@ contract AssetManager {
         _;
         nonReentrantLock = false;
     }
-    
-    constructor(
-        address usdc_address,
-        address _xchain_operator
-    ) {
+
+    constructor(address usdc_address, address _xchain_operator) {
         usdc = IERC20(usdc_address);
         xchain_operator = _xchain_operator;
     }
 
     // user deposit USDC
-    function deposit(uint amount) public {
+    function deposit(uint256 amount) public {
         require(usdc.transferFrom(msg.sender, address(this), amount), "transferFrom failed");
         user_balance[msg.sender] += amount;
         // emit deposit event
@@ -69,7 +67,7 @@ contract AssetManager {
     }
 
     // user withdraw USDC by withdraw_id
-    function withdraw(uint withdraw_id) public nonReentrant {
+    function withdraw(uint256 withdraw_id) public nonReentrant {
         WithdrawInfo storage withdraw_info = pending_withdraw_info[msg.sender];
         WithdrawRequest storage withdraw_request = withdraw_info.withdraw_requests[withdraw_id];
         require(withdraw_request.amount > 0, "withdraw request not found");
@@ -84,7 +82,7 @@ contract AssetManager {
     }
 
     // user withdraw USDC by withdraw_ids
-    function withdraws(uint[] memory withdraw_ids) public nonReentrant {
+    function withdraws(uint256[] memory withdraw_ids) public nonReentrant {
         // TODO batch withdraw. Pay attention to the reentrancy problem.
     }
 
@@ -92,13 +90,11 @@ contract AssetManager {
     // Cefi send withdraw approve event to OperatorManager,
     // and the message should cross-chain by xchain-operator,
     // finally call this function to approve withdraw request
-    function withdraw_approve(
-        address user,
-        uint amount,
-        uint request_time,
-        uint withdraw_id,
-        uint event_id
-    ) public only_xchain_operator nonReentrant {
+    function withdraw_approve(address user, uint256 amount, uint256 request_time, uint256 withdraw_id, uint256 event_id)
+        public
+        only_xchain_operator
+        nonReentrant
+    {
         require(user_balance[user] >= amount, "insufficient balance");
         user_balance[user] -= amount;
         // TODO get withdraw_info by user. if not exist, create a new one
@@ -113,11 +109,11 @@ contract AssetManager {
     }
 
     // withdraw reject
-    function withdraw_reject(
-        address user,
-        uint withdraw_id,
-        uint event_id
-    ) public only_xchain_operator nonReentrant {
+    function withdraw_reject(address user, uint256 withdraw_id, uint256 event_id)
+        public
+        only_xchain_operator
+        nonReentrant
+    {
         // emit withdraw reject event
         emit withdraw_reject_event(user, withdraw_id, event_id);
     }
