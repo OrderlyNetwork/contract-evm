@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
-import "../library/types.sol";
-
-interface IOrderlyDex {
+library AccountTypes {
     struct PerpPosition {
         int256 position_qty;
         int256 cost_position;
@@ -21,9 +19,4 @@ interface IOrderlyDex {
         // perp position
         PerpPosition perp_position;
     }
-
-    function update_user_ledger_by_trade_upload(Types.FuturesTradeUpload calldata trade) external;
-    function execute_withdraw_action(Types.WithdrawData calldata withdraw, uint256 event_id) external;
-    function execute_settlement(Types.Settlement calldata settlement, uint256 event_id) external;
-    function execute_liquidation(Types.Liquidation calldata liquidation, uint256 event_id) external;
 }
