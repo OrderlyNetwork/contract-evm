@@ -3,12 +3,13 @@ pragma solidity ^0.8.18;
 
 import "./interface/Isettlement.sol";
 import "./library/signature.sol";
+import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 
 /**
  * OperatorManager is responsible for executing cefi tx, only called by operator.
  * This contract should only have one in main-chain (avalanche)
  */
-contract OperatorManager {
+contract OperatorManager is Ownable {
     // operator address
     address public operator;
     Isettlement public settlement;
@@ -20,7 +21,7 @@ contract OperatorManager {
     uint256 public event_upload_batch_id;
 
     // only operator
-    modifier only_operator() {
+    modifier onlyOperator() {
         require(msg.sender == operator, "only operator can call");
         _;
     }
@@ -34,7 +35,7 @@ contract OperatorManager {
     // entry point for operator to call this contract
     function operator_execute_action(PrepTypes.OperatorActionData action_data, bytes calldata action)
         public
-        only_operator
+        onlyOperator
     {
         if (action_data == PrepTypes.OperatorActionData.FuturesTradeUpload) {
             // FuturesTradeUpload
@@ -77,8 +78,7 @@ contract OperatorManager {
         bytes32 sig = keccak256(abi.encodePacked(trade.trade_id, trade.symbol, trade.side, trade.trade_qty));
 
         require(
-            Signature.verify(Signature.getEthSignedMessageHash(sig), trade.signature, trade.account_id),
-            "invalid signature"
+            Signature.verify(Signature.getEthSignedMessageHash(sig), trade.signature, trade.addr), "invalid signature"
         );
     }
 

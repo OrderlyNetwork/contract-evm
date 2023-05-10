@@ -20,7 +20,8 @@ library PrepTypes {
     struct FuturesTradeUpload {
         uint256 trade_id;
         uint256 match_id;
-        address account_id;
+        bytes32 account_id;
+        address addr;
         string symbol;
         bool side;
         uint256 trade_qty;
@@ -47,7 +48,7 @@ library PrepTypes {
     }
 
     struct WithdrawData {
-        address account_id;
+        bytes32 account_id;
         bytes32 token;
         uint256 withdraw_id;
         bool approval;
@@ -55,7 +56,7 @@ library PrepTypes {
     }
 
     struct Settlement {
-        address account_id;
+        bytes32 account_id;
         int256 settled_amount;
         bytes32 settled_asset;
         uint256 insurance_transfer_amount;
@@ -63,7 +64,7 @@ library PrepTypes {
     }
 
     struct Liquidation {
-        address account_id;
+        bytes32 account_id;
         int256 settled_amount;
         LiquidationTransfer[] liquidation_transfers;
         uint256 timestamp;
@@ -72,7 +73,7 @@ library PrepTypes {
 
     struct LiquidationTransfer {
         uint256 liquidation_transfer_id;
-        address liquidator_account_id;
+        bytes32 liquidator_account_id;
         bytes32 list_symbol;
         int256 position_qty_transfer;
         int256 cost_position_transfer;

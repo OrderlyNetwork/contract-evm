@@ -20,7 +20,7 @@ contract Settlement is Ownable, Isettlement {
     // global_event_id
     uint256 public global_event_id;
     // user_ledger
-    mapping(address => AccountTypes.Account) public user_ledger;
+    mapping(bytes32 => AccountTypes.Account) private user_ledger;
 
     // require operator
     modifier onlyOperatorManager() {
@@ -33,8 +33,19 @@ contract Settlement is Ownable, Isettlement {
         operator_manager_address = _operator_manager_address;
     }
 
+    // Interface implementation
+
+    function register_account(bytes32 account_id, address addr, uint256 broker_id)
+        public
+        override
+        onlyOperatorManager
+    {
+        // TODO
+    }
+
     function update_user_ledger_by_trade_upload(PrepTypes.FuturesTradeUpload calldata trade)
         public
+        override
         onlyOperatorManager
     {
         AccountTypes.Account storage account = user_ledger[trade.account_id];
@@ -44,18 +55,26 @@ contract Settlement is Ownable, Isettlement {
 
     function execute_withdraw_action(PrepTypes.WithdrawData calldata withdraw, uint256 event_id)
         public
+        override
         onlyOperatorManager
     {}
 
     function execute_settlement(PrepTypes.Settlement calldata settlement, uint256 event_id)
         public
+        override
         onlyOperatorManager
-    {}
+    {
+        // TODO send cross-chain tx to target vault
+    }
 
     function execute_liquidation(PrepTypes.Liquidation calldata liquidation, uint256 event_id)
         public
+        override
         onlyOperatorManager
-    {}
+    {
+        // TODO
+        // AccountTypes.Account storage liquidated_user = user_ledger[liquidation.account_id];
+    }
 
     function _check_cefi_down() internal pure returns (bool) {
         // TODO mock here
