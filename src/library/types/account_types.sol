@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
-import "../library/types.sol";
+// EnumerableSet
+import "../../../lib/openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 
-interface IOrderlyDex {
+library AccountTypes {
+    using EnumerableSet for EnumerableSet.AddressSet;
+
     struct PerpPosition {
         int256 position_qty;
         int256 cost_position;
@@ -12,6 +15,12 @@ interface IOrderlyDex {
     }
 
     struct Account {
+        // account id, unique for each account, should be {Array<addr>, brokerId}
+        bytes32 account_id;
+        // user's broker id
+        uint256 broker_id;
+        // account addresses.
+        EnumerableSet.AddressSet addresses;
         // user's balance
         uint256 balance;
         // last perp trade id
@@ -21,9 +30,4 @@ interface IOrderlyDex {
         // perp position
         PerpPosition perp_position;
     }
-
-    function update_user_ledger_by_trade_upload(Types.FuturesTradeUpload calldata trade) external;
-    function execute_withdraw_action(Types.WithdrawData calldata withdraw, uint256 event_id) external;
-    function execute_settlement(Types.Settlement calldata settlement, uint256 event_id) external;
-    function execute_liquidation(Types.Liquidation calldata liquidation, uint256 event_id) external;
 }

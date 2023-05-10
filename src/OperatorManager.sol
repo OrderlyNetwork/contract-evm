@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
-import "./interface/IOrderlyDex.sol";
+import "./interface/Isettlement.sol";
 import "./library/signature.sol";
-import "./library/types.sol";
+import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 
 /**
  * OperatorManager is responsible for executing cefi tx, only called by operator.
  * This contract should only have one in main-chain (avalanche)
  */
-contract OperatorManager {
+contract OperatorManager is Ownable {
     // operator address
     address public operator;
-    IOrderlyDex public orderly_dex;
+    Isettlement public settlement;
 
     // ids
     // futures_upload_batch_id
@@ -21,7 +21,7 @@ contract OperatorManager {
     uint256 public event_upload_batch_id;
 
     // only operator
-    modifier only_operator() {
+    modifier onlyOperator() {
         require(msg.sender == operator, "only operator can call");
         _;
     }
@@ -33,14 +33,14 @@ contract OperatorManager {
     }
 
     // entry point for operator to call this contract
-    function operator_execute_action(Types.OperatorActionData action_data, bytes calldata action)
+    function operator_execute_action(PrepTypes.OperatorActionData action_data, bytes calldata action)
         public
-        only_operator
+        onlyOperator
     {
-        if (action_data == Types.OperatorActionData.FuturesTradeUpload) {
+        if (action_data == PrepTypes.OperatorActionData.FuturesTradeUpload) {
             // FuturesTradeUpload
-            futures_trade_upload_data(abi.decode(action, (Types.FuturesTradeUploadData)));
-        } else if (action_data == Types.OperatorActionData.EventUpload) {
+            futures_trade_upload_data(abi.decode(action, (PrepTypes.FuturesTradeUploadData)));
+        } else if (action_data == PrepTypes.OperatorActionData.EventUpload) {
             // EventUpload
             // TODO
         } else {
@@ -49,9 +49,9 @@ contract OperatorManager {
     }
 
     // futures trade upload data
-    function futures_trade_upload_data(Types.FuturesTradeUploadData memory data) internal {
+    function futures_trade_upload_data(PrepTypes.FuturesTradeUploadData memory data) internal {
         require(data.batch_id == futures_upload_batch_id, "batch_id not match");
-        Types.FuturesTradeUpload[] memory trades = data.trades; // gas saving
+        PrepTypes.FuturesTradeUpload[] memory trades = data.trades; // gas saving
         require(trades.length == data.count, "count not match");
         _validate_perp(trades);
         // process each validated perp trades
@@ -64,7 +64,7 @@ contract OperatorManager {
     }
 
     // validate futres trade upload data
-    function _validate_perp(Types.FuturesTradeUpload[] memory trades) internal pure {
+    function _validate_perp(PrepTypes.FuturesTradeUpload[] memory trades) internal pure {
         for (uint256 i = 0; i < trades.length; i++) {
             // first, check signature is valid
             _verify_signature(trades[i]);
@@ -73,25 +73,24 @@ contract OperatorManager {
         }
     }
 
-    function _verify_signature(Types.FuturesTradeUpload memory trade) internal pure {
+    function _verify_signature(PrepTypes.FuturesTradeUpload memory trade) internal pure {
         // TODO ensure the parameters satisfy the real signature
         bytes32 sig = keccak256(abi.encodePacked(trade.trade_id, trade.symbol, trade.side, trade.trade_qty));
 
         require(
-            Signature.verify(Signature.getEthSignedMessageHash(sig), trade.signature, trade.account_id),
-            "invalid signature"
+            Signature.verify(Signature.getEthSignedMessageHash(sig), trade.signature, trade.addr), "invalid signature"
         );
     }
 
     // process each validated perp trades
-    function _process_validated_futures(Types.FuturesTradeUpload memory trade) internal {
-        orderly_dex.update_user_ledger_by_trade_upload(trade);
+    function _process_validated_futures(PrepTypes.FuturesTradeUpload memory trade) internal {
+        settlement.update_user_ledger_by_trade_upload(trade);
     }
 
     // event upload data
-    function event_upload_data(Types.EventUpload memory data) internal {
+    function event_upload_data(PrepTypes.EventUpload memory data) internal {
         require(data.batch_id == event_upload_batch_id, "batch_id not match");
-        Types.EventUploadData[] memory events = data.events; // gas saving
+        PrepTypes.EventUploadData[] memory events = data.events; // gas saving
         require(events.length == data.count, "count not match");
         // process each event upload
         for (uint256 i = 0; i < data.count; i++) {
@@ -103,7 +102,7 @@ contract OperatorManager {
     }
 
     // process each event upload
-    function _process_event_upload(Types.EventUploadData memory data) internal {
+    function _process_event_upload(PrepTypes.EventUploadData memory data) internal {
         uint256 index_withdraw = 0;
         uint256 index_settlement = 0;
         uint256 index_liquidation = 0;
@@ -111,15 +110,15 @@ contract OperatorManager {
         for (uint256 i = 0; i < data.sequence.length; i++) {
             if (data.sequence[i] == 0) {
                 // withdraw
-                orderly_dex.execute_withdraw_action(data.withdraws[index_withdraw], data.event_id);
+                settlement.execute_withdraw_action(data.withdraws[index_withdraw], data.event_id);
                 index_withdraw += 1;
             } else if (data.sequence[i] == 1) {
                 // settlement
-                orderly_dex.execute_settlement(data.settlements[index_settlement], data.event_id);
+                settlement.execute_settlement(data.settlements[index_settlement], data.event_id);
                 index_settlement += 1;
             } else if (data.sequence[i] == 2) {
                 // liquidation
-                orderly_dex.execute_liquidation(data.liquidations[index_liquidation], data.event_id);
+                settlement.execute_liquidation(data.liquidations[index_liquidation], data.event_id);
                 index_liquidation += 1;
             } else {
                 revert("invalid sequence");

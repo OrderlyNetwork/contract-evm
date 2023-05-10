@@ -13,3 +13,6 @@ docs/
 # Dotenv file
 .env
 .envrc
+
+# Node modules
+node_modules
