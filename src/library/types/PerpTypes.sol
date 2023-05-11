@@ -12,19 +12,19 @@ library PrepTypes {
     // FuturesTradeUploadData
 
     struct FuturesTradeUploadData {
-        uint256 batch_id;
+        uint256 batchId;
         uint256 count;
         FuturesTradeUpload[] trades;
     }
 
     struct FuturesTradeUpload {
-        uint256 trade_id;
-        uint256 match_id;
-        bytes32 account_id;
+        uint256 tradeId;
+        uint256 matchId;
+        bytes32 accountId;
         address addr;
         string symbol;
         bool side;
-        uint256 trade_qty;
+        uint256 tradeQty;
         // signature for validate signed by real user
         bytes signature;
     }
@@ -32,15 +32,15 @@ library PrepTypes {
     // EventUpload
 
     struct EventUpload {
-        uint256 batch_id;
+        uint256 batchId;
         uint256 count;
         EventUploadData[] events;
     }
 
     struct EventUploadData {
-        uint256 event_id;
-        string biz_type;
-        uint256 biz_id;
+        uint256 eventId;
+        string bizType;
+        uint256 bizId;
         WithdrawData[] withdraws;
         Settlement[] settlements;
         Liquidation[] liquidations;
@@ -48,46 +48,46 @@ library PrepTypes {
     }
 
     struct WithdrawData {
-        bytes32 account_id;
+        bytes32 accountId;
         bytes32 token;
-        uint256 withdraw_id;
+        uint256 withdrawId;
         bool approval;
-        uint256 chain_id; // target withdraw chain
+        uint256 chainId; // target withdraw chain
     }
 
     struct Settlement {
-        bytes32 account_id;
-        int256 settled_amount;
-        bytes32 settled_asset;
-        uint256 insurance_transfer_amount;
-        SettlementExecution[] settlement_executions;
+        bytes32 accountId;
+        int256 settledAmount;
+        bytes32 settledAsset;
+        uint256 insuranceTransferAmount;
+        SettlementExecution[] settlementExecutions;
     }
 
     struct Liquidation {
-        bytes32 account_id;
-        int256 settled_amount;
-        LiquidationTransfer[] liquidation_transfers;
+        bytes32 accountId;
+        int256 settledAmount;
+        LiquidationTransfer[] liquidationTransfers;
         uint256 timestamp;
-        bytes32 liquidated_asset;
+        bytes32 liquidatedAsset;
     }
 
     struct LiquidationTransfer {
-        uint256 liquidation_transfer_id;
-        bytes32 liquidator_account_id;
+        uint256 liquidationTransferId;
+        bytes32 liquidatorAccountId;
         bytes32 list_symbol;
-        int256 position_qty_transfer;
-        int256 cost_position_transfer;
-        uint256 liquidator_fee;
-        uint256 insurance_fee;
-        uint256 mark_price;
-        int256 sum_unitary_fundings;
-        uint256 liquidation_fee;
+        int256 positionQtyTransfer;
+        int256 costPositionTransfer;
+        uint256 liquidatorFee;
+        uint256 insuranceFee;
+        uint256 markPrice;
+        int256 sumUnitaryFundings;
+        uint256 liquidationFee;
     }
 
     struct SettlementExecution {
         bytes32 symbol;
-        int256 sum_unitary_fundings;
-        uint256 mark_price;
-        int256 settled_amount;
+        int256 sumUnitaryFundings;
+        uint256 markPrice;
+        int256 settledAmount;
     }
 }
