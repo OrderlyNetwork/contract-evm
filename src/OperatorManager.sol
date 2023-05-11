@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
-import "./interface/Isettlement.sol";
+import "./interface/ISettlement.sol";
 import "./library/signature.sol";
+import "./library/types/OperatorTypes.sol";
 import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 
 /**
@@ -12,7 +13,7 @@ import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 contract OperatorManager is Ownable {
     // operator address
     address public operator;
-    Isettlement public settlement;
+    ISettlement public settlement;
 
     // ids
     // futuresUploadBatchId
@@ -28,23 +29,27 @@ contract OperatorManager is Ownable {
 
     // constructor
     constructor(address _operator) {
-        futuresUploadBatchId = 0;
         operator = _operator;
     }
 
     // entry point for operator to call this contract
-    function operatorExecuteAction(PrepTypes.OperatorActionData actionData, bytes calldata action)
+    function operatorExecuteAction(OperatorTypes.OperatorActionData actionData, bytes calldata action)
         public
         onlyOperator
     {
-        if (actionData == PrepTypes.OperatorActionData.FuturesTradeUpload) {
+        if (actionData == OperatorTypes.OperatorActionData.FuturesTradeUpload) {
             // FuturesTradeUpload
             futuresTradeUploadData(abi.decode(action, (PrepTypes.FuturesTradeUploadData)));
-        } else if (actionData == PrepTypes.OperatorActionData.EventUpload) {
+        } else if (actionData == OperatorTypes.OperatorActionData.EventUpload) {
             // EventUpload
-            // TODO
+            eventUploadData(abi.decode(action, (PrepTypes.EventUpload)));
+        } else if (actionData == OperatorTypes.OperatorActionData.UserRegister) {
+            // UserRegister
+            settlement.registerAccount(abi.decode(action, (AccountTypes.AccountRegister)));
+        } else if (actionData == OperatorTypes.OperatorActionData.UserDeposit) {
+            // UserDeposit
         } else {
-            revert("invalid actionData");
+            revert("invalid action data");
         }
     }
 

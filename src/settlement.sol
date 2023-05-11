@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
-import "./interface/Isettlement.sol";
+import "./interface/ISettlement.sol";
 import "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 
@@ -10,7 +10,7 @@ import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
  * and global state (e.g. futuresUploadBatchId)
  * This contract should only have one in main-chain (avalanche)
  */
-contract Settlement is Ownable, Isettlement {
+contract Settlement is Ownable, ISettlement {
     // OperatorManager contract address
     address public operatorManagerAddress;
     // globalWithdrawId
@@ -42,8 +42,17 @@ contract Settlement is Ownable, Isettlement {
 
     // Interface implementation
 
-    function registerAccount(bytes32 accountId, address addr, uint256 brokerId) public override onlyOperatorManager {
-        // TODO
+    function registerAccount(AccountTypes.AccountRegister calldata accountRegister)
+        public
+        override
+        onlyOperatorManager
+    {
+        // check account not exist
+        require(userLedger[accountRegister.accountId].accountId != bytes32(0), "account already exist");
+        AccountTypes.Account storage account = userLedger[accountRegister.accountId];
+        account.accountId = accountRegister.accountId;
+        EnumerableSet.add(account.addresses, accountRegister.addr);
+        account.brokerId = accountRegister.brokerId;
     }
 
     function updateUserLedgerByTradeUpload(PrepTypes.FuturesTradeUpload calldata trade)
@@ -77,7 +86,6 @@ contract Settlement is Ownable, Isettlement {
         }
         require(totalSettleAmount == 0, "total settle amount not zero");
 
-        //
         AccountTypes.Account storage account = userLedger[settlement.accountId];
         uint256 balance = account.balance;
         account.hasPendingSettlementRequest = false;

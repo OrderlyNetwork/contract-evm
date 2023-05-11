@@ -35,6 +35,12 @@ library AccountTypes {
         bool hasPendingSettlementRequest;
     }
 
+    struct AccountRegister {
+        bytes32 accountId;
+        uint256 brokerId;
+        address addr;
+    }
+
     // charge funding fee
     function chargeFundingFee(PerpPosition storage position, int256 sumUnitaryFundings) public {
         int256 accruedFeeUncoverted = position.positionQty * (sumUnitaryFundings - position.lastSumUnitaryFundings);

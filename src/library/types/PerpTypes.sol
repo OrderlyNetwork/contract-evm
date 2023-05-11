@@ -2,15 +2,7 @@
 pragma solidity ^0.8.18;
 
 library PrepTypes {
-    enum OperatorActionData {
-        None,
-        FuturesTradeUpload,
-        EventUpload,
-        PerpMarketInfo
-    }
-
     // FuturesTradeUploadData
-
     struct FuturesTradeUploadData {
         uint256 batchId;
         uint256 count;
@@ -30,7 +22,6 @@ library PrepTypes {
     }
 
     // EventUpload
-
     struct EventUpload {
         uint256 batchId;
         uint256 count;
