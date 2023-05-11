@@ -15,10 +15,10 @@ contract OperatorManager is Ownable {
     Isettlement public settlement;
 
     // ids
-    // futures_upload_batch_id
-    uint256 public futures_upload_batch_id;
-    // event_upload_batch_id
-    uint256 public event_upload_batch_id;
+    // futuresUploadBatchId
+    uint256 public futuresUploadBatchId;
+    // eventUploadBatchId
+    uint256 public eventUploadBatchId;
 
     // only operator
     modifier onlyOperator() {
@@ -28,54 +28,54 @@ contract OperatorManager is Ownable {
 
     // constructor
     constructor(address _operator) {
-        futures_upload_batch_id = 0;
+        futuresUploadBatchId = 0;
         operator = _operator;
     }
 
     // entry point for operator to call this contract
-    function operator_execute_action(PrepTypes.OperatorActionData action_data, bytes calldata action)
+    function operatorExecuteAction(PrepTypes.OperatorActionData actionData, bytes calldata action)
         public
         onlyOperator
     {
-        if (action_data == PrepTypes.OperatorActionData.FuturesTradeUpload) {
+        if (actionData == PrepTypes.OperatorActionData.FuturesTradeUpload) {
             // FuturesTradeUpload
-            futures_trade_upload_data(abi.decode(action, (PrepTypes.FuturesTradeUploadData)));
-        } else if (action_data == PrepTypes.OperatorActionData.EventUpload) {
+            futuresTradeUploadData(abi.decode(action, (PrepTypes.FuturesTradeUploadData)));
+        } else if (actionData == PrepTypes.OperatorActionData.EventUpload) {
             // EventUpload
             // TODO
         } else {
-            revert("invalid action_data");
+            revert("invalid actionData");
         }
     }
 
     // futures trade upload data
-    function futures_trade_upload_data(PrepTypes.FuturesTradeUploadData memory data) internal {
-        require(data.batch_id == futures_upload_batch_id, "batch_id not match");
+    function futuresTradeUploadData(PrepTypes.FuturesTradeUploadData memory data) internal {
+        require(data.batchId == futuresUploadBatchId, "batchId not match");
         PrepTypes.FuturesTradeUpload[] memory trades = data.trades; // gas saving
         require(trades.length == data.count, "count not match");
-        _validate_perp(trades);
+        _validatePerp(trades);
         // process each validated perp trades
         for (uint256 i = 0; i < data.count; i++) {
-            _process_validated_futures(trades[i]);
+            _processValidatedFutures(trades[i]);
         }
-        // update_futures_upload_batch_id
+        // update_futuresUploadBatchId
         // TODO use math safe add
-        futures_upload_batch_id += 1;
+        futuresUploadBatchId += 1;
     }
 
     // validate futres trade upload data
-    function _validate_perp(PrepTypes.FuturesTradeUpload[] memory trades) internal pure {
+    function _validatePerp(PrepTypes.FuturesTradeUpload[] memory trades) internal pure {
         for (uint256 i = 0; i < trades.length; i++) {
             // first, check signature is valid
-            _verify_signature(trades[i]);
+            _verifySignature(trades[i]);
             // second, check symbol (and maybe other value) is valid
             // TODO
         }
     }
 
-    function _verify_signature(PrepTypes.FuturesTradeUpload memory trade) internal pure {
+    function _verifySignature(PrepTypes.FuturesTradeUpload memory trade) internal pure {
         // TODO ensure the parameters satisfy the real signature
-        bytes32 sig = keccak256(abi.encodePacked(trade.trade_id, trade.symbol, trade.side, trade.trade_qty));
+        bytes32 sig = keccak256(abi.encodePacked(trade.tradeId, trade.symbol, trade.side, trade.tradeQty));
 
         require(
             Signature.verify(Signature.getEthSignedMessageHash(sig), trade.signature, trade.addr), "invalid signature"
@@ -83,26 +83,26 @@ contract OperatorManager is Ownable {
     }
 
     // process each validated perp trades
-    function _process_validated_futures(PrepTypes.FuturesTradeUpload memory trade) internal {
-        settlement.update_user_ledger_by_trade_upload(trade);
+    function _processValidatedFutures(PrepTypes.FuturesTradeUpload memory trade) internal {
+        settlement.updateUserLedgerByTradeUpload(trade);
     }
 
     // event upload data
-    function event_upload_data(PrepTypes.EventUpload memory data) internal {
-        require(data.batch_id == event_upload_batch_id, "batch_id not match");
+    function eventUploadData(PrepTypes.EventUpload memory data) internal {
+        require(data.batchId == eventUploadBatchId, "batchId not match");
         PrepTypes.EventUploadData[] memory events = data.events; // gas saving
         require(events.length == data.count, "count not match");
         // process each event upload
         for (uint256 i = 0; i < data.count; i++) {
-            _process_event_upload(events[i]);
+            _processEventUpload(events[i]);
         }
-        // update_event_upload_batch_id
+        // update_eventUploadBatchId
         // TODO use math safe add
-        event_upload_batch_id += 1;
+        eventUploadBatchId += 1;
     }
 
     // process each event upload
-    function _process_event_upload(PrepTypes.EventUploadData memory data) internal {
+    function _processEventUpload(PrepTypes.EventUploadData memory data) internal {
         uint256 index_withdraw = 0;
         uint256 index_settlement = 0;
         uint256 index_liquidation = 0;
@@ -110,15 +110,15 @@ contract OperatorManager is Ownable {
         for (uint256 i = 0; i < data.sequence.length; i++) {
             if (data.sequence[i] == 0) {
                 // withdraw
-                settlement.execute_withdraw_action(data.withdraws[index_withdraw], data.event_id);
+                settlement.executeWithdrawAction(data.withdraws[index_withdraw], data.eventId);
                 index_withdraw += 1;
             } else if (data.sequence[i] == 1) {
                 // settlement
-                settlement.execute_settlement(data.settlements[index_settlement], data.event_id);
+                settlement.executeSettlement(data.settlements[index_settlement], data.eventId);
                 index_settlement += 1;
             } else if (data.sequence[i] == 2) {
                 // liquidation
-                settlement.execute_liquidation(data.liquidations[index_liquidation], data.event_id);
+                settlement.executeLiquidation(data.liquidations[index_liquidation], data.eventId);
                 index_liquidation += 1;
             } else {
                 revert("invalid sequence");
