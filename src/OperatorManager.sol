@@ -2,15 +2,15 @@
 pragma solidity ^0.8.18;
 
 import "./interface/ISettlement.sol";
+import "./interface/IOperatorManager.sol";
 import "./library/signature.sol";
-import "./library/types/OperatorTypes.sol";
 import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 
 /**
  * OperatorManager is responsible for executing cefi tx, only called by operator.
  * This contract should only have one in main-chain (avalanche)
  */
-contract OperatorManager is Ownable {
+contract OperatorManager is IOperatorManager, Ownable {
     // operator address
     address public operator;
     ISettlement public settlement;
@@ -35,6 +35,7 @@ contract OperatorManager is Ownable {
     // entry point for operator to call this contract
     function operatorExecuteAction(OperatorTypes.OperatorActionData actionData, bytes calldata action)
         public
+        override
         onlyOperator
     {
         if (actionData == OperatorTypes.OperatorActionData.FuturesTradeUpload) {

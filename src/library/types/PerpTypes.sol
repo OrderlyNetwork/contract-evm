@@ -40,9 +40,7 @@ library PrepTypes {
 
     struct WithdrawData {
         bytes32 accountId;
-        bytes32 token;
-        uint256 withdrawId;
-        bool approval;
+        uint256 amount;
         uint256 chainId; // target withdraw chain
     }
 

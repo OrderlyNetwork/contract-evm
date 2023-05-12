@@ -5,6 +5,10 @@ import "../library/types/AccountTypes.sol";
 import "../library/types/PerpTypes.sol";
 
 interface ISettlement {
+    event AccountRegister(bytes32 indexed accountId, uint256 indexed brokerId, address indexed addr);
+    event AccountDeposit(bytes32 indexed accountId, uint256 chainId, uint256 amount);
+    event Withdraw(bytes32 indexed accountId, uint256 chainId, uint256 amount);
+
     function accountRegister(AccountTypes.AccountRegister calldata accountRegister) external;
     function accountDeposit(AccountTypes.AccountDeposit calldata accountDeposit) external;
     function updateUserLedgerByTradeUpload(PrepTypes.FuturesTradeUpload calldata trade) external;

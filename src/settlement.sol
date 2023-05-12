@@ -49,14 +49,16 @@ contract Settlement is Ownable, ISettlement {
         account.accountId = data.accountId;
         EnumerableSet.add(account.addresses, data.addr);
         account.brokerId = data.brokerId;
-        // TODO emit event
+        // emit register event
+        emit AccountRegister(data.accountId, data.brokerId, data.addr);
     }
 
     function accountDeposit(AccountTypes.AccountDeposit calldata data) public override onlyOperatorManager {
         // a not registerd account can still deposit, because of the consistency
         AccountTypes.Account storage account = userLedger[data.accountId];
         account.balance += data.amount;
-        // TODO emit deposit event
+        // emit deposit event
+        emit AccountDeposit(data.accountId, data.chainId, data.amount);
     }
 
     function updateUserLedgerByTradeUpload(PrepTypes.FuturesTradeUpload calldata trade)
@@ -73,7 +75,17 @@ contract Settlement is Ownable, ISettlement {
         public
         override
         onlyOperatorManager
-    {}
+    {
+        AccountTypes.Account storage account = userLedger[withdraw.accountId];
+        // require balance enough
+        require(account.balance >= withdraw.amount, "balance not enough");
+        // update balance
+        account.balance -= withdraw.amount;
+        // TODO send cross-chain tx
+        account.lastCefiEventId = eventId;
+        // emit withdraw event
+        emit Withdraw(withdraw.accountId, withdraw.chainId, withdraw.amount);
+    }
 
     function executeSettlement(PrepTypes.Settlement calldata settlement, uint256 eventId)
         public
