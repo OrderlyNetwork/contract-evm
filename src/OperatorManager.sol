@@ -45,9 +45,10 @@ contract OperatorManager is Ownable {
             eventUploadData(abi.decode(action, (PrepTypes.EventUpload)));
         } else if (actionData == OperatorTypes.OperatorActionData.UserRegister) {
             // UserRegister
-            settlement.registerAccount(abi.decode(action, (AccountTypes.AccountRegister)));
+            settlement.accountRegister(abi.decode(action, (AccountTypes.AccountRegister)));
         } else if (actionData == OperatorTypes.OperatorActionData.UserDeposit) {
             // UserDeposit
+            settlement.accountDeposit(abi.decode(action, (AccountTypes.AccountDeposit)));
         } else {
             revert("invalid action data");
         }

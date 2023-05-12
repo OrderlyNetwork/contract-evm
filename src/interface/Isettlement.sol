@@ -5,7 +5,8 @@ import "../library/types/AccountTypes.sol";
 import "../library/types/PerpTypes.sol";
 
 interface ISettlement {
-    function registerAccount(AccountTypes.AccountRegister calldata accountRegister) external;
+    function accountRegister(AccountTypes.AccountRegister calldata accountRegister) external;
+    function accountDeposit(AccountTypes.AccountDeposit calldata accountDeposit) external;
     function updateUserLedgerByTradeUpload(PrepTypes.FuturesTradeUpload calldata trade) external;
     function executeWithdrawAction(PrepTypes.WithdrawData calldata withdraw, uint256 eventId) external;
     function executeSettlement(PrepTypes.Settlement calldata settlement, uint256 eventId) external;

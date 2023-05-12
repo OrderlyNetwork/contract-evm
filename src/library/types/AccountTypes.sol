@@ -41,6 +41,11 @@ library AccountTypes {
         address addr;
     }
 
+    struct AccountDeposit {
+        bytes32 accountId;
+        uint256 amount;
+    }
+
     // charge funding fee
     function chargeFundingFee(PerpPosition storage position, int256 sumUnitaryFundings) public {
         int256 accruedFeeUncoverted = position.positionQty * (sumUnitaryFundings - position.lastSumUnitaryFundings);

@@ -42,17 +42,21 @@ contract Settlement is Ownable, ISettlement {
 
     // Interface implementation
 
-    function registerAccount(AccountTypes.AccountRegister calldata accountRegister)
-        public
-        override
-        onlyOperatorManager
-    {
+    function accountRegister(AccountTypes.AccountRegister calldata data) public override onlyOperatorManager {
         // check account not exist
-        require(userLedger[accountRegister.accountId].accountId != bytes32(0), "account already exist");
-        AccountTypes.Account storage account = userLedger[accountRegister.accountId];
-        account.accountId = accountRegister.accountId;
-        EnumerableSet.add(account.addresses, accountRegister.addr);
-        account.brokerId = accountRegister.brokerId;
+        require(userLedger[data.accountId].accountId != bytes32(0), "account already exist");
+        AccountTypes.Account storage account = userLedger[data.accountId];
+        account.accountId = data.accountId;
+        EnumerableSet.add(account.addresses, data.addr);
+        account.brokerId = data.brokerId;
+        // TODO emit event
+    }
+
+    function accountDeposit(AccountTypes.AccountDeposit calldata data) public override onlyOperatorManager {
+        // a not registerd account can still deposit, because of the consistency
+        AccountTypes.Account storage account = userLedger[data.accountId];
+        account.balance += data.amount;
+        // TODO emit deposit event
     }
 
     function updateUserLedgerByTradeUpload(PrepTypes.FuturesTradeUpload calldata trade)
