@@ -44,6 +44,7 @@ library AccountTypes {
     struct AccountDeposit {
         bytes32 accountId;
         uint256 amount;
+        uint256 chainId;
     }
 
     // charge funding fee
