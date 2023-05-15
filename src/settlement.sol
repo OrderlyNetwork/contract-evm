@@ -40,6 +40,12 @@ contract Settlement is Ownable, ISettlement {
         insuranceFundAccountId = _insuranceFundAccountId;
     }
 
+    // constructor
+    constructor(address _operatorManagerAddress, bytes32 _insuranceFundAccountId) {
+        operatorManagerAddress = _operatorManagerAddress;
+        insuranceFundAccountId = _insuranceFundAccountId;
+    }
+
     // Interface implementation
 
     function accountRegister(AccountTypes.AccountRegister calldata data) public override onlyOperatorManager {

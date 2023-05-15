@@ -27,6 +27,11 @@ contract OperatorManager is IOperatorManager, Ownable {
         _;
     }
 
+    // set operator
+    function setOperator(address _operator) public onlyOwner {
+        operator = _operator;
+    }
+
     // constructor
     constructor(address _operator) {
         operator = _operator;
