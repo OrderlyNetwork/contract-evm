@@ -66,7 +66,6 @@ contract OperatorManager is IOperatorManager, Ownable {
             _processValidatedFutures(trades[i]);
         }
         // update_futuresUploadBatchId
-        // TODO use math safe add
         futuresUploadBatchId += 1;
     }
 
@@ -104,7 +103,6 @@ contract OperatorManager is IOperatorManager, Ownable {
             _processEventUpload(events[i]);
         }
         // update_eventUploadBatchId
-        // TODO use math safe add
         eventUploadBatchId += 1;
     }
 

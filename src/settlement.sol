@@ -84,7 +84,7 @@ contract Settlement is Ownable, ISettlement {
         // TODO send cross-chain tx
         account.lastCefiEventId = eventId;
         // emit withdraw event
-        emit Withdraw(withdraw.accountId, withdraw.chainId, withdraw.amount);
+        emit AccountWithdraw(withdraw.accountId, withdraw.chainId, withdraw.amount);
     }
 
     function executeSettlement(PrepTypes.Settlement calldata settlement, uint256 eventId)
