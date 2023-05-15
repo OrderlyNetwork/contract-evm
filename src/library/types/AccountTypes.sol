@@ -13,7 +13,7 @@ library AccountTypes {
         int256 positionQty;
         int256 cost_position;
         int256 lastSumUnitaryFundings;
-        uint256 last_executed_price;
+        uint256 lastExecutedPrice;
     }
 
     struct Account {

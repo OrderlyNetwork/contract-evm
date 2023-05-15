@@ -3,38 +3,44 @@ pragma solidity ^0.8.18;
 
 import "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "../lib/openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
+import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 
 /**
  * Vault is responsible for saving user's USDC (where USDC which is a IERC20 token).
  * EACH CHAIN SHOULD HAVE ONE Vault CONTRACT.
  * User can deposit and withdraw USDC from Vault.
- * Only xchain_operator can approve withdraw request.
+ * Only xchainOperator can approve withdraw request.
  */
-contract Vault is ReentrancyGuard {
-    event deposit_event(address user, uint256 amount);
-    event withdraw_event(address user, uint256 amount);
+contract Vault is ReentrancyGuard, Ownable {
+    event DepositEvent(address user, uint256 amount);
+    event WithdrawEvent(address user, uint256 amount);
 
     // cross-chain operator address
-    address public xchain_operator;
+    address public xchainOperator;
     // USDC contract
     IERC20 public usdc;
 
     // only cross-chain operator can call
     modifier onlyXchainOperator() {
-        require(msg.sender == xchain_operator, "only operator can call");
+        require(msg.sender == xchainOperator, "only operator can call");
         _;
     }
 
-    constructor(address usdc_address, address _xchain_operator) {
+    // change xchainOperator
+    function setXchainOperator(address _xchainOperator) public onlyOwner {
+        xchainOperator = _xchainOperator;
+    }
+
+    constructor(address usdc_address, address _xchainOperator) {
         usdc = IERC20(usdc_address);
-        xchain_operator = _xchain_operator;
+        xchainOperator = _xchainOperator;
     }
 
     // user deposit USDC
     function deposit(uint256 amount) public {
         require(usdc.transferFrom(msg.sender, address(this), amount), "transferFrom failed");
         // emit deposit event
-        emit deposit_event(msg.sender, amount);
+        emit DepositEvent(msg.sender, amount);
         // TODO send cross-chain tx to settlement
     }
 
@@ -45,6 +51,6 @@ contract Vault is ReentrancyGuard {
         // transfer USDC to user
         require(usdc.transfer(msg.sender, amount), "transfer failed");
         // emit withdraw event
-        emit withdraw_event(msg.sender, amount);
+        emit WithdrawEvent(msg.sender, amount);
     }
 }

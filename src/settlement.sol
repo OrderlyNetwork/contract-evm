@@ -121,7 +121,7 @@ contract Settlement is Ownable, ISettlement {
             if (position.positionQty != 0) {
                 AccountTypes.chargeFundingFee(position, settlementExecution.sumUnitaryFundings);
                 position.cost_position += settlementExecution.settledAmount;
-                position.last_executed_price = settlementExecution.markPrice;
+                position.lastExecutedPrice = settlementExecution.markPrice;
             }
             // check balance + settledAmount >= 0, where balance should cast to int256 first
             require(int256(balance) + settlementExecution.settledAmount >= 0, "balance not enough");
