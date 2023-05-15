@@ -43,6 +43,7 @@ library AccountTypes {
 
     struct AccountDeposit {
         bytes32 accountId;
+        address addr;
         uint256 amount;
         uint256 chainId;
     }

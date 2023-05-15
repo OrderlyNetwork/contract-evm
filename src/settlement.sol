@@ -64,7 +64,7 @@ contract Settlement is Ownable, ISettlement {
         AccountTypes.Account storage account = userLedger[data.accountId];
         account.balance += data.amount;
         // emit deposit event
-        emit AccountDeposit(data.accountId, data.chainId, data.amount);
+        emit AccountDeposit(data.accountId, data.addr, data.chainId, data.amount);
     }
 
     function updateUserLedgerByTradeUpload(PrepTypes.FuturesTradeUpload calldata trade)
@@ -85,12 +85,14 @@ contract Settlement is Ownable, ISettlement {
         AccountTypes.Account storage account = userLedger[withdraw.accountId];
         // require balance enough
         require(account.balance >= withdraw.amount, "balance not enough");
+        // require addr is in account.addresses
+        require(EnumerableSet.contains(account.addresses, withdraw.addr), "addr not in account");
         // update balance
         account.balance -= withdraw.amount;
         // TODO send cross-chain tx
         account.lastCefiEventId = eventId;
         // emit withdraw event
-        emit AccountWithdraw(withdraw.accountId, withdraw.chainId, withdraw.amount);
+        emit AccountWithdraw(withdraw.accountId, withdraw.addr, withdraw.chainId, withdraw.amount);
     }
 
     function executeSettlement(PrepTypes.Settlement calldata settlement, uint256 eventId)

@@ -12,8 +12,8 @@ import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
  * Only xchainOperator can approve withdraw request.
  */
 contract Vault is ReentrancyGuard, Ownable {
-    event DepositEvent(address user, uint256 amount);
-    event WithdrawEvent(address user, uint256 amount);
+    event DepositEvent(bytes32 indexed accountId, address indexed addr, uint256 amount);
+    event WithdrawEvent(bytes32 indexed accountId, address indexed addr, uint256 amount);
 
     // cross-chain operator address
     address public xchainOperator;
@@ -37,20 +37,20 @@ contract Vault is ReentrancyGuard, Ownable {
     }
 
     // user deposit USDC
-    function deposit(uint256 amount) public {
+    function deposit(bytes32 accountId, uint256 amount) public {
         require(usdc.transferFrom(msg.sender, address(this), amount), "transferFrom failed");
         // emit deposit event
-        emit DepositEvent(msg.sender, amount);
+        emit DepositEvent(accountId, msg.sender, amount);
         // TODO send cross-chain tx to settlement
     }
 
     // user withdraw USDC
-    function withdraw(uint256 amount) public onlyXchainOperator nonReentrant {
+    function withdraw(bytes32 accountId, address addr, uint256 amount) public onlyXchainOperator nonReentrant {
         // check USDC balane gt amount
         require(usdc.balanceOf(address(this)) >= amount, "balance not enough");
         // transfer USDC to user
-        require(usdc.transfer(msg.sender, amount), "transfer failed");
+        require(usdc.transfer(addr, amount), "transfer failed");
         // emit withdraw event
-        emit WithdrawEvent(msg.sender, amount);
+        emit WithdrawEvent(accountId, addr, amount);
     }
 }
