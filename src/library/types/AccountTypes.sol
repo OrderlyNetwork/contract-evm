@@ -8,6 +8,7 @@ library AccountTypes {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     int256 constant FUNDING_MOVE_RIGHT_PRECISIONS = 100000000000000000;
+    bytes32 constant USDC = "USDC";
 
     struct PerpPosition {
         int256 positionQty;
@@ -16,34 +17,38 @@ library AccountTypes {
         uint256 lastExecutedPrice;
     }
 
+    // account id, unique for each account, should be accountId -> {Array<addr>, brokerId, primaryAddr}
+    // and sha3(primaryAddress, brokerID) == accountId
     struct Account {
-        // account id, unique for each account, should be {Array<addr>, brokerId}
-        bytes32 accountId;
         // user's broker id
-        uint256 brokerId;
-        // account addresses.
+        bytes32 brokerId;
+        // account addresses
         EnumerableSet.AddressSet addresses;
-        // user's balance
-        uint256 balance;
+        // primary address
+        address primaryAddress;
+        // mapping symbol => balance
+        mapping(bytes32 => uint256) balances;
         // last perp trade id
         uint256 lastPerpTradeId;
         // last cefi event id
         uint256 lastCefiEventId;
         // perp position
-        PerpPosition perpPosition;
+        mapping(bytes32 => PerpPosition) perpPositions;
         // reentrancy lock
         bool hasPendingSettlementRequest;
     }
 
     struct AccountRegister {
         bytes32 accountId;
-        uint256 brokerId;
         address addr;
+        bytes32 brokerId;
+        bytes32 symbol;
     }
 
     struct AccountDeposit {
         bytes32 accountId;
         address addr;
+        bytes32 symbol;
         uint256 amount;
         uint256 chainId;
     }
