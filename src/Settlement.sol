@@ -89,7 +89,7 @@ contract Settlement is Ownable, ISettlement {
         require(EnumerableSet.contains(account.addresses, withdraw.addr), "addr not in account");
         // update balance
         account.balance -= withdraw.amount;
-        // TODO send cross-chain tx
+        // TODO @Lewis send cross-chain tx
         account.lastCefiEventId = eventId;
         // emit withdraw event
         emit AccountWithdraw(withdraw.accountId, withdraw.addr, withdraw.chainId, withdraw.amount);
