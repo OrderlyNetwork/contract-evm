@@ -41,7 +41,7 @@ contract Vault is ReentrancyGuard, Ownable {
         require(usdc.transferFrom(msg.sender, address(this), amount), "transferFrom failed");
         // emit deposit event
         emit DepositEvent(accountId, msg.sender, amount);
-        // TODO send cross-chain tx to settlement
+        // TODO @Lewis send cross-chain tx to settlement
     }
 
     // user withdraw USDC
