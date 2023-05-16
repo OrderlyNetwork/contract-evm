@@ -42,6 +42,7 @@ library PrepTypes {
         bytes32 accountId;
         address addr;
         uint256 amount;
+        bytes32 symbol;
         uint256 chainId; // target withdraw chain
     }
 
@@ -64,7 +65,7 @@ library PrepTypes {
     struct LiquidationTransfer {
         uint256 liquidationTransferId;
         bytes32 liquidatorAccountId;
-        bytes32 list_symbol;
+        bytes32 listSymbol;
         int256 positionQtyTransfer;
         int256 costPositionTransfer;
         uint256 liquidatorFee;

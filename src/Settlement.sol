@@ -4,13 +4,14 @@ pragma solidity ^0.8.18;
 import "./interface/ISettlement.sol";
 import "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
+import "./library/FeeCollector.sol";
 
 /**
  * Settlement is responsible for saving traders' Account (balance, perpPosition, and other meta)
  * and global state (e.g. futuresUploadBatchId)
  * This contract should only have one in main-chain (avalanche)
  */
-contract Settlement is Ownable, ISettlement {
+contract Settlement is FeeCollector, ISettlement {
     // OperatorManager contract address
     address public operatorManagerAddress;
     // globalWithdrawId
@@ -19,7 +20,7 @@ contract Settlement is Ownable, ISettlement {
     uint256 public operatorTradesBatchId;
     // globalEventId
     uint256 public globalEventId;
-    // userLedger
+    // userLedger accountId -> Account
     mapping(bytes32 => AccountTypes.Account) private userLedger;
     // insuranceFundAccountId
     bytes32 private insuranceFundAccountId;
@@ -50,9 +51,9 @@ contract Settlement is Ownable, ISettlement {
 
     function accountRegister(AccountTypes.AccountRegister calldata data) public override onlyOperatorManager {
         // check account not exist
-        require(userLedger[data.accountId].accountId != bytes32(0), "account already exist");
+        require(userLedger[data.accountId].primaryAddress != address(0), "account already exist");
         AccountTypes.Account storage account = userLedger[data.accountId];
-        account.accountId = data.accountId;
+        account.primaryAddress = data.addr;
         EnumerableSet.add(account.addresses, data.addr);
         account.brokerId = data.brokerId;
         // emit register event
@@ -62,9 +63,9 @@ contract Settlement is Ownable, ISettlement {
     function accountDeposit(AccountTypes.AccountDeposit calldata data) public override onlyOperatorManager {
         // a not registerd account can still deposit, because of the consistency
         AccountTypes.Account storage account = userLedger[data.accountId];
-        account.balance += data.amount;
+        account.balances[data.symbol] += data.amount;
         // emit deposit event
-        emit AccountDeposit(data.accountId, data.addr, data.chainId, data.amount);
+        emit AccountDeposit(data.accountId, data.addr, data.symbol, data.chainId, data.amount);
     }
 
     function updateUserLedgerByTradeUpload(PrepTypes.FuturesTradeUpload calldata trade)
@@ -84,15 +85,15 @@ contract Settlement is Ownable, ISettlement {
     {
         AccountTypes.Account storage account = userLedger[withdraw.accountId];
         // require balance enough
-        require(account.balance >= withdraw.amount, "balance not enough");
+        require(account.balances[withdraw.symbol] >= withdraw.amount, "balance not enough");
         // require addr is in account.addresses
         require(EnumerableSet.contains(account.addresses, withdraw.addr), "addr not in account");
         // update balance
-        account.balance -= withdraw.amount;
+        account.balances[withdraw.symbol] -= withdraw.amount;
         // TODO @Lewis send cross-chain tx
         account.lastCefiEventId = eventId;
         // emit withdraw event
-        emit AccountWithdraw(withdraw.accountId, withdraw.addr, withdraw.chainId, withdraw.amount);
+        emit AccountWithdraw(withdraw.accountId, withdraw.addr, withdraw.symbol, withdraw.chainId, withdraw.amount);
     }
 
     function executeSettlement(PrepTypes.Settlement calldata settlement, uint256 eventId)
@@ -111,21 +112,21 @@ contract Settlement is Ownable, ISettlement {
         require(totalSettleAmount == 0, "total settle amount not zero");
 
         AccountTypes.Account storage account = userLedger[settlement.accountId];
-        uint256 balance = account.balance;
+        uint256 balance = account.balances[settlement.settledAsset];
         account.hasPendingSettlementRequest = false;
         if (settlement.insuranceTransferAmount != 0) {
             // transfer insurance fund
-            if (int256(account.balance) + int256(settlement.insuranceTransferAmount) + settlement.settledAmount < 0) {
+            if (int256(balance) + int256(settlement.insuranceTransferAmount) + settlement.settledAmount < 0) {
                 // overflow
                 revert("Insurance transfer amount invalid");
             }
             AccountTypes.Account storage insuranceFund = userLedger[insuranceFundAccountId];
-            insuranceFund.balance += settlement.insuranceTransferAmount;
+            insuranceFund.balances[settlement.settledAsset] += settlement.insuranceTransferAmount;
         }
         // for-loop settlement execution
         for (uint256 i = 0; i < length; ++i) {
             PrepTypes.SettlementExecution calldata settlementExecution = settlementExecutions[i];
-            AccountTypes.PerpPosition storage position = account.perpPosition;
+            AccountTypes.PerpPosition storage position = account.perpPositions[settlementExecution.symbol];
             if (position.positionQty != 0) {
                 AccountTypes.chargeFundingFee(position, settlementExecution.sumUnitaryFundings);
                 position.cost_position += settlementExecution.settledAmount;
@@ -149,7 +150,9 @@ contract Settlement is Ownable, ISettlement {
         PrepTypes.LiquidationTransfer[] calldata liquidationTransfers = liquidation.liquidationTransfers;
         // chargeFundingFee for liquidated_user.perpPosition
         for (uint256 i = 0; i < length; ++i) {
-            AccountTypes.chargeFundingFee(liquidated_user.perpPosition, liquidationTransfers[i].sumUnitaryFundings);
+            AccountTypes.chargeFundingFee(
+                liquidated_user.perpPositions[liquidation.liquidatedAsset], liquidationTransfers[i].sumUnitaryFundings
+            );
         }
         // TODO get_liquidation_info
         // TODO transfer_liquidatedAsset_to_insurance if insuranceTransferAmount != 0
