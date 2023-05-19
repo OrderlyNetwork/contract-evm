@@ -174,11 +174,6 @@ contract Settlement is FeeCollector, ISettlement {
         // TODO emit event
     }
 
-    function _check_cefi_down() internal pure returns (bool) {
-        // TODO mock here
-        return true;
-    }
-
     function _new_globalEventId() internal returns (uint256) {
         globalEventId += 1;
         return globalEventId;

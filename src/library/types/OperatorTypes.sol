@@ -5,9 +5,14 @@ library OperatorTypes {
     enum OperatorActionData {
         None,
         UserRegister,
-        UserDeposit,
         FuturesTradeUpload,
         EventUpload,
         PerpMarketInfo
+    }
+
+    enum CrossChainOperatorActionData {
+        None,
+        UserDeposit,
+        UserEmergencyWithdraw
     }
 }

@@ -13,6 +13,9 @@ import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 contract OperatorManager is IOperatorManager, Ownable {
     // operator address
     address public operator;
+    // cross-chain operator address
+    address public xchainOperator;
+    // settlement Interface
     ISettlement public settlement;
 
     // ids
@@ -20,10 +23,18 @@ contract OperatorManager is IOperatorManager, Ownable {
     uint256 public futuresUploadBatchId;
     // eventUploadBatchId
     uint256 public eventUploadBatchId;
+    // last operator interaction timestamp
+    uint256 public lastOperatorInteraction;
 
     // only operator
     modifier onlyOperator() {
         require(msg.sender == operator, "only operator can call");
+        _;
+    }
+
+    // only xchain operator
+    modifier onlyXchainOperator() {
+        require(msg.sender == xchainOperator, "only xchain operator can call");
         _;
     }
 
@@ -32,9 +43,38 @@ contract OperatorManager is IOperatorManager, Ownable {
         operator = _operator;
     }
 
+    // set xchainOperator
+    function setXchainOperator(address _xchainOperator) public onlyOwner {
+        xchainOperator = _xchainOperator;
+    }
+
     // constructor
-    constructor(address _operator) {
+    constructor(address _operator, address _xchainOperator) {
         operator = _operator;
+        xchainOperator = _xchainOperator;
+    }
+
+    // cross-chain operator deposit
+    function crossChainOperatorExecuteAction(
+        OperatorTypes.CrossChainOperatorActionData actionData,
+        bytes calldata action
+    ) public override onlyXchainOperator {
+        if (actionData == OperatorTypes.CrossChainOperatorActionData.UserDeposit) {
+            // UserDeposit
+            settlement.accountDeposit(abi.decode(action, (AccountTypes.AccountDeposit)));
+        } else if (actionData == OperatorTypes.CrossChainOperatorActionData.UserEmergencyWithdraw) {
+            // UserEmergencyWithdraw iff cefi down
+            require(_check_cefi_down(), "cefi not down");
+            // TODO
+            // settlement.accountEmergencyWithdraw(abi.decode(action, (PrepTypes.WithdrawData)));
+        } else {
+            revert("invalid action data");
+        }
+    }
+
+    // operator ping
+    function operatorPing() public onlyOperator {
+        _innerPing();
     }
 
     // entry point for operator to call this contract
@@ -43,6 +83,7 @@ contract OperatorManager is IOperatorManager, Ownable {
         override
         onlyOperator
     {
+        _innerPing();
         if (actionData == OperatorTypes.OperatorActionData.FuturesTradeUpload) {
             // FuturesTradeUpload
             futuresTradeUploadData(abi.decode(action, (PrepTypes.FuturesTradeUploadData)));
@@ -52,9 +93,6 @@ contract OperatorManager is IOperatorManager, Ownable {
         } else if (actionData == OperatorTypes.OperatorActionData.UserRegister) {
             // UserRegister
             settlement.accountRegister(abi.decode(action, (AccountTypes.AccountRegister)));
-        } else if (actionData == OperatorTypes.OperatorActionData.UserDeposit) {
-            // UserDeposit
-            settlement.accountDeposit(abi.decode(action, (AccountTypes.AccountDeposit)));
         } else {
             revert("invalid action data");
         }
@@ -134,5 +172,13 @@ contract OperatorManager is IOperatorManager, Ownable {
                 revert("invalid sequence");
             }
         }
+    }
+
+    function _innerPing() internal {
+        lastOperatorInteraction = block.timestamp;
+    }
+
+    function _check_cefi_down() internal view returns (bool) {
+        return (lastOperatorInteraction + 1 days > block.timestamp);
     }
 }
