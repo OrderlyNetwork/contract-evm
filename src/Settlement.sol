@@ -24,6 +24,8 @@ contract Settlement is FeeCollector, ISettlement {
     mapping(bytes32 => AccountTypes.Account) private userLedger;
     // insuranceFundAccountId
     bytes32 private insuranceFundAccountId;
+    // valut balance, used for check if withdraw is valid
+    mapping(uint256 => mapping(bytes32 => uint256)) chain2symbol2balance;
 
     // require operator
     modifier onlyOperatorManager() {
@@ -64,6 +66,7 @@ contract Settlement is FeeCollector, ISettlement {
         // a not registerd account can still deposit, because of the consistency
         AccountTypes.Account storage account = userLedger[data.accountId];
         account.balances[data.symbol] += data.amount;
+        chain2symbol2balance[data.chainId][data.symbol] += data.amount;
         // emit deposit event
         emit AccountDeposit(data.accountId, data.addr, data.symbol, data.chainId, data.amount);
     }
@@ -85,11 +88,17 @@ contract Settlement is FeeCollector, ISettlement {
     {
         AccountTypes.Account storage account = userLedger[withdraw.accountId];
         // require balance enough
-        require(account.balances[withdraw.symbol] >= withdraw.amount, "balance not enough");
+        require(account.balances[withdraw.symbol] >= withdraw.amount, "user balance not enough");
         // require addr is in account.addresses
         require(EnumerableSet.contains(account.addresses, withdraw.addr), "addr not in account");
+        // require chain has enough balance
+        require(
+            chain2symbol2balance[withdraw.chainId][withdraw.symbol] >= withdraw.amount,
+            "target chain balance not enough"
+        );
         // update balance
         account.balances[withdraw.symbol] -= withdraw.amount;
+        chain2symbol2balance[withdraw.chainId][withdraw.symbol] -= withdraw.amount;
         // TODO @Lewis send cross-chain tx
         account.lastCefiEventId = eventId;
         // emit withdraw event
