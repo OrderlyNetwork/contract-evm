@@ -54,7 +54,7 @@ contract Settlement is FeeCollector, ISettlement {
 
     function accountRegister(AccountTypes.AccountRegister calldata data) public override onlyOperatorManager {
         // check account not exist
-        require(userLedger[data.accountId].primaryAddress != address(0), "account already registered");
+        require(userLedger[data.accountId].primaryAddress == address(0), "account already registered");
         // check accountId is correct by Utils.getAccountId
         require(data.accountId == Utils.getAccountId(data.addr, data.brokerId), "accountId not match");
         AccountTypes.Account storage account = userLedger[data.accountId];
