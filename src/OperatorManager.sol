@@ -48,6 +48,11 @@ contract OperatorManager is IOperatorManager, Ownable {
         xchainOperator = _xchainOperator;
     }
 
+    // set settlement
+    function setSettlement(address _settlement) public onlyOwner {
+        settlement = ISettlement(_settlement);
+    }
+
     // constructor
     constructor(address _operator, address _xchainOperator) {
         operator = _operator;
