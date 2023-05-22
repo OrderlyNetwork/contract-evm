@@ -30,8 +30,8 @@ library PrepTypes {
 
     struct EventUploadData {
         uint256 eventId;
-        string bizType;
-        uint256 bizId;
+        // bytes32 bizType;
+        // uint256 bizId;
         WithdrawData[] withdraws;
         Settlement[] settlements;
         Liquidation[] liquidations;
