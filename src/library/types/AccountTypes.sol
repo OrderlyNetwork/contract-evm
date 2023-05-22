@@ -18,7 +18,7 @@ library AccountTypes {
     }
 
     // account id, unique for each account, should be accountId -> {Array<addr>, brokerId, primaryAddr}
-    // and sha3(primaryAddress, brokerID) == accountId
+    // and keccak256(primaryAddress, brokerID) == accountId
     struct Account {
         // user's broker id
         bytes32 brokerId;
@@ -42,7 +42,6 @@ library AccountTypes {
         bytes32 accountId;
         address addr;
         bytes32 brokerId;
-        bytes32 symbol;
     }
 
     struct AccountDeposit {

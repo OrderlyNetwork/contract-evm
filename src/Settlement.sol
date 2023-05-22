@@ -5,6 +5,7 @@ import "./interface/ISettlement.sol";
 import "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 import "./library/FeeCollector.sol";
+import "./library/Utils.sol";
 
 /**
  * Settlement is responsible for saving traders' Account (balance, perpPosition, and other meta)
@@ -53,7 +54,9 @@ contract Settlement is FeeCollector, ISettlement {
 
     function accountRegister(AccountTypes.AccountRegister calldata data) public override onlyOperatorManager {
         // check account not exist
-        require(userLedger[data.accountId].primaryAddress != address(0), "account already exist");
+        require(userLedger[data.accountId].primaryAddress != address(0), "account already registered");
+        // check accountId is correct by Utils.getAccountId
+        require(data.accountId == Utils.getAccountId(data.addr, data.brokerId), "accountId not match");
         AccountTypes.Account storage account = userLedger[data.accountId];
         account.primaryAddress = data.addr;
         EnumerableSet.add(account.addresses, data.addr);
