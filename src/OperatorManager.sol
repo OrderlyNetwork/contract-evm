@@ -3,7 +3,6 @@ pragma solidity ^0.8.18;
 
 import "./interface/ISettlement.sol";
 import "./interface/IOperatorManager.sol";
-import "./library/signature.sol";
 import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 
 /**
@@ -13,8 +12,6 @@ import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 contract OperatorManager is IOperatorManager, Ownable {
     // operator address
     address public operator;
-    // cross-chain operator address
-    address public xchainOperator;
     // settlement Interface
     ISettlement public settlement;
 
@@ -32,20 +29,9 @@ contract OperatorManager is IOperatorManager, Ownable {
         _;
     }
 
-    // only xchain operator
-    modifier onlyXchainOperator() {
-        require(msg.sender == xchainOperator, "only xchain operator can call");
-        _;
-    }
-
     // set operator
     function setOperator(address _operator) public onlyOwner {
         operator = _operator;
-    }
-
-    // set xchainOperator
-    function setXchainOperator(address _xchainOperator) public onlyOwner {
-        xchainOperator = _xchainOperator;
     }
 
     // set settlement
@@ -54,27 +40,8 @@ contract OperatorManager is IOperatorManager, Ownable {
     }
 
     // constructor
-    constructor(address _operator, address _xchainOperator) {
+    constructor(address _operator) {
         operator = _operator;
-        xchainOperator = _xchainOperator;
-    }
-
-    // cross-chain operator deposit
-    function crossChainOperatorExecuteAction(
-        OperatorTypes.CrossChainOperatorActionData actionData,
-        bytes calldata action
-    ) public override onlyXchainOperator {
-        if (actionData == OperatorTypes.CrossChainOperatorActionData.UserDeposit) {
-            // UserDeposit
-            settlement.accountDeposit(abi.decode(action, (AccountTypes.AccountDeposit)));
-        } else if (actionData == OperatorTypes.CrossChainOperatorActionData.UserEmergencyWithdraw) {
-            // UserEmergencyWithdraw iff cefi down
-            require(_check_cefi_down(), "cefi not down");
-            // TODO
-            // settlement.accountEmergencyWithdraw(abi.decode(action, (PrepTypes.WithdrawData)));
-        } else {
-            revert("invalid action data");
-        }
     }
 
     // operator ping
@@ -120,20 +87,9 @@ contract OperatorManager is IOperatorManager, Ownable {
     // validate futres trade upload data
     function _validatePerp(PrepTypes.FuturesTradeUpload[] memory trades) internal pure {
         for (uint256 i = 0; i < trades.length; i++) {
-            // first, check signature is valid
-            _verifySignature(trades[i]);
-            // second, check symbol (and maybe other value) is valid
+            // check symbol (and maybe other value) is valid
             // TODO
         }
-    }
-
-    function _verifySignature(PrepTypes.FuturesTradeUpload memory trade) internal pure {
-        // TODO ensure the parameters satisfy the real signature
-        bytes32 sig = keccak256(abi.encodePacked(trade.tradeId, trade.symbol, trade.side, trade.tradeQty));
-
-        require(
-            Signature.verify(Signature.getEthSignedMessageHash(sig), trade.signature, trade.addr), "invalid signature"
-        );
     }
 
     // process each validated perp trades
@@ -183,7 +139,7 @@ contract OperatorManager is IOperatorManager, Ownable {
         lastOperatorInteraction = block.timestamp;
     }
 
-    function _check_cefi_down() internal view returns (bool) {
+    function checkCefiDown() public view override returns (bool) {
         return (lastOperatorInteraction + 1 days > block.timestamp);
     }
 }
