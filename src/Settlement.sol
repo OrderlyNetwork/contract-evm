@@ -15,6 +15,8 @@ import "./library/Utils.sol";
 contract Settlement is FeeCollector, ISettlement {
     // OperatorManager contract address
     address public operatorManagerAddress;
+    // crossChainManagerAddress contract address
+    address public crossChainManagerAddress;
     // globalWithdrawId
     uint256 public globalWithdrawId;
     // operatorTradesBatchId
@@ -34,9 +36,20 @@ contract Settlement is FeeCollector, ISettlement {
         _;
     }
 
+    // require crossChainManager
+    modifier onlyCrossChainManager() {
+        require(msg.sender == crossChainManagerAddress, "only crossChainManager can call");
+        _;
+    }
+
     // set operatorManagerAddress
     function setOperatorManagerAddress(address _operatorManagerAddress) public onlyOwner {
         operatorManagerAddress = _operatorManagerAddress;
+    }
+
+    // set crossChainManagerAddress
+    function setCrossChainManagerAddress(address _crossChainManagerAddress) public onlyOwner {
+        crossChainManagerAddress = _crossChainManagerAddress;
     }
 
     // set insuranceFundAccountId
@@ -45,9 +58,9 @@ contract Settlement is FeeCollector, ISettlement {
     }
 
     // constructor
-    constructor(address _operatorManagerAddress, bytes32 _insuranceFundAccountId) {
+    constructor(address _operatorManagerAddress, address _crossChainManagerAddress) {
         operatorManagerAddress = _operatorManagerAddress;
-        insuranceFundAccountId = _insuranceFundAccountId;
+        crossChainManagerAddress = _crossChainManagerAddress;
     }
 
     // Interface implementation
@@ -65,7 +78,7 @@ contract Settlement is FeeCollector, ISettlement {
         emit AccountRegister(data.accountId, data.brokerId, data.addr);
     }
 
-    function accountDeposit(AccountTypes.AccountDeposit calldata data) public override onlyOperatorManager {
+    function accountDeposit(AccountTypes.AccountDeposit calldata data) public override onlyCrossChainManager {
         // a not registerd account can still deposit, because of the consistency
         AccountTypes.Account storage account = userLedger[data.accountId];
         account.balances[data.symbol] += data.amount;
