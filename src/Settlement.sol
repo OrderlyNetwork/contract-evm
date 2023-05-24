@@ -2,7 +2,6 @@
 pragma solidity ^0.8.18;
 
 import "./interface/ISettlement.sol";
-import "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 import "./library/FeeCollector.sol";
 import "./library/Utils.sol";
@@ -58,6 +57,7 @@ contract Settlement is FeeCollector, ISettlement {
     }
 
     // constructor
+    // call `setInsuranceFundAccountId` later
     constructor(address _operatorManagerAddress, address _crossChainManagerAddress) {
         operatorManagerAddress = _operatorManagerAddress;
         crossChainManagerAddress = _crossChainManagerAddress;

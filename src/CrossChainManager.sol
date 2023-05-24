@@ -11,23 +11,10 @@ import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
  * This contract should only have one in main-chain (avalanche)
  */
 contract CrossChainManager is ICrossChainManager, Ownable {
-    // cross-chain operator address
-    address public xchainOperator;
     // settlement Interface
     ISettlement public settlement;
     // operatorManager Interface
     IOperatorManager public operatorManager;
-
-    // only xchain operator
-    modifier onlyXchainOperator() {
-        require(msg.sender == xchainOperator, "only xchain operator can call");
-        _;
-    }
-
-    // set xchainOperator
-    function setXchainOperator(address _xchainOperator) public onlyOwner {
-        xchainOperator = _xchainOperator;
-    }
 
     // set settlement
     function setSettlement(address _settlement) public onlyOwner {
@@ -39,16 +26,12 @@ contract CrossChainManager is ICrossChainManager, Ownable {
         operatorManager = IOperatorManager(_operatorManager);
     }
 
-    // constructor
-    constructor(address _xchainOperator) {
-        xchainOperator = _xchainOperator;
-    }
-
     // cross-chain operator deposit
+    // TODO should be removed
     function crossChainOperatorExecuteAction(
         OperatorTypes.CrossChainOperatorActionData actionData,
         bytes calldata action
-    ) public override onlyXchainOperator {
+    ) public override onlyOwner {
         if (actionData == OperatorTypes.CrossChainOperatorActionData.UserDeposit) {
             // UserDeposit
             settlement.accountDeposit(abi.decode(action, (AccountTypes.AccountDeposit)));
@@ -60,5 +43,17 @@ contract CrossChainManager is ICrossChainManager, Ownable {
         } else {
             revert("invalid action data");
         }
+    }
+
+    function deposit(CrossChainMessageTypes.MessageV1 calldata message) public override onlyOwner {
+        // convert message to AccountTypes.AccountDeposit
+        AccountTypes.AccountDeposit memory data = AccountTypes.AccountDeposit({
+            accountId: message.accountId,
+            addr: message.addr,
+            symbol: message.tokenSymbol,
+            amount: message.tokenAmount,
+            chainId: message.srcChainId
+        });
+        settlement.accountDeposit(data);
     }
 }
