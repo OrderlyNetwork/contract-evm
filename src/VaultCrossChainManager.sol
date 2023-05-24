@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
-import "./library/types/CrossChainMessageTypes.sol";
 import "./interface/IVault.sol";
+import "./interface/IVaultCrossChainManager.sol";
 import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 
-contract VaultCrossChainManager is Ownable {
+contract VaultCrossChainManager is IVaultCrossChainManager, Ownable {
     IVault public vault;
 
     // construct
@@ -14,7 +14,7 @@ contract VaultCrossChainManager is Ownable {
     }
 
     // user withdraw USDC
-    function withdraw(CrossChainMessageTypes.MessageV1 calldata message) public onlyOwner {
+    function withdraw(CrossChainMessageTypes.MessageV1 calldata message) public override onlyOwner {
         vault.withdraw(message.accountId, message.addr, message.tokenSymbol, message.tokenAmount);
     }
 }
