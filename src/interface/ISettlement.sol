@@ -7,10 +7,18 @@ import "../library/types/PerpTypes.sol";
 interface ISettlement {
     event AccountRegister(bytes32 indexed accountId, bytes32 indexed brokerId, address indexed addr);
     event AccountDeposit(
-        bytes32 indexed accountId, address indexed addr, bytes32 indexed symbol, uint256 chainId, uint256 amount
+        bytes32 indexed accountId,
+        address indexed addr,
+        bytes32 indexed tokenSymbol,
+        uint256 srcChainId,
+        uint256 tokenAmount
     );
     event AccountWithdraw(
-        bytes32 indexed accountId, address indexed addr, bytes32 indexed symbol, uint256 chainId, uint256 amount
+        bytes32 indexed accountId,
+        address indexed addr,
+        bytes32 indexed tokenSymbol,
+        uint256 dstChainId,
+        uint256 tokenAmount
     );
 
     function accountRegister(AccountTypes.AccountRegister calldata accountRegister) external;

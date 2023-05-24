@@ -40,6 +40,7 @@ contract OperatorManager is IOperatorManager, Ownable {
     }
 
     // constructor
+    // call `setSettlement` later
     constructor(address _operator) {
         operator = _operator;
     }
