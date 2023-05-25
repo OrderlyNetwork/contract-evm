@@ -39,7 +39,7 @@ contract CrossChainManager is ICrossChainManager, Ownable {
             // UserEmergencyWithdraw iff cefi down
             require(operatorManager.checkCefiDown(), "cefi not down");
             // TODO
-            // settlement.accountEmergencyWithdraw(abi.decode(action, (PrepTypes.WithdrawData)));
+            // settlement.accountEmergencyWithdraw(abi.decode(action, (PerpTypes.WithdrawData)));
         } else {
             revert("invalid action data");
         }

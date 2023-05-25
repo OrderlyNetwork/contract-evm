@@ -59,10 +59,10 @@ contract OperatorManager is IOperatorManager, Ownable {
         _innerPing();
         if (actionData == OperatorTypes.OperatorActionData.FuturesTradeUpload) {
             // FuturesTradeUpload
-            futuresTradeUploadData(abi.decode(action, (PrepTypes.FuturesTradeUploadData)));
+            futuresTradeUploadData(abi.decode(action, (PerpTypes.FuturesTradeUploadData)));
         } else if (actionData == OperatorTypes.OperatorActionData.EventUpload) {
             // EventUpload
-            eventUploadData(abi.decode(action, (PrepTypes.EventUpload)));
+            eventUploadData(abi.decode(action, (PerpTypes.EventUpload)));
         } else if (actionData == OperatorTypes.OperatorActionData.UserRegister) {
             // UserRegister
             settlement.accountRegister(abi.decode(action, (AccountTypes.AccountRegister)));
@@ -71,10 +71,32 @@ contract OperatorManager is IOperatorManager, Ownable {
         }
     }
 
+    // accountRegisterAction
+    function accountRegisterAction(AccountTypes.AccountRegister calldata data) public override onlyOperator {
+        _innerPing();
+        settlement.accountRegister(data);
+    }
+
+    // futuresTradeUploadDataAction
+    function futuresTradeUploadDataAction(PerpTypes.FuturesTradeUploadData calldata data)
+        public
+        override
+        onlyOperator
+    {
+        _innerPing();
+        futuresTradeUploadData(data);
+    }
+
+    // eventUploadDataAction
+    function eventUploadDataAction(PerpTypes.EventUpload calldata data) public override onlyOperator {
+        _innerPing();
+        eventUploadData(data);
+    }
+
     // futures trade upload data
-    function futuresTradeUploadData(PrepTypes.FuturesTradeUploadData memory data) internal {
+    function futuresTradeUploadData(PerpTypes.FuturesTradeUploadData memory data) internal {
         require(data.batchId == futuresUploadBatchId, "batchId not match");
-        PrepTypes.FuturesTradeUpload[] memory trades = data.trades; // gas saving
+        PerpTypes.FuturesTradeUpload[] memory trades = data.trades; // gas saving
         require(trades.length == data.count, "count not match");
         _validatePerp(trades);
         // process each validated perp trades
@@ -86,7 +108,7 @@ contract OperatorManager is IOperatorManager, Ownable {
     }
 
     // validate futres trade upload data
-    function _validatePerp(PrepTypes.FuturesTradeUpload[] memory trades) internal pure {
+    function _validatePerp(PerpTypes.FuturesTradeUpload[] memory trades) internal pure {
         for (uint256 i = 0; i < trades.length; i++) {
             // check symbol (and maybe other value) is valid
             // TODO
@@ -94,14 +116,14 @@ contract OperatorManager is IOperatorManager, Ownable {
     }
 
     // process each validated perp trades
-    function _processValidatedFutures(PrepTypes.FuturesTradeUpload memory trade) internal {
+    function _processValidatedFutures(PerpTypes.FuturesTradeUpload memory trade) internal {
         settlement.updateUserLedgerByTradeUpload(trade);
     }
 
     // event upload data
-    function eventUploadData(PrepTypes.EventUpload memory data) internal {
+    function eventUploadData(PerpTypes.EventUpload memory data) internal {
         require(data.batchId == eventUploadBatchId, "batchId not match");
-        PrepTypes.EventUploadData[] memory events = data.events; // gas saving
+        PerpTypes.EventUploadData[] memory events = data.events; // gas saving
         require(events.length == data.count, "count not match");
         // process each event upload
         for (uint256 i = 0; i < data.count; i++) {
@@ -112,7 +134,7 @@ contract OperatorManager is IOperatorManager, Ownable {
     }
 
     // process each event upload
-    function _processEventUpload(PrepTypes.EventUploadData memory data) internal {
+    function _processEventUpload(PerpTypes.EventUploadData memory data) internal {
         uint256 index_withdraw = 0;
         uint256 index_settlement = 0;
         uint256 index_liquidation = 0;

@@ -23,8 +23,8 @@ interface ISettlement {
 
     function accountRegister(AccountTypes.AccountRegister calldata accountRegister) external;
     function accountDeposit(AccountTypes.AccountDeposit calldata accountDeposit) external;
-    function updateUserLedgerByTradeUpload(PrepTypes.FuturesTradeUpload calldata trade) external;
-    function executeWithdrawAction(PrepTypes.WithdrawData calldata withdraw, uint256 eventId) external;
-    function executeSettlement(PrepTypes.Settlement calldata settlement, uint256 eventId) external;
-    function executeLiquidation(PrepTypes.Liquidation calldata liquidation, uint256 eventId) external;
+    function updateUserLedgerByTradeUpload(PerpTypes.FuturesTradeUpload calldata trade) external;
+    function executeWithdrawAction(PerpTypes.WithdrawData calldata withdraw, uint256 eventId) external;
+    function executeSettlement(PerpTypes.Settlement calldata settlement, uint256 eventId) external;
+    function executeLiquidation(PerpTypes.Liquidation calldata liquidation, uint256 eventId) external;
 }
