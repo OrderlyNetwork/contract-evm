@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
-import "../../lib/openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
-import "../../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
+import "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
+import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 // WIP @Rubick
 abstract contract FeeCollector is Ownable {

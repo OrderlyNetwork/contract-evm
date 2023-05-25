@@ -4,7 +4,7 @@ pragma solidity ^0.8.18;
 import "./interface/ISettlement.sol";
 import "./interface/ICrossChainManager.sol";
 import "./interface/IOperatorManager.sol";
-import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
+import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 /**
  * CrossChainManager is responsible for executing cross-chain tx.

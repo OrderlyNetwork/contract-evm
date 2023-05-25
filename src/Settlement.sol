@@ -2,7 +2,7 @@
 pragma solidity ^0.8.18;
 
 import "./interface/ISettlement.sol";
-import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
+import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "./library/FeeCollector.sol";
 import "./library/Utils.sol";
 
