@@ -87,7 +87,7 @@ contract Settlement is FeeCollector, ISettlement {
         emit AccountDeposit(data.accountId, data.addr, data.symbol, data.chainId, data.amount);
     }
 
-    function updateUserLedgerByTradeUpload(PrepTypes.FuturesTradeUpload calldata trade)
+    function updateUserLedgerByTradeUpload(PerpTypes.FuturesTradeUpload calldata trade)
         public
         override
         onlyOperatorManager
@@ -97,7 +97,7 @@ contract Settlement is FeeCollector, ISettlement {
         // TODO update account.prep_position
     }
 
-    function executeWithdrawAction(PrepTypes.WithdrawData calldata withdraw, uint256 eventId)
+    function executeWithdrawAction(PerpTypes.WithdrawData calldata withdraw, uint256 eventId)
         public
         override
         onlyOperatorManager
@@ -121,7 +121,7 @@ contract Settlement is FeeCollector, ISettlement {
         emit AccountWithdraw(withdraw.accountId, withdraw.addr, withdraw.symbol, withdraw.chainId, withdraw.amount);
     }
 
-    function executeSettlement(PrepTypes.Settlement calldata settlement, uint256 eventId)
+    function executeSettlement(PerpTypes.Settlement calldata settlement, uint256 eventId)
         public
         override
         onlyOperatorManager
@@ -130,7 +130,7 @@ contract Settlement is FeeCollector, ISettlement {
         int256 totalSettleAmount = 0;
         // gas saving
         uint256 length = settlement.settlementExecutions.length;
-        PrepTypes.SettlementExecution[] calldata settlementExecutions = settlement.settlementExecutions;
+        PerpTypes.SettlementExecution[] calldata settlementExecutions = settlement.settlementExecutions;
         for (uint256 i = 0; i < length; ++i) {
             totalSettleAmount += settlementExecutions[i].settledAmount;
         }
@@ -150,7 +150,7 @@ contract Settlement is FeeCollector, ISettlement {
         }
         // for-loop settlement execution
         for (uint256 i = 0; i < length; ++i) {
-            PrepTypes.SettlementExecution calldata settlementExecution = settlementExecutions[i];
+            PerpTypes.SettlementExecution calldata settlementExecution = settlementExecutions[i];
             AccountTypes.PerpPosition storage position = account.perpPositions[settlementExecution.symbol];
             if (position.positionQty != 0) {
                 AccountTypes.chargeFundingFee(position, settlementExecution.sumUnitaryFundings);
@@ -164,7 +164,7 @@ contract Settlement is FeeCollector, ISettlement {
         account.lastCefiEventId = eventId;
     }
 
-    function executeLiquidation(PrepTypes.Liquidation calldata liquidation, uint256 eventId)
+    function executeLiquidation(PerpTypes.Liquidation calldata liquidation, uint256 eventId)
         public
         override
         onlyOperatorManager
@@ -172,7 +172,7 @@ contract Settlement is FeeCollector, ISettlement {
         AccountTypes.Account storage liquidated_user = userLedger[liquidation.accountId];
         // for-loop liquidation execution
         uint256 length = liquidation.liquidationTransfers.length;
-        PrepTypes.LiquidationTransfer[] calldata liquidationTransfers = liquidation.liquidationTransfers;
+        PerpTypes.LiquidationTransfer[] calldata liquidationTransfers = liquidation.liquidationTransfers;
         // chargeFundingFee for liquidated_user.perpPosition
         for (uint256 i = 0; i < length; ++i) {
             AccountTypes.chargeFundingFee(
