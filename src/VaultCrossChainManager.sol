@@ -3,7 +3,7 @@ pragma solidity ^0.8.18;
 
 import "./interface/IVault.sol";
 import "./interface/IVaultCrossChainManager.sol";
-import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
+import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 contract VaultCrossChainManager is IVaultCrossChainManager, Ownable {
     IVault public vault;

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.18;
 
 // EnumerableSet
-import "../../../lib/openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
+import "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 
 library AccountTypes {
     using EnumerableSet for EnumerableSet.AddressSet;
