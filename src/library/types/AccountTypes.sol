@@ -52,11 +52,25 @@ library AccountTypes {
         uint256 chainId;
     }
 
+    struct AccountWithdraw {
+        bytes32 accountId;
+        address addr;
+        bytes32 symbol;
+        uint256 amount;
+        uint256 chainId;
+    }
+
     // charge funding fee
-    function chargeFundingFee(PerpPosition storage position, int256 sumUnitaryFundings) public {
-        int256 accruedFeeUncoverted = position.positionQty * (sumUnitaryFundings - position.lastSumUnitaryFundings);
-        int256 accruedFee = accruedFeeUncoverted / FUNDING_MOVE_RIGHT_PRECISIONS;
-        int256 remainder = accruedFeeUncoverted - (accruedFee * FUNDING_MOVE_RIGHT_PRECISIONS);
+    function chargeFundingFee(
+        PerpPosition storage position,
+        int256 sumUnitaryFundings
+    ) public {
+        int256 accruedFeeUncoverted = position.positionQty *
+            (sumUnitaryFundings - position.lastSumUnitaryFundings);
+        int256 accruedFee = accruedFeeUncoverted /
+            FUNDING_MOVE_RIGHT_PRECISIONS;
+        int256 remainder = accruedFeeUncoverted -
+            (accruedFee * FUNDING_MOVE_RIGHT_PRECISIONS);
         if (remainder > 0) {
             accruedFee += 1;
         }
