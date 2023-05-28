@@ -1,8 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
-import "../library/types/CrossChainMessageTypes.sol";
+import "../crossChain/utils/OrderlyCrossChainMessage.sol";
+import "../library/types/AccountTypes.sol";
 
 interface IVaultCrossChainManager {
-    function withdraw(CrossChainMessageTypes.MessageV1 calldata message) external;
+    function withdraw(
+        OrderlyCrossChainMessage.MessageV1 calldata message
+    ) external;
+
+    function deposit(AccountTypes.AccountDeposit calldata data) external;
 }
