@@ -8,6 +8,7 @@ import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "./crossChain/interface/IOrderlyCrossChain.sol";
 import "./crossChain/utils/OrderlyCrossChainMessage.sol";
 import "./library/types/AccountTypes.sol";
+import "./library/types/PerpTypes.sol";
 
 /**
  * CrossChainManager is responsible for executing cross-chain tx.
@@ -61,11 +62,11 @@ contract SettlementCrossChainManager is
     }
 
     function receiveMessage(
-        bytes memory payload,
+        bytes calldata payload,
         uint256 srcChainId,
-        uint256 dstChainId,
-        address contractAddress
+        uint256 dstChainId
     ) external override {
+        emit MessageReceived(payload, srcChainId, dstChainId);
         require(
             msg.sender == address(crossChainRelay),
             "caller is not crossChainRelay"
@@ -80,12 +81,12 @@ contract SettlementCrossChainManager is
     }
 
     function deposit(
-        CrossChainMessageTypes.MessageV1 calldata message
+        OrderlyCrossChainMessage.MessageV1 memory message
     ) public override onlyOwner {
         // convert message to AccountTypes.AccountDeposit
         AccountTypes.AccountDeposit memory data = AccountTypes.AccountDeposit({
             accountId: message.accountId,
-            addr: message.addr,
+            addr: message.userAddress,
             symbol: message.tokenSymbol,
             amount: message.tokenAmount,
             chainId: message.srcChainId
@@ -94,7 +95,7 @@ contract SettlementCrossChainManager is
     }
 
     function withdraw(
-        AccountTypes.AccountWithdraw calldata data
+        PerpTypes.WithdrawData calldata data
     ) external override onlyOwner {
         // only settlement can call this function
         require(msg.sender == address(settlement), "caller is not settlement");
@@ -112,7 +113,7 @@ contract SettlementCrossChainManager is
                 tokenAmount: data.amount
             });
         // encode message
-        bytes calldata payload = OrderlyCrossChainMessage.encodePacked(
+        bytes memory payload = OrderlyCrossChainMessage.encodePacked(
             OrderlyCrossChainMessage.toArray(message)
         );
         // send message

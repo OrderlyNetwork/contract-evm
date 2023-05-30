@@ -6,8 +6,8 @@ import "../library/types/AccountTypes.sol";
 
 interface IVaultCrossChainManager {
     function withdraw(
-        OrderlyCrossChainMessage.MessageV1 calldata message
+        OrderlyCrossChainMessage.MessageV1 memory message
     ) external;
 
-    function deposit(AccountTypes.AccountDeposit calldata data) external;
+    function deposit(AccountTypes.AccountDeposit memory data) external;
 }

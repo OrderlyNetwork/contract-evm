@@ -52,14 +52,6 @@ library AccountTypes {
         uint256 chainId;
     }
 
-    struct AccountWithdraw {
-        bytes32 accountId;
-        address addr;
-        bytes32 symbol;
-        uint256 amount;
-        uint256 chainId;
-    }
-
     // charge funding fee
     function chargeFundingFee(
         PerpPosition storage position,
