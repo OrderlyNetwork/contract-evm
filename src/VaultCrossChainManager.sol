@@ -45,11 +45,11 @@ contract VaultCrossChainManager is
     }
 
     function receiveMessage(
-        bytes memory payload,
+        bytes calldata payload,
         uint256 srcChainId,
-        uint256 dstChainId,
-        address contractAddress
+        uint256 dstChainId
     ) external override {
+        emit MessageReceived(payload, srcChainId, dstChainId);
         // only relay can call it
         require(
             msg.sender == address(crossChainRelay),
@@ -65,11 +65,11 @@ contract VaultCrossChainManager is
 
     // user withdraw USDC
     function withdraw(
-        OrderlyCrossChainMessage.MessageV1 calldata message
+        OrderlyCrossChainMessage.MessageV1 memory message
     ) public override onlyOwner {
         vault.withdraw(
             message.accountId,
-            message.addr,
+            message.userAddress,
             message.tokenSymbol,
             message.tokenAmount
         );
@@ -95,8 +95,8 @@ contract VaultCrossChainManager is
                 tokenAmount: data.amount
             });
         // encode message
-        bytes calldata payload = OrderlyCrossChainMessage.encodePacked(
-            OrderlyCrossChainMessage.msgToArray(message)
+        bytes memory payload = OrderlyCrossChainMessage.encodePacked(
+            OrderlyCrossChainMessage.toArray(message)
         );
 
         // send message to settlementCrossChainManager

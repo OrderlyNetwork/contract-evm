@@ -46,13 +46,15 @@ interface IOrderlyCrossChain {
 
 // Interface for the Cross Chain Receiver
 interface IOrderlyCrossChainReceiver {
+    event MessageReceived(bytes payload, uint srcChainId, uint dstChainId);
+
     /**
      * Receive a message from another chain
      *
      * @param payload The payload received from the other chain
      */
     function receiveMessage(
-        bytes memory payload,
+        bytes calldata payload,
         uint srcChainId,
         uint dstChainId
     ) external;

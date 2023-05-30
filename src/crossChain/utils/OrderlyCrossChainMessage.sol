@@ -48,15 +48,16 @@ library OrderlyCrossChainMessage {
     function arrayToMsg(
         bytes[] memory data
     ) internal pure returns (MessageV1 memory) {
-        MessageV1 memory message;
-        message.version = uint8(bytes1(data[0]));
-        message.userAddress = address(bytes20(data[1]));
-        message.srcChainId = uint256(bytes32(data[1]));
-        message.dstChainId = uint256(bytes32(data[2]));
-        message.method = string(data[3]);
-        message.accountId = bytes32(data[4]);
-        message.tokenSymbol = bytes(data[5]);
-        message.tokenAmount = uint256(bytes32(data[6]));
+        MessageV1 memory message = MessageV1({
+            version: uint8(bytes1(data[0])),
+            userAddress: address(bytes20(data[1])),
+            srcChainId: uint256(bytes32(data[2])),
+            dstChainId: uint256(bytes32(data[3])),
+            method: string(data[4]),
+            accountId: bytes32(data[5]),
+            tokenSymbol: bytes32(data[6]),
+            tokenAmount: uint256(bytes32(data[7]))
+        });
         return message;
     }
 
@@ -82,7 +83,7 @@ library OrderlyCrossChainMessage {
      * @return data The unpacked bytes array
      */
     function decodePacked(
-        bytes memory payload
+        bytes calldata payload
     ) internal pure returns (bytes[] memory) {
         bytes[] memory data;
         uint offset = 0;
@@ -92,7 +93,10 @@ library OrderlyCrossChainMessage {
             uint dataLength;
             uint loadOffset = offset + 32;
             assembly {
-                dataLength := mload(add(payload, loadOffset))
+                // payload is calldata
+                // dataLength := mload(add(payload, loadOffset))
+                // dataLength := calldataload(loadOffset)
+                dataLength := calldataload(add(payload.offset, loadOffset))
             }
             offset += 32; // Skip the data length
 
