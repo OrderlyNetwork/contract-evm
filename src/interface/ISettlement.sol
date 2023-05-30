@@ -27,4 +27,8 @@ interface ISettlement {
     function executeWithdrawAction(PerpTypes.WithdrawData calldata withdraw, uint256 eventId) external;
     function executeSettlement(PerpTypes.Settlement calldata settlement, uint256 eventId) external;
     function executeLiquidation(PerpTypes.Liquidation calldata liquidation, uint256 eventId) external;
+
+    // view call
+    function getUserLedgerBalance(bytes32 accountId, bytes32 symbol) external view returns (uint256);
+    function getUserLedgerBrokerId(bytes32 accountId) external view returns (bytes32);
 }

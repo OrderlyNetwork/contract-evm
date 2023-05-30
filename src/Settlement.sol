@@ -63,6 +63,16 @@ contract Settlement is FeeCollector, ISettlement {
         crossChainManagerAddress = _crossChainManagerAddress;
     }
 
+    // get userLedger balance
+    function getUserLedgerBalance(bytes32 accountId, bytes32 symbol) public view returns (uint256) {
+        return userLedger[accountId].balances[symbol];
+    }
+
+    // get userLedger brokerId
+    function getUserLedgerBrokerId(bytes32 accountId) public view returns (bytes32) {
+        return userLedger[accountId].brokerId;
+    }
+
     // Interface implementation
 
     function accountRegister(AccountTypes.AccountRegister calldata data) public override onlyOperatorManager {
