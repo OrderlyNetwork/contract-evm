@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
-import "../crossChain/utils/OrderlyCrossChainMessage.sol";
+import "crosschain/utils/OrderlyCrossChainMessage.sol";
 import "../library/types/AccountTypes.sol";
 
 interface IVaultCrossChainManager {
