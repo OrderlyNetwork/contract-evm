@@ -57,9 +57,7 @@ contract VaultCrossChainManager is
         );
 
         OrderlyCrossChainMessage.MessageV1
-            memory message = OrderlyCrossChainMessage.arrayToMsg(
-                OrderlyCrossChainMessage.decodePacked(payload)
-            );
+            memory message = OrderlyCrossChainMessage.decodeMessageV1(payload);
         withdraw(message);
     }
 
@@ -83,28 +81,30 @@ contract VaultCrossChainManager is
             msg.sender == address(vault),
             "VaultCrossChainManager: deposit caller is not vault"
         );
+
+        // TODO broker id
+        uint256 brokerId = 123;
+
         OrderlyCrossChainMessage.MessageV1
             memory message = OrderlyCrossChainMessage.MessageV1({
                 version: 1,
+                method: uint8(OrderlyCrossChainMessage.CrossChainMethod.Deposit),
                 userAddress: data.addr,
                 srcChainId: chainId,
                 dstChainId: data.chainId,
-                method: "withdraw",
                 accountId: data.accountId,
+                brokerId: bytes32(brokerId), // TODO broker id
                 tokenSymbol: data.symbol,
                 tokenAmount: data.amount
             });
         // encode message
-        bytes memory payload = OrderlyCrossChainMessage.encodePacked(
-            OrderlyCrossChainMessage.toArray(message)
-        );
+        bytes memory payload = OrderlyCrossChainMessage.encodeMessageV1(message);
 
         // send message to settlementCrossChainManager
         crossChainRelay.sendMessage(
             payload,
             chainId,
-            data.chainId,
-            settlementCrossChainManagers[data.chainId]
+            data.chainId
         );
     }
 }
