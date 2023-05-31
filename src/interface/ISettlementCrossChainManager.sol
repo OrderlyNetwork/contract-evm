@@ -3,7 +3,7 @@ pragma solidity ^0.8.18;
 
 import "../library/types/OperatorTypes.sol";
 import "../library/types/PerpTypes.sol";
-import "../crossChain/utils/OrderlyCrossChainMessage.sol";
+import "crosschain/utils/OrderlyCrossChainMessage.sol";
 
 interface ISettlementCrossChainManager {
     // cross chain call deposit
