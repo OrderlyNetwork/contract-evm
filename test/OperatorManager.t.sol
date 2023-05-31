@@ -4,18 +4,18 @@ pragma solidity ^0.8.19;
 import "forge-std/Test.sol";
 import "../src/OperatorManager.sol";
 import "../src/Settlement.sol";
-import "../src/CrossChainManager.sol";
+import "../src/SettlementCrossChainManager.sol";
 
 contract OperatorManagerTest is Test {
     address constant operatorAddress = address(0x1234567890);
-    ICrossChainManager crossChainManager;
+    ISettlementCrossChainManager settlementCrossChainManager;
     IOperatorManager operatorManager;
     ISettlement settlement;
 
     function setUp() public {
-        crossChainManager = new CrossChainManager();
+        settlementCrossChainManager = new SettlementCrossChainManager();
         operatorManager = new OperatorManager();
-        settlement = new Settlement(address(operatorManager), address(crossChainManager));
+        settlement = new Settlement(address(operatorManager), address(settlementCrossChainManager));
         operatorManager.setOperator(operatorAddress);
         operatorManager.setSettlement(address(settlement));
     }
