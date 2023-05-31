@@ -12,3 +12,6 @@
 	path = lib/openzeppelin-contracts
 	url = https://github.com/openzeppelin/openzeppelin-contracts
 	branch = v4.8.2
+[submodule "lib/crosschain"]
+	path = lib/crosschain
+	url = git@gitlab.com:orderlynetwork/orderly-v2/cross-chain-relay.git
