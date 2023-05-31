@@ -73,9 +73,7 @@ contract SettlementCrossChainManager is
         );
         // convert payload to CrossChainMessageTypes.MessageV1
         OrderlyCrossChainMessage.MessageV1
-            memory message = OrderlyCrossChainMessage.arrayToMsg(
-                OrderlyCrossChainMessage.decodePacked(payload)
-            );
+            memory message = OrderlyCrossChainMessage.decodeMessageV1(payload);
         // execute deposit
         deposit(message);
     }
@@ -100,28 +98,29 @@ contract SettlementCrossChainManager is
         // only settlement can call this function
         require(msg.sender == address(settlement), "caller is not settlement");
 
+        // TODO temporary value
+        uint256 brokerId = 123;
+
         // convert data to CrossChainMessageTypes.MessageV1
         OrderlyCrossChainMessage.MessageV1
             memory message = OrderlyCrossChainMessage.MessageV1({
                 version: 1,
+                method: uint8(OrderlyCrossChainMessage.CrossChainMethod.Withdraw),
                 userAddress: data.addr,
                 srcChainId: chainId,
                 dstChainId: data.chainId,
-                method: "withdraw",
                 accountId: data.accountId,
+                brokerId: bytes32(brokerId), // TODO (need to be changed
                 tokenSymbol: data.symbol,
                 tokenAmount: data.amount
             });
         // encode message
-        bytes memory payload = OrderlyCrossChainMessage.encodePacked(
-            OrderlyCrossChainMessage.toArray(message)
-        );
+        bytes memory payload = OrderlyCrossChainMessage.encodeMessageV1(message);
         // send message
         crossChainRelay.sendMessage(
             payload,
             message.srcChainId,
-            message.dstChainId,
-            vaultCrossChainManagers[message.dstChainId]
+            message.dstChainId
         );
     }
 }
