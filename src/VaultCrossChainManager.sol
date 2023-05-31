@@ -4,8 +4,8 @@ pragma solidity ^0.8.18;
 import "./interface/IVault.sol";
 import "./interface/IVaultCrossChainManager.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
-import "./crossChain/interface/IOrderlyCrossChain.sol";
-import "./crossChain/utils/OrderlyCrossChainMessage.sol";
+import "crosschain/interface/IOrderlyCrossChain.sol";
+import "crosschain/utils/OrderlyCrossChainMessage.sol";
 
 contract VaultCrossChainManager is
     IOrderlyCrossChainReceiver,

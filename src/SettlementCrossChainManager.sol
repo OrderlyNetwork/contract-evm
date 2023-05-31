@@ -5,8 +5,8 @@ import "./interface/ISettlement.sol";
 import "./interface/ISettlementCrossChainManager.sol";
 import "./interface/IOperatorManager.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
-import "./crossChain/interface/IOrderlyCrossChain.sol";
-import "./crossChain/utils/OrderlyCrossChainMessage.sol";
+import "crosschain/interface/IOrderlyCrossChain.sol";
+import "crosschain/utils/OrderlyCrossChainMessage.sol";
 import "./library/types/AccountTypes.sol";
 import "./library/types/PerpTypes.sol";
 
