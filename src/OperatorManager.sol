@@ -39,12 +39,6 @@ contract OperatorManager is IOperatorManager, Ownable {
         settlement = ISettlement(_settlement);
     }
 
-    // constructor
-    // call `setSettlement` later
-    constructor(address _operator) {
-        operator = _operator;
-    }
-
     // operator ping
     function operatorPing() public onlyOperator {
         _innerPing();
