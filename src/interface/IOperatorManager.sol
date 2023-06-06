@@ -9,8 +9,6 @@ interface IOperatorManager {
     // @deprecated TODO @Rubick should be removed
     function operatorExecuteAction(OperatorTypes.OperatorActionData actionData, bytes calldata action) external;
 
-    // operator call account register
-    function accountRegisterAction(AccountTypes.AccountRegister calldata data) external;
     // operator call futures trade upload
     function futuresTradeUploadDataAction(PerpTypes.FuturesTradeUploadData calldata data) external;
     // operator call event upload
@@ -23,5 +21,5 @@ interface IOperatorManager {
 
     // admin call
     function setOperator(address _operator) external;
-    function setSettlement(address _settlement) external;
+    function setLedger(address _ledger) external;
 }

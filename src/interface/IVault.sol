@@ -1,10 +1,24 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
-interface IVault {
-    event DepositEvent(bytes32 indexed accountId, address indexed addr, bytes32 indexed symbol, uint256 amount);
-    event WithdrawEvent(bytes32 indexed accountId, address indexed addr, bytes32 indexed symbol, uint256 amount);
+import "./../library/types/VaultTypes.sol";
 
-    function deposit(bytes32 accountId, bytes32 tokenSymbol, uint256 tokenAmount) external;
-    function withdraw(bytes32 accountId, address addr, bytes32 tokenSymbol, uint256 tokenAmount) external;
+interface IVault {
+    event AccountDeposit(
+        bytes32 indexed accountId,
+        address indexed userAddress,
+        uint256 indexed depositNonce,
+        bytes32 tokenSymbol,
+        uint256 tokenAmount
+    );
+    event AccountWithdraw(
+        bytes32 indexed accountId,
+        address indexed userAddress,
+        uint256 indexed withdrawNonce,
+        bytes32 tokenSymbol,
+        uint256 tokenAmount
+    );
+
+    function deposit(VaultTypes.VaultDeposit calldata data) external;
+    function withdraw(VaultTypes.VaultWithdraw calldata data) external;
 }
