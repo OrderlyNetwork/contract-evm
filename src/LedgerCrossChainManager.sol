@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
-import "./interface/ISettlement.sol";
-import "./interface/ISettlementCrossChainManager.sol";
+import "./interface/ILedger.sol";
+import "./interface/ILedgerCrossChainManager.sol";
 import "./interface/IOperatorManager.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "crosschain/interface/IOrderlyCrossChain.sol";
@@ -14,18 +14,18 @@ import "./library/types/PerpTypes.sol";
  * CrossChainManager is responsible for executing cross-chain tx.
  * This contract should only have one in main-chain (avalanche)
  *
- * Settlement(manager addr, chain id) -> SettlementCrossChainManager -> OrderlyCrossChain -> VaultCrossChainManager(Identified by chain id) -> Vault
+ * Ledger(manager addr, chain id) -> LedgerCrossChainManager -> OrderlyCrossChain -> VaultCrossChainManager(Identified by chain id) -> Vault
  *
  */
-contract SettlementCrossChainManager is
+contract LedgerCrossChainManager is
     IOrderlyCrossChainReceiver,
-    ISettlementCrossChainManager,
+    ILedgerCrossChainManager,
     Ownable
 {
     // chain id of this contract
     uint256 public chainId;
-    // settlement Interface
-    ISettlement public settlement;
+    // ledger Interface
+    ILedger public ledger;
     // crosschain relay interface
     IOrderlyCrossChain public crossChainRelay;
     // operatorManager Interface
@@ -38,9 +38,9 @@ contract SettlementCrossChainManager is
         chainId = _chainId;
     }
 
-    // set settlement
-    function setSettlement(address _settlement) public onlyOwner {
-        settlement = ISettlement(_settlement);
+    // set ledger
+    function setLedger(address _ledger) public onlyOwner {
+        ledger = ILedger(_ledger);
     }
 
     // set crossChainRelay
@@ -82,21 +82,21 @@ contract SettlementCrossChainManager is
         OrderlyCrossChainMessage.MessageV1 memory message
     ) public override onlyOwner {
         // convert message to AccountTypes.AccountDeposit
-        AccountTypes.AccountDeposit memory data = AccountTypes.AccountDeposit({
-            accountId: message.accountId,
-            addr: message.userAddress,
-            symbol: message.tokenSymbol,
-            amount: message.tokenAmount,
-            chainId: message.srcChainId
-        });
-        settlement.accountDeposit(data);
+        // AccountTypes.AccountDeposit memory data = AccountTypes.AccountDeposit({
+        //     accountId: message.accountId,
+        //     addr: message.userAddress,
+        //     symbol: message.tokenSymbol,
+        //     amount: message.tokenAmount,
+        //     chainId: message.srcChainId
+        // });
+        // ledger.accountDeposit(data);
     }
 
     function withdraw(
         PerpTypes.WithdrawData calldata data
     ) external override onlyOwner {
-        // only settlement can call this function
-        require(msg.sender == address(settlement), "caller is not settlement");
+        // only ledger can call this function
+        require(msg.sender == address(ledger), "caller is not ledger");
 
         // TODO temporary value
         uint256 brokerId = 123;
@@ -106,13 +106,13 @@ contract SettlementCrossChainManager is
             memory message = OrderlyCrossChainMessage.MessageV1({
                 version: 1,
                 method: uint8(OrderlyCrossChainMessage.CrossChainMethod.Withdraw),
-                userAddress: data.addr,
+                userAddress: data.receiver,
                 srcChainId: chainId,
                 dstChainId: data.chainId,
                 accountId: data.accountId,
                 brokerId: bytes32(brokerId), // TODO (need to be changed
-                tokenSymbol: data.symbol,
-                tokenAmount: data.amount
+                tokenSymbol: bytes32(0),    // TODO fixme
+                tokenAmount: data.tokenAmount
             });
         // encode message
         bytes memory payload = OrderlyCrossChainMessage.encodeMessageV1(message);
@@ -122,5 +122,11 @@ contract SettlementCrossChainManager is
             message.srcChainId,
             message.dstChainId
         );
+    }
+
+    function withdrawFinish(
+        OrderlyCrossChainMessage.MessageV1 memory message
+    ) external override onlyOwner {
+        // TODO
     }
 }

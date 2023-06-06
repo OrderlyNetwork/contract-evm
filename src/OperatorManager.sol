@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
-import "./interface/ISettlement.sol";
+import "./interface/ILedger.sol";
 import "./interface/IOperatorManager.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
@@ -12,8 +12,8 @@ import "openzeppelin-contracts/contracts/access/Ownable.sol";
 contract OperatorManager is IOperatorManager, Ownable {
     // operator address
     address public operator;
-    // settlement Interface
-    ISettlement public settlement;
+    // ledger Interface
+    ILedger public ledger;
 
     // ids
     // futuresUploadBatchId
@@ -34,9 +34,9 @@ contract OperatorManager is IOperatorManager, Ownable {
         operator = _operator;
     }
 
-    // set settlement
-    function setSettlement(address _settlement) public onlyOwner {
-        settlement = ISettlement(_settlement);
+    // set ledger
+    function setLedger(address _ledger) public onlyOwner {
+        ledger = ILedger(_ledger);
     }
 
     // operator ping
@@ -44,7 +44,7 @@ contract OperatorManager is IOperatorManager, Ownable {
         _innerPing();
     }
 
-    // entry point for operator to call this contract
+    // @deprecated entry point for operator to call this contract
     function operatorExecuteAction(OperatorTypes.OperatorActionData actionData, bytes calldata action)
         public
         override
@@ -53,22 +53,13 @@ contract OperatorManager is IOperatorManager, Ownable {
         _innerPing();
         if (actionData == OperatorTypes.OperatorActionData.FuturesTradeUpload) {
             // FuturesTradeUpload
-            futuresTradeUploadData(abi.decode(action, (PerpTypes.FuturesTradeUploadData)));
+            _futuresTradeUploadData(abi.decode(action, (PerpTypes.FuturesTradeUploadData)));
         } else if (actionData == OperatorTypes.OperatorActionData.EventUpload) {
             // EventUpload
-            eventUploadData(abi.decode(action, (PerpTypes.EventUpload)));
-        } else if (actionData == OperatorTypes.OperatorActionData.UserRegister) {
-            // UserRegister
-            settlement.accountRegister(abi.decode(action, (AccountTypes.AccountRegister)));
+            _eventUploadData(abi.decode(action, (PerpTypes.EventUpload)));
         } else {
             revert("invalid action data");
         }
-    }
-
-    // accountRegisterAction
-    function accountRegisterAction(AccountTypes.AccountRegister calldata data) public override onlyOperator {
-        _innerPing();
-        settlement.accountRegister(data);
     }
 
     // futuresTradeUploadDataAction
@@ -78,17 +69,17 @@ contract OperatorManager is IOperatorManager, Ownable {
         onlyOperator
     {
         _innerPing();
-        futuresTradeUploadData(data);
+        _futuresTradeUploadData(data);
     }
 
     // eventUploadDataAction
     function eventUploadDataAction(PerpTypes.EventUpload calldata data) public override onlyOperator {
         _innerPing();
-        eventUploadData(data);
+        _eventUploadData(data);
     }
 
     // futures trade upload data
-    function futuresTradeUploadData(PerpTypes.FuturesTradeUploadData memory data) internal {
+    function _futuresTradeUploadData(PerpTypes.FuturesTradeUploadData memory data) internal {
         require(data.batchId == futuresUploadBatchId, "batchId not match");
         PerpTypes.FuturesTradeUpload[] memory trades = data.trades; // gas saving
         require(trades.length == data.count, "count not match");
@@ -111,11 +102,11 @@ contract OperatorManager is IOperatorManager, Ownable {
 
     // process each validated perp trades
     function _processValidatedFutures(PerpTypes.FuturesTradeUpload memory trade) internal {
-        settlement.updateUserLedgerByTradeUpload(trade);
+        ledger.updateUserLedgerByTradeUpload(trade);
     }
 
     // event upload data
-    function eventUploadData(PerpTypes.EventUpload memory data) internal {
+    function _eventUploadData(PerpTypes.EventUpload memory data) internal {
         require(data.batchId == eventUploadBatchId, "batchId not match");
         PerpTypes.EventUploadData[] memory events = data.events; // gas saving
         require(events.length == data.count, "count not match");
@@ -129,26 +120,18 @@ contract OperatorManager is IOperatorManager, Ownable {
 
     // process each event upload
     function _processEventUpload(PerpTypes.EventUploadData memory data) internal {
-        uint256 index_withdraw = 0;
-        uint256 index_settlement = 0;
-        uint256 index_liquidation = 0;
-        // iterate sequence to process each event. The sequence decides the event type.
-        for (uint256 i = 0; i < data.sequence.length; i++) {
-            if (data.sequence[i] == 0) {
-                // withdraw
-                settlement.executeWithdrawAction(data.withdraws[index_withdraw], data.eventId);
-                index_withdraw += 1;
-            } else if (data.sequence[i] == 1) {
-                // settlement
-                settlement.executeSettlement(data.settlements[index_settlement], data.eventId);
-                index_settlement += 1;
-            } else if (data.sequence[i] == 2) {
-                // liquidation
-                settlement.executeLiquidation(data.liquidations[index_liquidation], data.eventId);
-                index_liquidation += 1;
-            } else {
-                revert("invalid sequence");
-            }
+        uint256 bizId = data.bizId;
+        if (bizId == 0) {
+            // withdraw
+            ledger.executeWithdrawAction(abi.decode(data.data, (PerpTypes.WithdrawData)), data.eventId);
+        } else if (bizId == 1) {
+            // ledger
+            ledger.executeLedger(abi.decode(data.data, (PerpTypes.LedgerData)), data.eventId);
+        } else if (bizId == 2) {
+            // liquidation
+            ledger.executeLiquidation(abi.decode(data.data, (PerpTypes.LiquidationData)), data.eventId);
+        } else {
+            revert("invalid bizId");
         }
     }
 

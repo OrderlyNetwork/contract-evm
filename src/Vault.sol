@@ -2,6 +2,7 @@
 pragma solidity ^0.8.18;
 
 import "./interface/IVault.sol";
+import "./library/Utils.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
@@ -19,6 +20,8 @@ contract Vault is IVault, ReentrancyGuard, Ownable {
     address public crossChainManager;
     // symbol to token address mapping
     mapping(bytes32 => IERC20) public symbol2TokenAddress;
+    // deposit id / nonce
+    uint256 public depositId;
 
     // only cross-chain manager can call
     modifier onlyCrossChainManager() {
@@ -42,27 +45,30 @@ contract Vault is IVault, ReentrancyGuard, Ownable {
     }
 
     // user deposit USDC
-    function deposit(bytes32 accountId, bytes32 tokenSymbol, uint256 tokenAmount) public {
-        IERC20 tokenAddress = symbol2TokenAddress[tokenSymbol];
-        require(tokenAddress.transferFrom(msg.sender, address(this), tokenAmount), "transferFrom failed");
+    function deposit(VaultTypes.VaultDeposit calldata data) public override {
+        // bytes32 tokenSymbol = Utils.string2HashedBytes32(data.tokenSymbol);
+        // bytes32 brokerId = Utils.string2HashedBytes32(data.brokerId);
+        IERC20 tokenAddress = symbol2TokenAddress[data.tokenSymbol];
+        require(tokenAddress.transferFrom(msg.sender, address(this), data.tokenAmount), "transferFrom failed");
         // emit deposit event
-        emit DepositEvent(accountId, msg.sender, tokenSymbol, tokenAmount);
-        // TODO @Lewis send cross-chain tx to settlement
+        emit AccountDeposit(data.accountId, msg.sender, _newDepositId(), data.tokenSymbol, data.tokenAmount);
+        // TODO @Rubick add whitelist to avoid malicious user
+        // TODO @Lewis send cross-chain tx to ledger
     }
 
     // user withdraw USDC
-    function withdraw(bytes32 accountId, address addr, bytes32 tokenSymbol, uint256 tokenAmount)
-        public
-        override
-        onlyCrossChainManager
-        nonReentrant
-    {
-        IERC20 tokenAddress = symbol2TokenAddress[tokenSymbol];
+    function withdraw(VaultTypes.VaultWithdraw calldata data) public override onlyCrossChainManager nonReentrant {
+        IERC20 tokenAddress = symbol2TokenAddress[data.tokenSymbol];
         // check balane gt amount
-        require(tokenAddress.balanceOf(address(this)) >= tokenAmount, "balance not enough");
+        require(tokenAddress.balanceOf(address(this)) >= data.tokenAmount, "balance not enough");
         // transfer to user
-        require(tokenAddress.transfer(addr, tokenAmount), "transfer failed");
+        require(tokenAddress.transfer(data.userAddress, data.tokenAmount), "transfer failed");
         // emit withdraw event
-        emit WithdrawEvent(accountId, addr, tokenSymbol, tokenAmount);
+        emit AccountWithdraw(data.accountId, data.userAddress, data.withdrawNonce, data.tokenSymbol, data.tokenAmount);
+    }
+
+    function _newDepositId() internal returns (uint256) {
+        depositId += 1;
+        return depositId;
     }
 }
