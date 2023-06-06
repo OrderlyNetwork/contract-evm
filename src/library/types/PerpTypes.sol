@@ -30,31 +30,35 @@ library PerpTypes {
 
     struct EventUploadData {
         uint256 eventId;
-        // bytes32 bizType;
-        // uint256 bizId;
-        WithdrawData[] withdraws;
-        Settlement[] settlements;
-        Liquidation[] liquidations;
-        uint256[] sequence;
+        uint256 bizId; // data type, 0 for `WithdrawData`
+        bytes data;
     }
 
+    // WithdrawData
     struct WithdrawData {
         bytes32 accountId;
-        address addr;
-        uint256 amount;
-        bytes32 symbol;
+        address sender;
+        address receiver;
+        string brokerId; // only this field is string, others should be bytes32 hashedBrokerId
+        string tokenSymbol; // only this field is string, others should be bytes32 hashedTokenSymbol
+        uint256 tokenAmount;
         uint256 chainId; // target withdraw chain
+        uint256 withdrawNonce; // withdraw nonce
+        uint64 timestamp;
+        uint8 v;
+        bytes32 r;
+        bytes32 s;
     }
 
-    struct Settlement {
+    struct LedgerData {
         bytes32 accountId;
         int256 settledAmount;
         bytes32 settledAsset;
         uint256 insuranceTransferAmount;
-        SettlementExecution[] settlementExecutions;
+        LedgerExecution[] ledgerExecutions;
     }
 
-    struct Liquidation {
+    struct LiquidationData {
         bytes32 accountId;
         int256 settledAmount;
         LiquidationTransfer[] liquidationTransfers;
@@ -75,7 +79,7 @@ library PerpTypes {
         uint256 liquidationFee;
     }
 
-    struct SettlementExecution {
+    struct LedgerExecution {
         bytes32 symbol;
         int256 sumUnitaryFundings;
         uint256 markPrice;
