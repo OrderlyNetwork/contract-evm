@@ -17,15 +17,15 @@ library AccountTypes {
         uint256 lastExecutedPrice;
     }
 
-    // account id, unique for each account, should be accountId -> {Array<addr>, brokerId, primaryAddr}
-    // and keccak256(primaryAddress, brokerID) == accountId
+    // account id, unique for each account, should be accountId -> {addr, brokerId}
+    // and keccak256(addr, brokerID) == accountId
     struct Account {
         // user's broker id
         bytes32 brokerId;
-        // account addresses
-        EnumerableSet.AddressSet addresses;
         // primary address
-        address primaryAddress;
+        address userAddress;
+        // withdraw nonce
+        uint256 withdrawNonce;
         // mapping symbol => balance
         mapping(bytes32 => uint256) balances;
         // last perp trade id
@@ -35,34 +35,35 @@ library AccountTypes {
         // perp position
         mapping(bytes32 => PerpPosition) perpPositions;
         // reentrancy lock
-        bool hasPendingSettlementRequest;
-    }
-
-    struct AccountRegister {
-        bytes32 accountId;
-        address addr;
-        bytes32 brokerId;
+        bool hasPendingLedgerRequest;
     }
 
     struct AccountDeposit {
         bytes32 accountId;
-        address addr;
-        bytes32 symbol;
-        uint256 amount;
+        bytes32 brokerId;
+        address userAddress;
+        bytes32 tokenSymbol;
+        uint256 tokenAmount;
+        uint256 srcChainId;
+        uint256 srcChainDepositNonce;
+    }
+
+    // for accountWithdrawFinish
+    struct AccountWithdraw {
+        bytes32 accountId;
+        bytes32 brokerId;
+        address receiver;
+        bytes32 tokenSymbol;
+        uint256 tokenAmount;
         uint256 chainId;
+        uint256 withdrawNonce;
     }
 
     // charge funding fee
-    function chargeFundingFee(
-        PerpPosition storage position,
-        int256 sumUnitaryFundings
-    ) public {
-        int256 accruedFeeUncoverted = position.positionQty *
-            (sumUnitaryFundings - position.lastSumUnitaryFundings);
-        int256 accruedFee = accruedFeeUncoverted /
-            FUNDING_MOVE_RIGHT_PRECISIONS;
-        int256 remainder = accruedFeeUncoverted -
-            (accruedFee * FUNDING_MOVE_RIGHT_PRECISIONS);
+    function chargeFundingFee(PerpPosition storage position, int256 sumUnitaryFundings) public {
+        int256 accruedFeeUncoverted = position.positionQty * (sumUnitaryFundings - position.lastSumUnitaryFundings);
+        int256 accruedFee = accruedFeeUncoverted / FUNDING_MOVE_RIGHT_PRECISIONS;
+        int256 remainder = accruedFeeUncoverted - (accruedFee * FUNDING_MOVE_RIGHT_PRECISIONS);
         if (remainder > 0) {
             accruedFee += 1;
         }

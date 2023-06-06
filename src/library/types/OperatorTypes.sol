@@ -4,7 +4,6 @@ pragma solidity ^0.8.18;
 library OperatorTypes {
     enum OperatorActionData {
         None,
-        UserRegister,
         FuturesTradeUpload,
         EventUpload,
         PerpMarketInfo
@@ -13,6 +12,7 @@ library OperatorTypes {
     enum CrossChainOperatorActionData {
         None,
         UserDeposit,
+        UserWithdrawSuccess,
         UserEmergencyWithdraw
     }
 }

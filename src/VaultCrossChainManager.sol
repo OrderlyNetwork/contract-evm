@@ -18,8 +18,8 @@ contract VaultCrossChainManager is
     IVault public vault;
     // crosschain relay interface
     IOrderlyCrossChain public crossChainRelay;
-    // map of chainId => SettlementCrossChainManager
-    mapping(uint256 => address) public settlementCrossChainManagers;
+    // map of chainId => LedgerCrossChainManager
+    mapping(uint256 => address) public ledgerCrossChainManagers;
 
     // set chain id
     function setChainId(uint256 _chainId) public onlyOwner {
@@ -36,12 +36,12 @@ contract VaultCrossChainManager is
         crossChainRelay = IOrderlyCrossChain(_crossChainRelay);
     }
 
-    // set settlementCrossChainManager
-    function setSettlementCrossChainManager(
+    // set ledgerCrossChainManager
+    function setLedgerCrossChainManager(
         uint256 _chainId,
-        address _settlementCrossChainManager
+        address _ledgerCrossChainManager
     ) public onlyOwner {
-        settlementCrossChainManagers[_chainId] = _settlementCrossChainManager;
+        ledgerCrossChainManagers[_chainId] = _ledgerCrossChainManager;
     }
 
     function receiveMessage(
@@ -65,12 +65,13 @@ contract VaultCrossChainManager is
     function withdraw(
         OrderlyCrossChainMessage.MessageV1 memory message
     ) public override onlyOwner {
-        vault.withdraw(
-            message.accountId,
-            message.userAddress,
-            message.tokenSymbol,
-            message.tokenAmount
-        );
+        // VaultTypes.VaultWithdraw memory data = VaultTypes.VaultWithdraw(
+        //     message.accountId,
+        //     message.userAddress,
+        //     message.tokenSymbol,
+        //     message.tokenAmount
+        // );
+        // vault.withdraw(data);
     }
 
     function deposit(
@@ -89,22 +90,22 @@ contract VaultCrossChainManager is
             memory message = OrderlyCrossChainMessage.MessageV1({
                 version: 1,
                 method: uint8(OrderlyCrossChainMessage.CrossChainMethod.Deposit),
-                userAddress: data.addr,
+                userAddress: data.userAddress,
                 srcChainId: chainId,
-                dstChainId: data.chainId,
+                dstChainId: data.srcChainId,
                 accountId: data.accountId,
                 brokerId: bytes32(brokerId), // TODO broker id
-                tokenSymbol: data.symbol,
-                tokenAmount: data.amount
+                tokenSymbol: data.tokenSymbol,
+                tokenAmount: data.tokenAmount
             });
         // encode message
         bytes memory payload = OrderlyCrossChainMessage.encodeMessageV1(message);
 
-        // send message to settlementCrossChainManager
+        // send message to ledgerCrossChainManager
         crossChainRelay.sendMessage(
             payload,
             chainId,
-            data.chainId
+            data.srcChainId
         );
     }
 }
