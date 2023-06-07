@@ -8,7 +8,7 @@ library CrossChainMessageTypes {
         uint256 dstChainId; // Target blockchain ID
         bytes32 accountId; // Account address converted to string
         address addr; // Account address
-        bytes32 tokenSymbol; // Token symbol for transfer
+        bytes32 tokenHash; // Token symbol for transfer
         uint256 tokenAmount; // Amount of token for transfer
     }
 }

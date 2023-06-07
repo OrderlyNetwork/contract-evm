@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
-import "./types/PerpTypes.sol";
+import "./types/EventTypes.sol";
 
 library VerifyEIP712 {
-    function verifyWithdraw(address sender, address contractAddr, PerpTypes.WithdrawData calldata data) external pure {
+    function verifyWithdraw(address sender, address contractAddr, EventTypes.WithdrawData calldata data) external pure {
         bytes32 typeHash =
             keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
 
@@ -15,7 +15,7 @@ library VerifyEIP712 {
         bytes32 hashStruct = keccak256(
             abi.encode(
                 keccak256(
-                    "Withdraw(string brokerId,uint256 chainId,address sender,address receiver,token string,uint256 amount,uint256 withdrawNonce,uint64 timestamp)"
+                    "Withdraw(string brokerId,uint256 chainId,address sender,address receiver,token string,uint256 amount,uint64 withdrawNonce,uint64 timestamp)"
                 ),
                 data.brokerId,
                 data.chainId,

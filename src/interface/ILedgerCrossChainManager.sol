@@ -2,7 +2,7 @@
 pragma solidity ^0.8.18;
 
 import "../library/types/OperatorTypes.sol";
-import "../library/types/PerpTypes.sol";
+import "../library/types/EventTypes.sol";
 import "crosschain/utils/OrderlyCrossChainMessage.sol";
 
 interface ILedgerCrossChainManager {
@@ -12,7 +12,7 @@ interface ILedgerCrossChainManager {
     ) external;
 
     // cross chain withdraw approve | from leger to vault
-    function withdraw(PerpTypes.WithdrawData calldata data) external;
+    function withdraw(EventTypes.WithdrawData calldata data) external;
     // cross chain withdraw finish | from vault to leger
     function withdrawFinish(OrderlyCrossChainMessage.MessageV1 memory message) external;
 
