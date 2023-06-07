@@ -6,15 +6,18 @@ library VaultTypes {
         bytes32 accountId;
         address userAddress;
         uint256 tokenAmount;
-        bytes32 tokenSymbol;
-        bytes32 brokerId;
+        bytes32 tokenHash;
+        bytes32 brokerHash;
     }
 
     struct VaultWithdraw {
         bytes32 accountId;
-        address userAddress;
-        uint256 withdrawNonce;
-        bytes32 tokenSymbol;
+        address sender;
+        address receiver;
+        bytes32 brokerHash;
+        bytes32 tokenHash;
         uint256 tokenAmount;
+        uint256 fee;
+        uint64 withdrawNonce; // withdraw nonce
     }
 }

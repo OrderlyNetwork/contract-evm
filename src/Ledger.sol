@@ -75,8 +75,8 @@ contract Ledger is FeeCollector, ILedger {
     }
 
     // get userLedger brokerId
-    function getUserLedgerBrokerId(bytes32 accountId) public view returns (bytes32) {
-        return userLedger[accountId].brokerId;
+    function getUserLedgerBrokerHash(bytes32 accountId) public view returns (bytes32) {
+        return userLedger[accountId].brokerHash;
     }
 
     // Interface implementation
@@ -87,19 +87,19 @@ contract Ledger is FeeCollector, ILedger {
         if (account.userAddress == address(0)) {
             // register account first
             account.userAddress = data.userAddress;
-            account.brokerId = data.brokerId;
+            account.brokerHash = data.brokerHash;
             // emit register event
-            emit AccountRegister(data.accountId, data.brokerId, data.userAddress);
+            emit AccountRegister(data.accountId, data.brokerHash, data.userAddress);
         }
-        account.balances[data.tokenSymbol] += data.tokenAmount;
-        vaultManager.addBalance(data.srcChainId, data.tokenSymbol, data.tokenAmount);
+        account.balances[data.tokenHash] += data.tokenAmount;
+        vaultManager.addBalance(data.srcChainId, data.tokenHash, data.tokenAmount);
         // emit deposit event
         emit AccountDeposit(
             data.accountId,
             _newGlobalDepositId(),
             _newGlobalEventId(),
             data.userAddress,
-            data.tokenSymbol,
+            data.tokenHash,
             data.tokenAmount,
             data.srcChainId,
             data.srcChainDepositNonce
@@ -116,18 +116,18 @@ contract Ledger is FeeCollector, ILedger {
         // TODO update account.prep_position
     }
 
-    function executeWithdrawAction(PerpTypes.WithdrawData calldata withdraw, uint256 eventId)
+    function executeWithdrawAction(EventTypes.WithdrawData calldata withdraw, uint256 eventId)
         public
         override
         onlyOperatorManager
     {
-        bytes32 tokenSymbol = Utils.string2HashedBytes32(withdraw.tokenSymbol);
+        bytes32 tokenHash = Utils.string2HashedBytes32(withdraw.tokenSymbol);
         AccountTypes.Account storage account = userLedger[withdraw.accountId];
         uint8 state = 0;
-        if (account.balances[tokenSymbol] < withdraw.tokenAmount) {
+        if (account.balances[tokenHash] < withdraw.tokenAmount) {
             // require balance enough
             state = 1;
-        } else if (vaultManager.getBalance(withdraw.chainId, tokenSymbol) < withdraw.tokenAmount) {
+        } else if (vaultManager.getBalance(withdraw.chainId, tokenHash) < withdraw.tokenAmount) {
             // require chain has enough balance
             state = 2;
         }
@@ -136,34 +136,63 @@ contract Ledger is FeeCollector, ILedger {
             emit AccountWithdrawFail(
                 withdraw.accountId,
                 withdraw.withdrawNonce,
-                _newGlobalDepositId(),
+                _newGlobalEventId(),
+                account.brokerHash,
+                withdraw.sender,
                 withdraw.receiver,
                 withdraw.chainId,
-                tokenSymbol,
+                tokenHash,
                 withdraw.tokenAmount,
-                state
+                withdraw.fee,
+                block.timestamp
             );
             return;
         }
         // update status, should never fail
         // update balance
-        account.balances[tokenSymbol] -= withdraw.tokenAmount;
-        vaultManager.subBalance(withdraw.chainId, tokenSymbol, withdraw.tokenAmount);
+        account.balances[tokenHash] -= withdraw.tokenAmount;
+        vaultManager.subBalance(withdraw.chainId, tokenHash, withdraw.tokenAmount);
         account.lastCefiEventId = eventId;
-        // emit withdraw event
+        // emit withdraw approve event
         emit AccountWithdrawApprove(
             withdraw.accountId,
             withdraw.withdrawNonce,
-            _newGlobalDepositId(),
+            _newGlobalEventId(),
+            account.brokerHash,
+            withdraw.sender,
             withdraw.receiver,
             withdraw.chainId,
-            tokenSymbol,
-            withdraw.tokenAmount
+            tokenHash,
+            withdraw.tokenAmount,
+            withdraw.fee,
+            block.timestamp
         );
         // TODO @Lewis send cross-chain tx
     }
 
-    function executeLedger(PerpTypes.LedgerData calldata ledger, uint256 eventId)
+    function accountWithDrawFinish(AccountTypes.AccountWithdraw calldata withdraw)
+        public
+        override
+        onlyCrossChainManager
+    {
+        AccountTypes.Account storage account = userLedger[withdraw.accountId];
+        // emit withdraw finish event
+        emit AccountWithdrawFinish(
+            withdraw.accountId,
+            withdraw.withdrawNonce,
+            _newGlobalEventId(),
+            account.brokerHash,
+            withdraw.sender,
+            withdraw.receiver,
+            withdraw.chainId,
+            withdraw.tokenHash,
+            withdraw.tokenAmount,
+            withdraw.fee,
+            block.timestamp
+        );
+    }
+
+    function executeSettlement(EventTypes.LedgerData calldata ledger, uint256 eventId)
         public
         override
         onlyOperatorManager
@@ -172,7 +201,7 @@ contract Ledger is FeeCollector, ILedger {
         int256 totalSettleAmount = 0;
         // gas saving
         uint256 length = ledger.ledgerExecutions.length;
-        PerpTypes.LedgerExecution[] calldata ledgerExecutions = ledger.ledgerExecutions;
+        EventTypes.LedgerExecution[] calldata ledgerExecutions = ledger.ledgerExecutions;
         for (uint256 i = 0; i < length; ++i) {
             totalSettleAmount += ledgerExecutions[i].settledAmount;
         }
@@ -192,7 +221,7 @@ contract Ledger is FeeCollector, ILedger {
         }
         // for-loop ledger execution
         for (uint256 i = 0; i < length; ++i) {
-            PerpTypes.LedgerExecution calldata ledgerExecution = ledgerExecutions[i];
+            EventTypes.LedgerExecution calldata ledgerExecution = ledgerExecutions[i];
             AccountTypes.PerpPosition storage position = account.perpPositions[ledgerExecution.symbol];
             if (position.positionQty != 0) {
                 AccountTypes.chargeFundingFee(position, ledgerExecution.sumUnitaryFundings);
@@ -204,9 +233,10 @@ contract Ledger is FeeCollector, ILedger {
             balance = uint256(int256(balance) + ledgerExecution.settledAmount);
         }
         account.lastCefiEventId = eventId;
+        // TODO emit event
     }
 
-    function executeLiquidation(PerpTypes.LiquidationData calldata liquidation, uint256 eventId)
+    function executeLiquidation(EventTypes.LiquidationData calldata liquidation, uint256 eventId)
         public
         override
         onlyOperatorManager
@@ -214,7 +244,7 @@ contract Ledger is FeeCollector, ILedger {
         AccountTypes.Account storage liquidated_user = userLedger[liquidation.accountId];
         // for-loop liquidation execution
         uint256 length = liquidation.liquidationTransfers.length;
-        PerpTypes.LiquidationTransfer[] calldata liquidationTransfers = liquidation.liquidationTransfers;
+        EventTypes.LiquidationTransfer[] calldata liquidationTransfers = liquidation.liquidationTransfers;
         // chargeFundingFee for liquidated_user.perpPosition
         for (uint256 i = 0; i < length; ++i) {
             AccountTypes.chargeFundingFee(
