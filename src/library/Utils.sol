@@ -4,14 +4,14 @@ pragma solidity ^0.8.18;
 library Utils {
     function getAccountId(address addr, string calldata brokerRaw) public pure returns (bytes32 accountId) {
         // get brokerId from brokerRaw
-        bytes32 brokerId = string2HashedBytes32(brokerRaw);
+        bytes32 brokerHash = string2HashedBytes32(brokerRaw);
         // call `getAccountId(address,bytes32)`
-        accountId = getAccountId(addr, brokerId);
+        accountId = getAccountId(addr, brokerHash);
     }
 
-    function getAccountId(address addr, bytes32 brokerId) public pure returns (bytes32 accountId) {
+    function getAccountId(address addr, bytes32 brokerHash) public pure returns (bytes32 accountId) {
         // data is encode addr + brokerId
-        bytes memory data = abi.encode(addr, brokerId);
+        bytes memory data = abi.encode(addr, brokerHash);
         // accountId is keccak data
         accountId = keccak256(data);
     }

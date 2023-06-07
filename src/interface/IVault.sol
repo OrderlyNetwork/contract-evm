@@ -8,15 +8,20 @@ interface IVault {
         bytes32 indexed accountId,
         address indexed userAddress,
         uint256 indexed depositNonce,
-        bytes32 tokenSymbol,
+        bytes32 tokenHash,
         uint256 tokenAmount
     );
+
     event AccountWithdraw(
         bytes32 indexed accountId,
-        address indexed userAddress,
-        uint256 indexed withdrawNonce,
-        bytes32 tokenSymbol,
-        uint256 tokenAmount
+        uint64 indexed withdrawNonce,
+        bytes32 brokerHash,
+        address sender,
+        address receiver,
+        bytes32 tokenHash,
+        uint256 tokenAmount,
+        uint256 fee,
+        uint256 blocktime
     );
 
     function deposit(VaultTypes.VaultDeposit calldata data) external;

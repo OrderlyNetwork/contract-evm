@@ -8,7 +8,7 @@ import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "crosschain/interface/IOrderlyCrossChain.sol";
 import "crosschain/utils/OrderlyCrossChainMessage.sol";
 import "./library/types/AccountTypes.sol";
-import "./library/types/PerpTypes.sol";
+import "./library/types/EventTypes.sol";
 
 /**
  * CrossChainManager is responsible for executing cross-chain tx.
@@ -93,7 +93,7 @@ contract LedgerCrossChainManager is
     }
 
     function withdraw(
-        PerpTypes.WithdrawData calldata data
+        EventTypes.WithdrawData calldata data
     ) external override onlyOwner {
         // only ledger can call this function
         require(msg.sender == address(ledger), "caller is not ledger");
@@ -110,8 +110,8 @@ contract LedgerCrossChainManager is
                 srcChainId: chainId,
                 dstChainId: data.chainId,
                 accountId: data.accountId,
-                brokerId: bytes32(brokerId), // TODO (need to be changed
-                tokenSymbol: bytes32(0),    // TODO fixme
+                brokerHash: bytes32(brokerId), // TODO (need to be changed
+                tokenHash: bytes32(0),    // TODO fixme
                 tokenAmount: data.tokenAmount
             });
         // encode message
@@ -128,5 +128,6 @@ contract LedgerCrossChainManager is
         OrderlyCrossChainMessage.MessageV1 memory message
     ) external override onlyOwner {
         // TODO
+        // ledger.AccountWithdrawFinish(data);
     }
 }

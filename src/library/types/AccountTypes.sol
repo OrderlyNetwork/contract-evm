@@ -21,7 +21,7 @@ library AccountTypes {
     // and keccak256(addr, brokerID) == accountId
     struct Account {
         // user's broker id
-        bytes32 brokerId;
+        bytes32 brokerHash;
         // primary address
         address userAddress;
         // withdraw nonce
@@ -40,9 +40,9 @@ library AccountTypes {
 
     struct AccountDeposit {
         bytes32 accountId;
-        bytes32 brokerId;
+        bytes32 brokerHash;
         address userAddress;
-        bytes32 tokenSymbol;
+        bytes32 tokenHash;
         uint256 tokenAmount;
         uint256 srcChainId;
         uint256 srcChainDepositNonce;
@@ -51,12 +51,14 @@ library AccountTypes {
     // for accountWithdrawFinish
     struct AccountWithdraw {
         bytes32 accountId;
-        bytes32 brokerId;
+        address sender;
         address receiver;
-        bytes32 tokenSymbol;
+        bytes32 brokerHash;
+        bytes32 tokenHash;
         uint256 tokenAmount;
+        uint256 fee;
         uint256 chainId;
-        uint256 withdrawNonce;
+        uint64 withdrawNonce;
     }
 
     // charge funding fee

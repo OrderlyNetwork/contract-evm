@@ -46,25 +46,36 @@ contract Vault is IVault, ReentrancyGuard, Ownable {
 
     // user deposit USDC
     function deposit(VaultTypes.VaultDeposit calldata data) public override {
-        // bytes32 tokenSymbol = Utils.string2HashedBytes32(data.tokenSymbol);
-        // bytes32 brokerId = Utils.string2HashedBytes32(data.brokerId);
-        IERC20 tokenAddress = symbol2TokenAddress[data.tokenSymbol];
+        // bytes32 tokenHash = Utils.string2HashedBytes32(data.tokenSymbol);
+        // bytes32 brokerHash = Utils.string2HashedBytes32(data.brokerId);
+        IERC20 tokenAddress = symbol2TokenAddress[data.tokenHash];
         require(tokenAddress.transferFrom(msg.sender, address(this), data.tokenAmount), "transferFrom failed");
         // emit deposit event
-        emit AccountDeposit(data.accountId, msg.sender, _newDepositId(), data.tokenSymbol, data.tokenAmount);
+        emit AccountDeposit(data.accountId, msg.sender, _newDepositId(), data.tokenHash, data.tokenAmount);
         // TODO @Rubick add whitelist to avoid malicious user
         // TODO @Lewis send cross-chain tx to ledger
     }
 
     // user withdraw USDC
     function withdraw(VaultTypes.VaultWithdraw calldata data) public override onlyCrossChainManager nonReentrant {
-        IERC20 tokenAddress = symbol2TokenAddress[data.tokenSymbol];
+        IERC20 tokenAddress = symbol2TokenAddress[data.tokenHash];
         // check balane gt amount
         require(tokenAddress.balanceOf(address(this)) >= data.tokenAmount, "balance not enough");
         // transfer to user
-        require(tokenAddress.transfer(data.userAddress, data.tokenAmount), "transfer failed");
+        require(tokenAddress.transfer(data.receiver, data.tokenAmount), "transfer failed");
         // emit withdraw event
-        emit AccountWithdraw(data.accountId, data.userAddress, data.withdrawNonce, data.tokenSymbol, data.tokenAmount);
+        emit AccountWithdraw(
+            data.accountId,
+            data.withdrawNonce,
+            data.brokerHash,
+            data.sender,
+            data.receiver,
+            data.tokenHash,
+            data.tokenAmount,
+            data.fee,
+            block.timestamp
+        );
+        // TODO @Lewis send cross-chain tx to ledger
     }
 
     function _newDepositId() internal returns (uint256) {
