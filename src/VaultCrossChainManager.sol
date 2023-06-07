@@ -94,8 +94,8 @@ contract VaultCrossChainManager is
                 srcChainId: chainId,
                 dstChainId: data.srcChainId,
                 accountId: data.accountId,
-                brokerId: bytes32(brokerId), // TODO broker id
-                tokenSymbol: data.tokenSymbol,
+                brokerHash: bytes32(brokerId), // TODO broker id
+                tokenHash: data.tokenHash,
                 tokenAmount: data.tokenAmount
             });
         // encode message

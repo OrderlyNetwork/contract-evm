@@ -17,9 +17,9 @@ contract OperatorManager is IOperatorManager, Ownable {
 
     // ids
     // futuresUploadBatchId
-    uint256 public futuresUploadBatchId;
+    uint64 public futuresUploadBatchId;
     // eventUploadBatchId
-    uint256 public eventUploadBatchId;
+    uint64 public eventUploadBatchId;
     // last operator interaction timestamp
     uint256 public lastOperatorInteraction;
 
@@ -39,6 +39,12 @@ contract OperatorManager is IOperatorManager, Ownable {
         ledger = ILedger(_ledger);
     }
 
+    constructor() {
+        futuresUploadBatchId = 1;
+        eventUploadBatchId = 1;
+        lastOperatorInteraction = block.timestamp;
+    }
+
     // operator ping
     function operatorPing() public onlyOperator {
         _innerPing();
@@ -56,14 +62,14 @@ contract OperatorManager is IOperatorManager, Ownable {
             _futuresTradeUploadData(abi.decode(action, (PerpTypes.FuturesTradeUploadData)));
         } else if (actionData == OperatorTypes.OperatorActionData.EventUpload) {
             // EventUpload
-            _eventUploadData(abi.decode(action, (PerpTypes.EventUpload)));
+            _eventUploadData(abi.decode(action, (EventTypes.EventUpload)));
         } else {
             revert("invalid action data");
         }
     }
 
-    // futuresTradeUploadDataAction
-    function futuresTradeUploadDataAction(PerpTypes.FuturesTradeUploadData calldata data)
+    // futuresTradeUpload
+    function futuresTradeUpload(PerpTypes.FuturesTradeUploadData calldata data)
         public
         override
         onlyOperator
@@ -72,10 +78,14 @@ contract OperatorManager is IOperatorManager, Ownable {
         _futuresTradeUploadData(data);
     }
 
-    // eventUploadDataAction
-    function eventUploadDataAction(PerpTypes.EventUpload calldata data) public override onlyOperator {
+    // eventUpload
+    function eventUpload(EventTypes.EventUpload calldata data) public override onlyOperator {
         _innerPing();
         _eventUploadData(data);
+        // emit event
+        emit EventUpload(eventUploadBatchId);
+        // next wanted batchId
+        eventUploadBatchId += 1;
     }
 
     // futures trade upload data
@@ -106,30 +116,28 @@ contract OperatorManager is IOperatorManager, Ownable {
     }
 
     // event upload data
-    function _eventUploadData(PerpTypes.EventUpload memory data) internal {
+    function _eventUploadData(EventTypes.EventUpload memory data) internal {
         require(data.batchId == eventUploadBatchId, "batchId not match");
-        PerpTypes.EventUploadData[] memory events = data.events; // gas saving
+        EventTypes.EventUploadData[] memory events = data.events; // gas saving
         require(events.length == data.count, "count not match");
         // process each event upload
         for (uint256 i = 0; i < data.count; i++) {
             _processEventUpload(events[i]);
         }
-        // update_eventUploadBatchId
-        eventUploadBatchId += 1;
     }
 
     // process each event upload
-    function _processEventUpload(PerpTypes.EventUploadData memory data) internal {
+    function _processEventUpload(EventTypes.EventUploadData memory data) internal {
         uint256 bizId = data.bizId;
         if (bizId == 0) {
             // withdraw
-            ledger.executeWithdrawAction(abi.decode(data.data, (PerpTypes.WithdrawData)), data.eventId);
+            ledger.executeWithdrawAction(abi.decode(data.data, (EventTypes.WithdrawData)), data.eventId);
         } else if (bizId == 1) {
             // ledger
-            ledger.executeLedger(abi.decode(data.data, (PerpTypes.LedgerData)), data.eventId);
+            ledger.executeSettlement(abi.decode(data.data, (EventTypes.LedgerData)), data.eventId);
         } else if (bizId == 2) {
             // liquidation
-            ledger.executeLiquidation(abi.decode(data.data, (PerpTypes.LiquidationData)), data.eventId);
+            ledger.executeLiquidation(abi.decode(data.data, (EventTypes.LiquidationData)), data.eventId);
         } else {
             revert("invalid bizId");
         }
@@ -140,6 +148,6 @@ contract OperatorManager is IOperatorManager, Ownable {
     }
 
     function checkCefiDown() public view override returns (bool) {
-        return (lastOperatorInteraction + 1 days > block.timestamp);
+        return (lastOperatorInteraction + 3 days < block.timestamp);
     }
 }
