@@ -12,7 +12,7 @@ import "./library/Utils.sol";
  * and global state (e.g. futuresUploadBatchId)
  * This contract should only have one in main-chain (avalanche)
  */
-contract Ledger is FeeCollector, ILedger {
+contract Ledger is Ownable, ILedger {
     // OperatorManager contract address
     address public operatorManagerAddress;
     // crossChainManagerAddress contract address
@@ -79,6 +79,11 @@ contract Ledger is FeeCollector, ILedger {
         return userLedger[accountId].brokerHash;
     }
 
+    // get userLedger lastCefiEventId
+    function getUserLedgerLastCefiEventId(bytes32 accountId) public view returns (uint256) {
+        return userLedger[accountId].lastCefiEventId;
+    }
+
     // Interface implementation
 
     function accountDeposit(AccountTypes.AccountDeposit calldata data) public override onlyCrossChainManager {
@@ -130,6 +135,9 @@ contract Ledger is FeeCollector, ILedger {
         } else if (vaultManager.getBalance(withdraw.chainId, tokenHash) < withdraw.tokenAmount) {
             // require chain has enough balance
             state = 2;
+        } else if (account.lastWithdrawNonce <= withdraw.withdrawNonce) {
+            // require withdraw nonce inc
+            state = 3;
         }
         // check all assert, should not change any status
         if (state != 0) {
@@ -151,6 +159,7 @@ contract Ledger is FeeCollector, ILedger {
         // update status, should never fail
         // update balance
         account.balances[tokenHash] -= withdraw.tokenAmount;
+        account.lastWithdrawNonce = withdraw.withdrawNonce;
         vaultManager.subBalance(withdraw.chainId, tokenHash, withdraw.tokenAmount);
         account.lastCefiEventId = eventId;
         // emit withdraw approve event
