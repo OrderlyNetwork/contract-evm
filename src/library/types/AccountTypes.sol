@@ -24,8 +24,8 @@ library AccountTypes {
         bytes32 brokerHash;
         // primary address
         address userAddress;
-        // withdraw nonce
-        uint256 withdrawNonce;
+        // lastwithdraw nonce
+        uint64 lastWithdrawNonce;
         // mapping symbol => balance
         mapping(bytes32 => uint256) balances;
         // last perp trade id
