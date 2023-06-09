@@ -6,6 +6,7 @@ import "./interface/IVaultManager.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "./library/FeeCollector.sol";
 import "./library/Utils.sol";
+import "./library/TypesHelper/AccountTypeHelper.sol";
 
 /**
  * Ledger is responsible for saving traders' Account (balance, perpPosition, and other meta)
@@ -13,6 +14,9 @@ import "./library/Utils.sol";
  * This contract should only have one in main-chain (avalanche)
  */
 contract Ledger is Ownable, ILedger {
+    using AccountTypeHelper for AccountTypes.Account;
+    using AccountTypeHelper for AccountTypes.PerpPosition;
+
     // OperatorManager contract address
     address public operatorManagerAddress;
     // crossChainManagerAddress contract address
@@ -70,8 +74,8 @@ contract Ledger is Ownable, ILedger {
     }
 
     // get userLedger balance
-    function getUserLedgerBalance(bytes32 accountId, bytes32 symbol) public view returns (uint256) {
-        return userLedger[accountId].balances[symbol];
+    function getUserLedgerBalance(bytes32 accountId, bytes32 symbolHash) public view returns (uint256) {
+        return userLedger[accountId].balances[symbolHash];
     }
 
     // get userLedger brokerId
@@ -82,6 +86,16 @@ contract Ledger is Ownable, ILedger {
     // get userLedger lastCefiEventId
     function getUserLedgerLastCefiEventId(bytes32 accountId) public view returns (uint256) {
         return userLedger[accountId].lastCefiEventId;
+    }
+
+    // get frozen total balance
+    function getFrozenTotalBalance(bytes32 accountId, bytes32 tokenHash) public view returns (uint256) {
+        return userLedger[accountId].getFrozenTotalBalance(tokenHash);
+    }
+
+    // get frozen withdrawNonce balance
+    function getFrozenWithdrawNonce(bytes32 accountId, uint64 withdrawNonce, bytes32 tokenHash) public view returns (uint256) {
+        return userLedger[accountId].getFrozenWithdrawNonceBalance(withdrawNonce, tokenHash);
     }
 
     // Interface implementation
@@ -157,8 +171,8 @@ contract Ledger is Ownable, ILedger {
             return;
         }
         // update status, should never fail
-        // update balance
-        account.balances[tokenHash] -= withdraw.tokenAmount;
+        // frozen balance
+        account.frozenBalance(withdraw.withdrawNonce, tokenHash, withdraw.tokenAmount);
         account.lastWithdrawNonce = withdraw.withdrawNonce;
         vaultManager.subBalance(withdraw.chainId, tokenHash, withdraw.tokenAmount);
         account.lastCefiEventId = eventId;
@@ -185,6 +199,8 @@ contract Ledger is Ownable, ILedger {
         onlyCrossChainManager
     {
         AccountTypes.Account storage account = userLedger[withdraw.accountId];
+        // finish frozen balance
+        account.finishFrozenBalance(withdraw.withdrawNonce, withdraw.tokenHash, withdraw.tokenAmount);
         // emit withdraw finish event
         emit AccountWithdrawFinish(
             withdraw.accountId,
@@ -233,7 +249,7 @@ contract Ledger is Ownable, ILedger {
             EventTypes.LedgerExecution calldata ledgerExecution = ledgerExecutions[i];
             AccountTypes.PerpPosition storage position = account.perpPositions[ledgerExecution.symbol];
             if (position.positionQty != 0) {
-                AccountTypes.chargeFundingFee(position, ledgerExecution.sumUnitaryFundings);
+                position.chargeFundingFee(ledgerExecution.sumUnitaryFundings);
                 position.cost_position += ledgerExecution.settledAmount;
                 position.lastExecutedPrice = ledgerExecution.markPrice;
             }
@@ -256,8 +272,8 @@ contract Ledger is Ownable, ILedger {
         EventTypes.LiquidationTransfer[] calldata liquidationTransfers = liquidation.liquidationTransfers;
         // chargeFundingFee for liquidated_user.perpPosition
         for (uint256 i = 0; i < length; ++i) {
-            AccountTypes.chargeFundingFee(
-                liquidated_user.perpPositions[liquidation.liquidatedAsset], liquidationTransfers[i].sumUnitaryFundings
+            liquidated_user.perpPositions[liquidation.liquidatedAsset].chargeFundingFee(
+                liquidationTransfers[i].sumUnitaryFundings
             );
         }
         // TODO get_liquidation_info
