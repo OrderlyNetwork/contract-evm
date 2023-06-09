@@ -1,15 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
-// EnumerableSet
-import "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
-
 library AccountTypes {
-    using EnumerableSet for EnumerableSet.AddressSet;
-
-    int256 constant FUNDING_MOVE_RIGHT_PRECISIONS = 100000000000000000;
-    bytes32 constant USDC = "USDC";
-
     struct PerpPosition {
         int256 positionQty;
         int256 cost_position;
@@ -28,6 +20,10 @@ library AccountTypes {
         uint64 lastWithdrawNonce;
         // mapping symbol => balance
         mapping(bytes32 => uint256) balances;
+        // mapping symbol => totalFrozenBalance
+        mapping(bytes32 => uint256) totalFrozenBalances;
+        // mapping withdrawNonce => symbol => balance
+        mapping(uint64 => mapping(bytes32 => uint256)) frozenBalances; 
         // last perp trade id
         uint256 lastPerpTradeId;
         // last cefi event id
@@ -59,17 +55,5 @@ library AccountTypes {
         uint256 fee;
         uint256 chainId;
         uint64 withdrawNonce;
-    }
-
-    // charge funding fee
-    function chargeFundingFee(PerpPosition storage position, int256 sumUnitaryFundings) public {
-        int256 accruedFeeUncoverted = position.positionQty * (sumUnitaryFundings - position.lastSumUnitaryFundings);
-        int256 accruedFee = accruedFeeUncoverted / FUNDING_MOVE_RIGHT_PRECISIONS;
-        int256 remainder = accruedFeeUncoverted - (accruedFee * FUNDING_MOVE_RIGHT_PRECISIONS);
-        if (remainder > 0) {
-            accruedFee += 1;
-        }
-        position.cost_position += accruedFee;
-        position.lastSumUnitaryFundings = sumUnitaryFundings;
     }
 }
