@@ -83,7 +83,7 @@ contract OperatorManager is IOperatorManager, Ownable {
         _innerPing();
         _eventUploadData(data);
         // emit event
-        emit EventUpload(eventUploadBatchId);
+        emit EventUpload(eventUploadBatchId, block.timestamp);
         // next wanted batchId
         eventUploadBatchId += 1;
     }

@@ -3,6 +3,7 @@ pragma solidity ^0.8.18;
 
 import "./interface/ILedger.sol";
 import "./interface/IVaultManager.sol";
+import "./interface/ILedgerCrossChainManager.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "./library/FeeCollector.sol";
 import "./library/Utils.sol";
@@ -33,6 +34,8 @@ contract Ledger is Ownable, ILedger {
     bytes32 private insuranceFundAccountId;
     // VaultManager contract
     IVaultManager public vaultManager;
+    // CrossChainManager contract
+    ILedgerCrossChainManager public crossChainManager;
 
     // require operator
     modifier onlyOperatorManager() {
@@ -47,45 +50,39 @@ contract Ledger is Ownable, ILedger {
     }
 
     // set operatorManagerAddress
-    function setOperatorManagerAddress(address _operatorManagerAddress) public onlyOwner {
+    function setOperatorManagerAddress(address _operatorManagerAddress) public override onlyOwner {
         operatorManagerAddress = _operatorManagerAddress;
     }
 
-    // set crossChainManagerAddress
-    function setCrossChainManagerAddress(address _crossChainManagerAddress) public onlyOwner {
+    // set crossChainManager & Address
+    function setCrossChainManager(address _crossChainManagerAddress) public override onlyOwner {
         crossChainManagerAddress = _crossChainManagerAddress;
+        crossChainManager = ILedgerCrossChainManager(_crossChainManagerAddress);
     }
 
     // set insuranceFundAccountId
-    function setInsuranceFundAccountId(bytes32 _insuranceFundAccountId) public onlyOwner {
+    function setInsuranceFundAccountId(bytes32 _insuranceFundAccountId) public override onlyOwner {
         insuranceFundAccountId = _insuranceFundAccountId;
     }
 
     // set vaultManager
-    function setVaultManager(address _vaultManagerAddress) public onlyOwner {
+    function setVaultManager(address _vaultManagerAddress) public override onlyOwner {
         vaultManager = IVaultManager(_vaultManagerAddress);
     }
 
-    // constructor
-    // call `setInsuranceFundAccountId` later
-    constructor(address _operatorManagerAddress, address _crossChainManagerAddress) {
-        operatorManagerAddress = _operatorManagerAddress;
-        crossChainManagerAddress = _crossChainManagerAddress;
-    }
-
     // get userLedger balance
-    function getUserLedgerBalance(bytes32 accountId, bytes32 symbolHash) public view returns (uint256) {
-        return userLedger[accountId].balances[symbolHash];
+    function getUserLedgerBalance(bytes32 accountId, bytes32 tokenHash) public view returns (uint256) {
+        return userLedger[accountId].getBalance(tokenHash);
     }
 
     // get userLedger brokerId
     function getUserLedgerBrokerHash(bytes32 accountId) public view returns (bytes32) {
-        return userLedger[accountId].brokerHash;
+        return userLedger[accountId].getBrokerHash();
     }
 
     // get userLedger lastCefiEventId
     function getUserLedgerLastCefiEventId(bytes32 accountId) public view returns (uint256) {
-        return userLedger[accountId].lastCefiEventId;
+        return userLedger[accountId].getLastCefiEventId();
     }
 
     // get frozen total balance
@@ -108,9 +105,9 @@ contract Ledger is Ownable, ILedger {
             account.userAddress = data.userAddress;
             account.brokerHash = data.brokerHash;
             // emit register event
-            emit AccountRegister(data.accountId, data.brokerHash, data.userAddress);
+            emit AccountRegister(data.accountId, data.brokerHash, data.userAddress, block.timestamp);
         }
-        account.balances[data.tokenHash] += data.tokenAmount;
+        account.addBalance(data.tokenHash, data.tokenAmount);
         vaultManager.addBalance(data.srcChainId, data.tokenHash, data.tokenAmount);
         // emit deposit event
         emit AccountDeposit(
@@ -121,7 +118,8 @@ contract Ledger is Ownable, ILedger {
             data.tokenHash,
             data.tokenAmount,
             data.srcChainId,
-            data.srcChainDepositNonce
+            data.srcChainDepositNonce,
+            block.timestamp
         );
     }
 
@@ -190,7 +188,8 @@ contract Ledger is Ownable, ILedger {
             withdraw.fee,
             block.timestamp
         );
-        // TODO @Lewis send cross-chain tx
+        // send cross-chain tx
+        crossChainManager.withdraw(withdraw);
     }
 
     function accountWithDrawFinish(AccountTypes.AccountWithdraw calldata withdraw)

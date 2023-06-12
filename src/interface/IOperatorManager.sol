@@ -7,7 +7,7 @@ import "../library/types/PerpTypes.sol";
 import "../library/types/EventTypes.sol";
 
 interface IOperatorManager {
-    event EventUpload(uint64 indexed batchId);
+    event EventUpload(uint64 indexed batchId, uint256 blocktime);
 
     // @deprecated TODO @Rubick should be removed
     function operatorExecuteAction(OperatorTypes.OperatorActionData actionData, bytes calldata action) external;
