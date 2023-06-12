@@ -60,7 +60,8 @@ interface ILedger {
         bytes32 tokenHash,
         uint256 tokenAmount,
         uint256 fee,
-        uint256 blocktime
+        uint256 blocktime,
+        uint8 failReson
     );
 
     // called by cross chain manager
