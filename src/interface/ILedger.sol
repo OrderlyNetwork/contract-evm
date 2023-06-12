@@ -6,7 +6,12 @@ import "../library/types/PerpTypes.sol";
 import "../library/types/EventTypes.sol";
 
 interface ILedger {
-    event AccountRegister(bytes32 indexed accountId, bytes32 indexed brokerId, address indexed userAddress);
+    event AccountRegister(
+        bytes32 indexed accountId,
+        bytes32 indexed brokerId,
+        address indexed userAddress,
+        uint256 blocktime
+    );
     event AccountDeposit(
         bytes32 indexed accountId,
         uint256 indexed depositNonce,
@@ -15,7 +20,8 @@ interface ILedger {
         bytes32 tokenHash,
         uint256 tokenAmount,
         uint256 srcChainId,
-        uint256 srcChainDepositNonce
+        uint256 srcChainDepositNonce,
+        uint256 blocktime
     );
     event AccountWithdrawApprove(
         bytes32 indexed accountId,
@@ -70,4 +76,10 @@ interface ILedger {
     // view call
     function getUserLedgerBalance(bytes32 accountId, bytes32 symbol) external view returns (uint256);
     function getUserLedgerBrokerHash(bytes32 accountId) external view returns (bytes32);
+
+    // admin call
+    function setOperatorManagerAddress(address _operatorManagerAddress) external;
+    function setInsuranceFundAccountId(bytes32 _insuranceFundAccountId) external;
+    function setCrossChainManager(address _crossChainManagerAddress) external;
+    function setVaultManager(address _vaultManagerAddress) external;
 }
