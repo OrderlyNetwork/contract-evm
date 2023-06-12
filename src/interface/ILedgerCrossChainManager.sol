@@ -3,18 +3,18 @@ pragma solidity ^0.8.18;
 
 import "../library/types/OperatorTypes.sol";
 import "../library/types/EventTypes.sol";
-import "crosschain/utils/OrderlyCrossChainMessage.sol";
 
+import "../library/types/AccountTypes.sol";
 interface ILedgerCrossChainManager {
     // cross chain call deposit | from vault to leger
-    function deposit(
-        OrderlyCrossChainMessage.MessageV1 memory message
-    ) external;
+    //function deposit(
+    //  AccountTypes.AccountDeposit memory message
+    //) external;
 
     // cross chain withdraw approve | from leger to vault
     function withdraw(EventTypes.WithdrawData calldata data) external;
     // cross chain withdraw finish | from vault to leger
-    function withdrawFinish(OrderlyCrossChainMessage.MessageV1 memory message) external;
+    //function withdrawFinish(AccountTypes.AccountWithdraw memory message) external;
 
     // admin call
     function setLedger(address _ledger) external;
