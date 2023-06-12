@@ -75,7 +75,7 @@ contract VaultCrossChainManager is
     }
 
     function deposit(
-        AccountTypes.AccountDeposit calldata data
+        VaultTypes.VaultDeposit calldata data
     ) external override {
         // only vault can call
         require(
@@ -92,7 +92,7 @@ contract VaultCrossChainManager is
                 method: uint8(OrderlyCrossChainMessage.CrossChainMethod.Deposit),
                 userAddress: data.userAddress,
                 srcChainId: chainId,
-                dstChainId: data.srcChainId,
+                dstChainId: chainId,    // TODO subnet
                 accountId: data.accountId,
                 brokerHash: bytes32(brokerId), // TODO broker id
                 tokenHash: data.tokenHash,
@@ -105,7 +105,13 @@ contract VaultCrossChainManager is
         crossChainRelay.sendMessage(
             payload,
             chainId,
-            data.srcChainId
+            chainId // TODO fixme
         );
+    }
+
+    function withdraw(
+        VaultTypes.VaultWithdraw calldata data
+    ) external override {
+        // TODO
     }
 }

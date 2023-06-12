@@ -2,6 +2,7 @@
 pragma solidity ^0.8.18;
 
 import "./interface/IVault.sol";
+import "./interface/IVaultCrossChainManager.sol";
 import "./library/Utils.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
@@ -17,21 +18,24 @@ contract Vault is IVault, ReentrancyGuard, Ownable {
     // equal to `Utils.string2HashedBytes32('USDC')`
     bytes32 constant USDC = bytes32(uint256(0x61fc29e9a6b4b52b423e75ca44734454f94ea60ddff3dc47af01a2a646fe9572));
     // cross-chain operator address
-    address public crossChainManager;
+    address public crossChainManagerAddress;
     // symbol to token address mapping
     mapping(bytes32 => IERC20) public symbol2TokenAddress;
     // deposit id / nonce
     uint256 public depositId;
+    // CrossChainManager contract
+    IVaultCrossChainManager public crossChainManager;
 
     // only cross-chain manager can call
     modifier onlyCrossChainManager() {
-        require(msg.sender == crossChainManager, "only crossChainManager can call");
+        require(msg.sender == crossChainManagerAddress, "only crossChainManager can call");
         _;
     }
 
     // change crossChainManager
-    function setCrossChainManager(address _crossChainManager) public onlyOwner {
-        crossChainManager = _crossChainManager;
+    function setCrossChainManager(address _crossChainManagerAddress) public onlyOwner {
+        crossChainManagerAddress = _crossChainManagerAddress;
+        crossChainManager = IVaultCrossChainManager(_crossChainManagerAddress);
     }
 
     // add token address
@@ -53,7 +57,8 @@ contract Vault is IVault, ReentrancyGuard, Ownable {
         // emit deposit event
         emit AccountDeposit(data.accountId, msg.sender, _newDepositId(), data.tokenHash, data.tokenAmount);
         // TODO @Rubick add whitelist to avoid malicious user
-        // TODO @Lewis send cross-chain tx to ledger
+        // TODO cross-chain tx to ledger
+        crossChainManager.deposit(data);
     }
 
     // user withdraw USDC
@@ -75,7 +80,8 @@ contract Vault is IVault, ReentrancyGuard, Ownable {
             data.fee,
             block.timestamp
         );
-        // TODO @Lewis send cross-chain tx to ledger
+        // send cross-chain tx to ledger
+        crossChainManager.withdraw(data);
     }
 
     function _newDepositId() internal returns (uint256) {
