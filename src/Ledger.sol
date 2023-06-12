@@ -8,6 +8,7 @@ import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "./library/FeeCollector.sol";
 import "./library/Utils.sol";
 import "./library/TypesHelper/AccountTypeHelper.sol";
+import "./library/VerifyEIP712.sol";
 
 /**
  * Ledger is responsible for saving traders' Account (balance, perpPosition, and other meta)
@@ -150,6 +151,9 @@ contract Ledger is Ownable, ILedger {
         } else if (account.lastWithdrawNonce <= withdraw.withdrawNonce) {
             // require withdraw nonce inc
             state = 3;
+        } else if (!VerifyEIP712.verifyWithdraw(withdraw.sender, address(this), withdraw)) {
+            // require signature verify
+            state = 4;
         }
         // check all assert, should not change any status
         if (state != 0) {
@@ -164,7 +168,8 @@ contract Ledger is Ownable, ILedger {
                 tokenHash,
                 withdraw.tokenAmount,
                 withdraw.fee,
-                block.timestamp
+                block.timestamp,
+                state
             );
             return;
         }
