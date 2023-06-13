@@ -14,13 +14,13 @@ interface ILedger {
     );
     event AccountDeposit(
         bytes32 indexed accountId,
-        uint256 indexed depositNonce,
+        uint64 indexed depositNonce,
         uint256 indexed eventId,
         address userAddress,
         bytes32 tokenHash,
         uint256 tokenAmount,
         uint256 srcChainId,
-        uint256 srcChainDepositNonce,
+        uint64 srcChainDepositNonce,
         uint256 blocktime
     );
     event AccountWithdrawApprove(
