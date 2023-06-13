@@ -15,7 +15,7 @@ import "./library/VerifyEIP712.sol";
  * and global state (e.g. futuresUploadBatchId)
  * This contract should only have one in main-chain (avalanche)
  */
-contract Ledger is Ownable, ILedger {
+contract Ledger is ILedger, Ownable {
     using AccountTypeHelper for AccountTypes.Account;
     using AccountTypeHelper for AccountTypes.PerpPosition;
 
@@ -151,7 +151,7 @@ contract Ledger is Ownable, ILedger {
         } else if (account.lastWithdrawNonce <= withdraw.withdrawNonce) {
             // require withdraw nonce inc
             state = 3;
-        } else if (!VerifyEIP712.verifyWithdraw(withdraw.sender, address(this), withdraw)) {
+        } else if (!VerifyEIP712.verifyWithdraw(withdraw.sender, withdraw)) {
             // require signature verify
             state = 4;
         }
