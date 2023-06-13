@@ -22,7 +22,7 @@ contract Vault is IVault, ReentrancyGuard, Ownable {
     // symbol to token address mapping
     mapping(bytes32 => IERC20) public symbol2TokenAddress;
     // deposit id / nonce
-    uint256 public depositId;
+    uint64 public depositId;
     // CrossChainManager contract
     IVaultCrossChainManager public crossChainManager;
 
@@ -49,16 +49,21 @@ contract Vault is IVault, ReentrancyGuard, Ownable {
     }
 
     // user deposit USDC
-    function deposit(VaultTypes.VaultDeposit calldata data) public override {
-        // bytes32 tokenHash = Utils.string2HashedBytes32(data.tokenSymbol);
-        // bytes32 brokerHash = Utils.string2HashedBytes32(data.brokerId);
+    function deposit(VaultTypes.VaultDepositFE calldata data) public override {
         IERC20 tokenAddress = symbol2TokenAddress[data.tokenHash];
         require(tokenAddress.transferFrom(msg.sender, address(this), data.tokenAmount), "transferFrom failed");
-        // emit deposit event
-        emit AccountDeposit(data.accountId, msg.sender, _newDepositId(), data.tokenHash, data.tokenAmount);
         // TODO @Rubick add whitelist to avoid malicious user
-        // TODO cross-chain tx to ledger
-        crossChainManager.deposit(data);
+        // cross-chain tx to ledger
+        VaultTypes.VaultDeposit memory depositData;
+        depositData.accountId = data.accountId;
+        depositData.userAddress = msg.sender;
+        depositData.brokerHash = data.brokerHash;
+        depositData.tokenHash = data.tokenHash;
+        depositData.tokenAmount = data.tokenAmount;
+        depositData.depositNonce = _newDepositId();
+        crossChainManager.deposit(depositData);
+        // emit deposit event
+        emit AccountDeposit(data.accountId, msg.sender, depositId, data.tokenHash, data.tokenAmount);
     }
 
     // user withdraw USDC
@@ -84,7 +89,7 @@ contract Vault is IVault, ReentrancyGuard, Ownable {
         crossChainManager.withdraw(data);
     }
 
-    function _newDepositId() internal returns (uint256) {
+    function _newDepositId() internal returns (uint64) {
         depositId += 1;
         return depositId;
     }
