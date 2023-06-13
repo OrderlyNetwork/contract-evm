@@ -28,7 +28,7 @@ contract Ledger is ILedger, Ownable {
     // globalEventId, for deposit and withdraw
     uint256 public globalEventId;
     // globalDepositId
-    uint256 public globalDepositId;
+    uint64 public globalDepositId;
     // userLedger accountId -> Account
     mapping(bytes32 => AccountTypes.Account) private userLedger;
     // insuranceFundAccountId
@@ -296,7 +296,7 @@ contract Ledger is ILedger, Ownable {
         return globalEventId;
     }
 
-    function _newGlobalDepositId() internal returns (uint256) {
+    function _newGlobalDepositId() internal returns (uint64) {
         globalDepositId += 1;
         return globalDepositId;
     }

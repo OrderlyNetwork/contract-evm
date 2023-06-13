@@ -2,12 +2,20 @@
 pragma solidity ^0.8.18;
 
 library VaultTypes {
+    struct VaultDepositFE {
+        bytes32 accountId;
+        bytes32 brokerHash;
+        bytes32 tokenHash;
+        uint256 tokenAmount;
+    }
+
     struct VaultDeposit {
         bytes32 accountId;
         address userAddress;
-        uint256 tokenAmount;
-        bytes32 tokenHash;
         bytes32 brokerHash;
+        bytes32 tokenHash;
+        uint256 tokenAmount;
+        uint64 depositNonce; // deposit nonce
     }
 
     struct VaultWithdraw {

@@ -41,7 +41,7 @@ library AccountTypes {
         bytes32 tokenHash;
         uint256 tokenAmount;
         uint256 srcChainId;
-        uint256 srcChainDepositNonce;
+        uint64 srcChainDepositNonce;
     }
 
     // for accountWithdrawFinish
