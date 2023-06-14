@@ -28,7 +28,7 @@ contract Vault is IVault, ReentrancyGuard, Ownable {
 
     // only cross-chain manager can call
     modifier onlyCrossChainManager() {
-        require(msg.sender == crossChainManagerAddress, "only crossChainManager can call");
+        if (msg.sender != crossChainManagerAddress) revert OnlyCrossChainManagerCanCall();
         _;
     }
 
@@ -52,16 +52,12 @@ contract Vault is IVault, ReentrancyGuard, Ownable {
     function deposit(VaultTypes.VaultDepositFE calldata data) public override {
         IERC20 tokenAddress = symbol2TokenAddress[data.tokenHash];
         // require tokenAddress exist
-        require(address(tokenAddress) != address(0), "token not exist");
-        require(tokenAddress.transferFrom(msg.sender, address(this), data.tokenAmount), "transferFrom failed");
+        if (address(tokenAddress) == address(0)) revert TokenNotExist();
+        bool succ = tokenAddress.transferFrom(msg.sender, address(this), data.tokenAmount);
+        if (!succ) revert TransferFromFailed();
         // cross-chain tx to ledger
         VaultTypes.VaultDeposit memory depositData = VaultTypes.VaultDeposit(
-            data.accountId,
-            msg.sender,
-            data.brokerHash,
-            data.tokenHash,
-            data.tokenAmount,
-            _newDepositId()
+            data.accountId, msg.sender, data.brokerHash, data.tokenHash, data.tokenAmount, _newDepositId()
         );
         crossChainManager.deposit(depositData);
         // emit deposit event
@@ -72,9 +68,12 @@ contract Vault is IVault, ReentrancyGuard, Ownable {
     function withdraw(VaultTypes.VaultWithdraw calldata data) public override onlyCrossChainManager nonReentrant {
         IERC20 tokenAddress = symbol2TokenAddress[data.tokenHash];
         // check balane gt amount
-        require(tokenAddress.balanceOf(address(this)) >= data.tokenAmount, "balance not enough");
+        if (tokenAddress.balanceOf(address(this)) < data.tokenAmount) {
+            revert BalanceNotEnough(tokenAddress.balanceOf(address(this)), data.tokenAmount);
+        }
         // transfer to user
-        require(tokenAddress.transfer(data.receiver, data.tokenAmount), "transfer failed");
+        bool succ = tokenAddress.transfer(data.receiver, data.tokenAmount);
+        if (!succ) revert TransferFailed();
         // send cross-chain tx to ledger
         crossChainManager.withdraw(data);
         // emit withdraw event

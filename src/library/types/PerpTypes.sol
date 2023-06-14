@@ -4,7 +4,7 @@ pragma solidity ^0.8.18;
 library PerpTypes {
     // FuturesTradeUploadData
     struct FuturesTradeUploadData {
-        uint256 batchId;
+        uint64 batchId;
         uint256 count;
         FuturesTradeUpload[] trades;
     }
