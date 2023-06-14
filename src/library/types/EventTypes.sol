@@ -4,32 +4,35 @@ pragma solidity ^0.8.18;
 library EventTypes {
     // EventUpload
     struct EventUpload {
-        uint64 batchId;
-        uint256 count;
         EventUploadData[] events;
+        bytes32 r;
+        bytes32 s;
+        uint8 v;
+        uint8 count;
+        uint64 batchId;
     }
 
     struct EventUploadData {
+        uint8 bizId; // data type, WIP, 0 for `WithdrawData`
         uint64 eventId;
-        uint256 bizId; // data type, WIP, 0 for `WithdrawData`
         bytes data;
     }
 
     // WithdrawData
     struct WithdrawData {
-        bytes32 accountId;
-        address sender;
-        address receiver;
-        string brokerId; // only this field is string, others should be bytes32 hashedBrokerId
-        string tokenSymbol; // only this field is string, others should be bytes32 hashedTokenSymbol
         uint256 tokenAmount;
         uint256 fee;
         uint256 chainId; // target withdraw chain
-        uint64 withdrawNonce; // withdraw nonce
-        uint64 timestamp;
-        uint8 v;
-        bytes32 r;
+        bytes32 accountId;
+        bytes32 r; // String to bytes32, big endian?
         bytes32 s;
+        uint8 v;
+        address sender;
+        uint64 withdrawNonce;
+        address receiver;
+        uint64 timestamp;
+        string brokerId; // only this field is string, others should be bytes32 hashedBrokerId
+        string tokenSymbol; // only this field is string, others should be bytes32 hashedTokenSymbol
     }
 
     struct LedgerData {
