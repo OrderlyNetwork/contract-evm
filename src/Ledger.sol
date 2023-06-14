@@ -72,27 +72,32 @@ contract Ledger is ILedger, Ownable {
     }
 
     // get userLedger balance
-    function getUserLedgerBalance(bytes32 accountId, bytes32 tokenHash) public view returns (uint256) {
+    function getUserLedgerBalance(bytes32 accountId, bytes32 tokenHash) public view override returns (uint256) {
         return userLedger[accountId].getBalance(tokenHash);
     }
 
     // get userLedger brokerId
-    function getUserLedgerBrokerHash(bytes32 accountId) public view returns (bytes32) {
+    function getUserLedgerBrokerHash(bytes32 accountId) public view override returns (bytes32) {
         return userLedger[accountId].getBrokerHash();
     }
 
     // get userLedger lastCefiEventId
-    function getUserLedgerLastCefiEventId(bytes32 accountId) public view returns (uint256) {
+    function getUserLedgerLastCefiEventId(bytes32 accountId) public view override returns (uint256) {
         return userLedger[accountId].getLastCefiEventId();
     }
 
     // get frozen total balance
-    function getFrozenTotalBalance(bytes32 accountId, bytes32 tokenHash) public view returns (uint256) {
+    function getFrozenTotalBalance(bytes32 accountId, bytes32 tokenHash) public view override returns (uint256) {
         return userLedger[accountId].getFrozenTotalBalance(tokenHash);
     }
 
     // get frozen withdrawNonce balance
-    function getFrozenWithdrawNonce(bytes32 accountId, uint64 withdrawNonce, bytes32 tokenHash) public view returns (uint256) {
+    function getFrozenWithdrawNonce(bytes32 accountId, uint64 withdrawNonce, bytes32 tokenHash)
+        public
+        view
+        override
+        returns (uint256)
+    {
         return userLedger[accountId].getFrozenWithdrawNonceBalance(withdrawNonce, tokenHash);
     }
 
@@ -148,7 +153,7 @@ contract Ledger is ILedger, Ownable {
         } else if (vaultManager.getBalance(withdraw.chainId, tokenHash) < withdraw.tokenAmount) {
             // require chain has enough balance
             state = 2;
-        } else if (account.lastWithdrawNonce <= withdraw.withdrawNonce) {
+        } else if (account.lastWithdrawNonce >= withdraw.withdrawNonce) {
             // require withdraw nonce inc
             state = 3;
         } else if (!VerifyEIP712.verifyWithdraw(withdraw.sender, withdraw)) {
