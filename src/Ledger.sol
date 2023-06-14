@@ -125,6 +125,7 @@ contract Ledger is ILedger, Ownable {
             data.tokenAmount,
             data.srcChainId,
             data.srcChainDepositNonce,
+            data.brokerHash,
             block.timestamp
         );
     }
