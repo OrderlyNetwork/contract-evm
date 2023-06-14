@@ -4,6 +4,12 @@ pragma solidity ^0.8.18;
 import "./../library/types/VaultTypes.sol";
 
 interface IVault {
+    error OnlyCrossChainManagerCanCall();
+    error TokenNotExist();
+    error TransferFromFailed();
+    error TransferFailed();
+    error BalanceNotEnough(uint256 balance, uint256 amount);
+
     event AccountDeposit(
         bytes32 indexed accountId,
         address indexed userAddress,
