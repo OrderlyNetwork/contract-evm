@@ -33,36 +33,36 @@ contract LedgerTest is Test {
 
     // address(this) is 0x90193C961A926261B756D1E5bb255e67ff9498A1
     EventTypes.WithdrawData withdrawData = EventTypes.WithdrawData(
-        ACCOUNT_ID,
-        SENDER,
-        SENDER,
-        "woofi_dex",
-        "USDC",
         AMOUNT,
         0,
         CHAIN_ID,
-        WITHDRAW_NONCE,
-        1686648201277,
-        27,
+        ACCOUNT_ID,
         0x90b44cb1c50eaca38cdbb972180d5bd6a328825aa60dc8e25f1c2cb9f1abc4a8,
-        0x5bb52b33ae0d9e1733c80da1163a33034ee433bf949e8c96beb940ece3ab5683
+        0x5bb52b33ae0d9e1733c80da1163a33034ee433bf949e8c96beb940ece3ab5683,
+        27,
+        SENDER,
+        WITHDRAW_NONCE,
+        SENDER,
+        1686648201277,
+        "woofi_dex",
+        "USDC"
     );
 
     // address(this) is 0x78cA0A67bF6Cbe8Bf2429f0c7934eE5Dd687a32c
     EventTypes.WithdrawData withdrawData2 = EventTypes.WithdrawData(
-        ACCOUNT_ID,
-        SENDER,
-        SENDER,
-        "woofi_dex",
-        "USDC",
         AMOUNT,
         0,
         CHAIN_ID,
-        WITHDRAW_NONCE,
-        1686723941381,
-        28,
+        ACCOUNT_ID,
         0x53461c50a139b3124efcba37be7eb96ee842453bcb24a841475bbc3898b997ac,
-        0x503c4cb84c2139d03f39be7cc49bef7764e5dcb8fd48ed64fc26a133c0e90462
+        0x503c4cb84c2139d03f39be7cc49bef7764e5dcb8fd48ed64fc26a133c0e90462,
+        28,
+        SENDER,
+        WITHDRAW_NONCE,
+        SENDER,
+        1686723941381,
+        "woofi_dex",
+        "USDC"
     );
 
     function setUp() public {
