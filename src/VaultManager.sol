@@ -22,12 +22,12 @@ contract VaultManager is IVaultManager, Ownable {
     }
 
     // set ledgerAddress
-    function setLedgerAddress(address _ledgerAddress) public onlyOwner {
+    function setLedgerAddress(address _ledgerAddress) public override onlyOwner {
         ledgerAddress = _ledgerAddress;
     }
 
     // get balance
-    function getBalance(uint256 _chainId, bytes32 _symbol) public override view returns (uint256) {
+    function getBalance(uint256 _chainId, bytes32 _symbol) public view override returns (uint256) {
         return chain2symbol2balance[_chainId][_symbol];
     }
 
