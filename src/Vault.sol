@@ -33,13 +33,13 @@ contract Vault is IVault, ReentrancyGuard, Ownable {
     }
 
     // change crossChainManager
-    function setCrossChainManager(address _crossChainManagerAddress) public onlyOwner {
+    function setCrossChainManager(address _crossChainManagerAddress) public override onlyOwner {
         crossChainManagerAddress = _crossChainManagerAddress;
         crossChainManager = IVaultCrossChainManager(_crossChainManagerAddress);
     }
 
     // add token address
-    function addTokenAddress(bytes32 _symbol, address _tokenAddress) public onlyOwner {
+    function addTokenAddress(bytes32 _symbol, address _tokenAddress) public override onlyOwner {
         symbol2TokenAddress[_symbol] = IERC20(_tokenAddress);
     }
 
@@ -51,16 +51,18 @@ contract Vault is IVault, ReentrancyGuard, Ownable {
     // user deposit USDC
     function deposit(VaultTypes.VaultDepositFE calldata data) public override {
         IERC20 tokenAddress = symbol2TokenAddress[data.tokenHash];
+        // require tokenAddress exist
+        require(address(tokenAddress) != address(0), "token not exist");
         require(tokenAddress.transferFrom(msg.sender, address(this), data.tokenAmount), "transferFrom failed");
-        // TODO @Rubick add whitelist to avoid malicious user
         // cross-chain tx to ledger
-        VaultTypes.VaultDeposit memory depositData;
-        depositData.accountId = data.accountId;
-        depositData.userAddress = msg.sender;
-        depositData.brokerHash = data.brokerHash;
-        depositData.tokenHash = data.tokenHash;
-        depositData.tokenAmount = data.tokenAmount;
-        depositData.depositNonce = _newDepositId();
+        VaultTypes.VaultDeposit memory depositData = VaultTypes.VaultDeposit(
+            data.accountId,
+            msg.sender,
+            data.brokerHash,
+            data.tokenHash,
+            data.tokenAmount,
+            _newDepositId()
+        );
         crossChainManager.deposit(depositData);
         // emit deposit event
         emit AccountDeposit(data.accountId, msg.sender, depositId, data.tokenHash, data.tokenAmount);
@@ -73,6 +75,8 @@ contract Vault is IVault, ReentrancyGuard, Ownable {
         require(tokenAddress.balanceOf(address(this)) >= data.tokenAmount, "balance not enough");
         // transfer to user
         require(tokenAddress.transfer(data.receiver, data.tokenAmount), "transfer failed");
+        // send cross-chain tx to ledger
+        crossChainManager.withdraw(data);
         // emit withdraw event
         emit AccountWithdraw(
             data.accountId,
@@ -85,8 +89,6 @@ contract Vault is IVault, ReentrancyGuard, Ownable {
             data.fee,
             block.timestamp
         );
-        // send cross-chain tx to ledger
-        crossChainManager.withdraw(data);
     }
 
     function _newDepositId() internal returns (uint64) {
