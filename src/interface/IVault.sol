@@ -26,4 +26,8 @@ interface IVault {
 
     function deposit(VaultTypes.VaultDepositFE calldata data) external;
     function withdraw(VaultTypes.VaultWithdraw calldata data) external;
+
+    // admin call
+    function setCrossChainManager(address _crossChainManagerAddress) external;
+    function addTokenAddress(bytes32 _symbol, address _tokenAddress) external;
 }
