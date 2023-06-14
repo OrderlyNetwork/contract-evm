@@ -50,24 +50,6 @@ contract OperatorManager is IOperatorManager, Ownable {
         _innerPing();
     }
 
-    // @deprecated entry point for operator to call this contract
-    function operatorExecuteAction(OperatorTypes.OperatorActionData actionData, bytes calldata action)
-        public
-        override
-        onlyOperator
-    {
-        _innerPing();
-        if (actionData == OperatorTypes.OperatorActionData.FuturesTradeUpload) {
-            // FuturesTradeUpload
-            _futuresTradeUploadData(abi.decode(action, (PerpTypes.FuturesTradeUploadData)));
-        } else if (actionData == OperatorTypes.OperatorActionData.EventUpload) {
-            // EventUpload
-            _eventUploadData(abi.decode(action, (EventTypes.EventUpload)));
-        } else {
-            revert("invalid action data");
-        }
-    }
-
     // futuresTradeUpload
     function futuresTradeUpload(PerpTypes.FuturesTradeUploadData calldata data)
         public
