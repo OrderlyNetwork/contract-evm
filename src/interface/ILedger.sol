@@ -18,6 +18,7 @@ interface ILedger {
         uint256 tokenAmount,
         uint256 srcChainId,
         uint64 srcChainDepositNonce,
+        bytes32 brokerHash,
         uint256 blocktime
     );
     event AccountWithdrawApprove(
