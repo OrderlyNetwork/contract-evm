@@ -7,10 +7,7 @@ import "../library/types/EventTypes.sol";
 
 interface ILedger {
     event AccountRegister(
-        bytes32 indexed accountId,
-        bytes32 indexed brokerId,
-        address indexed userAddress,
-        uint256 blocktime
+        bytes32 indexed accountId, bytes32 indexed brokerId, address indexed userAddress, uint256 blocktime
     );
     event AccountDeposit(
         bytes32 indexed accountId,
@@ -77,6 +74,12 @@ interface ILedger {
     // view call
     function getUserLedgerBalance(bytes32 accountId, bytes32 symbol) external view returns (uint256);
     function getUserLedgerBrokerHash(bytes32 accountId) external view returns (bytes32);
+    function getUserLedgerLastCefiEventId(bytes32 accountId) external view returns (uint256);
+    function getFrozenTotalBalance(bytes32 accountId, bytes32 tokenHash) external view returns (uint256);
+    function getFrozenWithdrawNonce(bytes32 accountId, uint64 withdrawNonce, bytes32 tokenHash)
+        external
+        view
+        returns (uint256);
 
     // admin call
     function setOperatorManagerAddress(address _operatorManagerAddress) external;
