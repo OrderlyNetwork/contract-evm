@@ -4,13 +4,13 @@ pragma solidity ^0.8.18;
 library EventTypes {
     // EventUpload
     struct EventUpload {
-        uint256 batchId;
+        uint64 batchId;
         uint256 count;
         EventUploadData[] events;
     }
 
     struct EventUploadData {
-        uint256 eventId;
+        uint64 eventId;
         uint256 bizId; // data type, WIP, 0 for `WithdrawData`
         bytes data;
     }

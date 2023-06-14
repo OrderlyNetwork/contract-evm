@@ -17,7 +17,7 @@ contract VaultManager is IVaultManager, Ownable {
 
     // only ledger
     modifier onlyLedger() {
-        require(msg.sender == ledgerAddress, "only ledger can call");
+        if (msg.sender != ledgerAddress) revert OnlyLedgerCanCall();
         _;
     }
 

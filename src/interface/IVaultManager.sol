@@ -2,6 +2,8 @@
 pragma solidity ^0.8.18;
 
 interface IVaultManager {
+    error OnlyLedgerCanCall();
+
     // get balance
     function getBalance(uint256 _chainId, bytes32 _symbol) external view returns (uint256);
     // add balance
