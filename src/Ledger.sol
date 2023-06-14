@@ -24,9 +24,9 @@ contract Ledger is ILedger, Ownable {
     // crossChainManagerAddress contract address
     address public crossChainManagerAddress;
     // operatorTradesBatchId
-    uint256 public operatorTradesBatchId;
+    uint64 public operatorTradesBatchId;
     // globalEventId, for deposit and withdraw
-    uint256 public globalEventId;
+    uint64 public globalEventId;
     // globalDepositId
     uint64 public globalDepositId;
     // userLedger accountId -> Account
@@ -40,13 +40,13 @@ contract Ledger is ILedger, Ownable {
 
     // require operator
     modifier onlyOperatorManager() {
-        require(msg.sender == operatorManagerAddress, "only operator can call");
+        if (msg.sender != operatorManagerAddress) revert OnlyOperatorCanCall();
         _;
     }
 
     // require crossChainManager
     modifier onlyCrossChainManager() {
-        require(msg.sender == crossChainManagerAddress, "only crossChainManager can call");
+        if (msg.sender != crossChainManagerAddress) revert OnlyCrossChainManagerCanCall();
         _;
     }
 
@@ -140,7 +140,7 @@ contract Ledger is ILedger, Ownable {
         // TODO update account.prep_position
     }
 
-    function executeWithdrawAction(EventTypes.WithdrawData calldata withdraw, uint256 eventId)
+    function executeWithdrawAction(EventTypes.WithdrawData calldata withdraw, uint64 eventId)
         public
         override
         onlyOperatorManager
@@ -227,7 +227,7 @@ contract Ledger is ILedger, Ownable {
         );
     }
 
-    function executeSettlement(EventTypes.LedgerData calldata ledger, uint256 eventId)
+    function executeSettlement(EventTypes.LedgerData calldata ledger, uint64 eventId)
         public
         override
         onlyOperatorManager
@@ -240,7 +240,7 @@ contract Ledger is ILedger, Ownable {
         for (uint256 i = 0; i < length; ++i) {
             totalSettleAmount += ledgerExecutions[i].settledAmount;
         }
-        require(totalSettleAmount == 0, "total settle amount not zero");
+        if (totalSettleAmount != 0) revert TotalSettleAmountNotZero(totalSettleAmount);
 
         AccountTypes.Account storage account = userLedger[ledger.accountId];
         uint256 balance = account.balances[ledger.settledAsset];
@@ -249,7 +249,7 @@ contract Ledger is ILedger, Ownable {
             // transfer insurance fund
             if (int256(balance) + int256(ledger.insuranceTransferAmount) + ledger.settledAmount < 0) {
                 // overflow
-                revert("Insurance transfer amount invalid");
+                revert InsuranceTransferAmountInvalid(balance, ledger.insuranceTransferAmount, ledger.settledAmount);
             }
             AccountTypes.Account storage insuranceFund = userLedger[insuranceFundAccountId];
             insuranceFund.balances[ledger.settledAsset] += ledger.insuranceTransferAmount;
@@ -264,14 +264,16 @@ contract Ledger is ILedger, Ownable {
                 position.lastExecutedPrice = ledgerExecution.markPrice;
             }
             // check balance + settledAmount >= 0, where balance should cast to int256 first
-            require(int256(balance) + ledgerExecution.settledAmount >= 0, "balance not enough");
+            if (int256(balance) + ledgerExecution.settledAmount < 0) {
+                revert BalanceNotEnough(balance, ledgerExecution.settledAmount);
+            }
             balance = uint256(int256(balance) + ledgerExecution.settledAmount);
         }
         account.lastCefiEventId = eventId;
         // TODO emit event
     }
 
-    function executeLiquidation(EventTypes.LiquidationData calldata liquidation, uint256 eventId)
+    function executeLiquidation(EventTypes.LiquidationData calldata liquidation, uint64 eventId)
         public
         override
         onlyOperatorManager
@@ -297,7 +299,7 @@ contract Ledger is ILedger, Ownable {
         // TODO emit event
     }
 
-    function _newGlobalEventId() internal returns (uint256) {
+    function _newGlobalEventId() internal returns (uint64) {
         globalEventId += 1;
         return globalEventId;
     }

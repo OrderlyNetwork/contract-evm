@@ -25,7 +25,7 @@ contract OperatorManager is IOperatorManager, Ownable {
 
     // only operator
     modifier onlyOperator() {
-        require(msg.sender == operator, "only operator can call");
+        if (msg.sender != operator) revert OnlyOperatorCanCall();
         _;
     }
 
@@ -51,11 +51,7 @@ contract OperatorManager is IOperatorManager, Ownable {
     }
 
     // futuresTradeUpload
-    function futuresTradeUpload(PerpTypes.FuturesTradeUploadData calldata data)
-        public
-        override
-        onlyOperator
-    {
+    function futuresTradeUpload(PerpTypes.FuturesTradeUploadData calldata data) public override onlyOperator {
         _innerPing();
         _futuresTradeUploadData(data);
     }
@@ -72,9 +68,9 @@ contract OperatorManager is IOperatorManager, Ownable {
 
     // futures trade upload data
     function _futuresTradeUploadData(PerpTypes.FuturesTradeUploadData memory data) internal {
-        require(data.batchId == futuresUploadBatchId, "batchId not match");
+        if (data.batchId != futuresUploadBatchId) revert BatchIdNotMatch(data.batchId, futuresUploadBatchId);
         PerpTypes.FuturesTradeUpload[] memory trades = data.trades; // gas saving
-        require(trades.length == data.count, "count not match");
+        if (trades.length != data.count) revert CountNotMatch(trades.length, data.count);
         _validatePerp(trades);
         // process each validated perp trades
         for (uint256 i = 0; i < data.count; i++) {
@@ -99,9 +95,9 @@ contract OperatorManager is IOperatorManager, Ownable {
 
     // event upload data
     function _eventUploadData(EventTypes.EventUpload memory data) internal {
-        require(data.batchId == eventUploadBatchId, "batchId not match");
+        if (data.batchId != eventUploadBatchId) revert BatchIdNotMatch(data.batchId, eventUploadBatchId);
         EventTypes.EventUploadData[] memory events = data.events; // gas saving
-        require(events.length == data.count, "count not match");
+        if (events.length != data.count) revert CountNotMatch(events.length, data.count);
         // process each event upload
         for (uint256 i = 0; i < data.count; i++) {
             _processEventUpload(events[i]);
@@ -121,7 +117,7 @@ contract OperatorManager is IOperatorManager, Ownable {
             // liquidation
             ledger.executeLiquidation(abi.decode(data.data, (EventTypes.LiquidationData)), data.eventId);
         } else {
-            revert("invalid bizId");
+            revert InvalidBizId(bizId);
         }
     }
 

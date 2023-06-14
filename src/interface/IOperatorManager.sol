@@ -7,6 +7,11 @@ import "../library/types/PerpTypes.sol";
 import "../library/types/EventTypes.sol";
 
 interface IOperatorManager {
+    error OnlyOperatorCanCall();
+    error InvalidBizId(uint256 bizId);
+    error BatchIdNotMatch(uint64 batchId, uint64 futuresUploadBatchId);
+    error CountNotMatch(uint256 length, uint256 count);
+
     event EventUpload(uint64 indexed batchId, uint256 blocktime);
 
     // operator call futures trade upload

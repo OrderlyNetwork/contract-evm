@@ -6,13 +6,19 @@ import "../library/types/PerpTypes.sol";
 import "../library/types/EventTypes.sol";
 
 interface ILedger {
+    error OnlyOperatorCanCall();
+    error OnlyCrossChainManagerCanCall();
+    error TotalSettleAmountNotZero(int256 amount);
+    error BalanceNotEnough(uint256 balance, int256 amount);
+    error InsuranceTransferAmountInvalid(uint256 balance, uint256 insuranceTransferAmount, int256 settledAmount);
+
     event AccountRegister(
         bytes32 indexed accountId, bytes32 indexed brokerId, address indexed userAddress, uint256 blocktime
     );
     event AccountDeposit(
         bytes32 indexed accountId,
         uint64 indexed depositNonce,
-        uint256 indexed eventId,
+        uint64 indexed eventId,
         address userAddress,
         bytes32 tokenHash,
         uint256 tokenAmount,
@@ -24,7 +30,7 @@ interface ILedger {
     event AccountWithdrawApprove(
         bytes32 indexed accountId,
         uint64 indexed withdrawNonce,
-        uint256 indexed eventId,
+        uint64 indexed eventId,
         bytes32 brokerHash,
         address sender,
         address receiver,
@@ -37,7 +43,7 @@ interface ILedger {
     event AccountWithdrawFinish(
         bytes32 indexed accountId,
         uint64 indexed withdrawNonce,
-        uint256 indexed eventId,
+        uint64 indexed eventId,
         bytes32 brokerHash,
         address sender,
         address receiver,
@@ -50,7 +56,7 @@ interface ILedger {
     event AccountWithdrawFail(
         bytes32 indexed accountId,
         uint64 indexed withdrawNonce,
-        uint256 indexed eventId,
+        uint64 indexed eventId,
         bytes32 brokerHash,
         address sender,
         address receiver,
@@ -68,9 +74,9 @@ interface ILedger {
 
     // called by operator manager
     function updateUserLedgerByTradeUpload(PerpTypes.FuturesTradeUpload calldata trade) external;
-    function executeWithdrawAction(EventTypes.WithdrawData calldata withdraw, uint256 eventId) external;
-    function executeSettlement(EventTypes.LedgerData calldata ledger, uint256 eventId) external;
-    function executeLiquidation(EventTypes.LiquidationData calldata liquidation, uint256 eventId) external;
+    function executeWithdrawAction(EventTypes.WithdrawData calldata withdraw, uint64 eventId) external;
+    function executeSettlement(EventTypes.LedgerData calldata ledger, uint64 eventId) external;
+    function executeLiquidation(EventTypes.LiquidationData calldata liquidation, uint64 eventId) external;
 
     // view call
     function getUserLedgerBalance(bytes32 accountId, bytes32 symbol) external view returns (uint256);
