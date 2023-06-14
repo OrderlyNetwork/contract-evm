@@ -85,8 +85,13 @@ contract LedgerTest is Test {
     }
 
     function test_verify_EIP712() public {
-        // assume the contract of this is `0x90193C961A926261B756D1E5bb255e67ff9498A1`
         vm.chainId(CHAIN_ID);
+        bool succ = VerifyEIP712.verifyWithdraw(withdrawData.sender, withdrawData);
+        require(succ, "verify failed");
+    }
+
+    function testFail_verify_EIP712() public {
+        vm.chainId(0xdead);
         bool succ = VerifyEIP712.verifyWithdraw(withdrawData.sender, withdrawData);
         require(succ, "verify failed");
     }
