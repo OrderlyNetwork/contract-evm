@@ -67,12 +67,13 @@ contract Vault is IVault, ReentrancyGuard, Ownable {
     // user withdraw USDC
     function withdraw(VaultTypes.VaultWithdraw calldata data) public override onlyCrossChainManager nonReentrant {
         IERC20 tokenAddress = symbol2TokenAddress[data.tokenHash];
+        uint256 amount = data.tokenAmount - data.fee;
         // check balane gt amount
-        if (tokenAddress.balanceOf(address(this)) < data.tokenAmount) {
-            revert BalanceNotEnough(tokenAddress.balanceOf(address(this)), data.tokenAmount);
+        if (tokenAddress.balanceOf(address(this)) < amount) {
+            revert BalanceNotEnough(tokenAddress.balanceOf(address(this)), amount);
         }
         // transfer to user
-        bool succ = tokenAddress.transfer(data.receiver, data.tokenAmount);
+        bool succ = tokenAddress.transfer(data.receiver, amount);
         if (!succ) revert TransferFailed();
         // send cross-chain tx to ledger
         crossChainManager.withdraw(data);

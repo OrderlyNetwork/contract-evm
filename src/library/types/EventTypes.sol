@@ -13,7 +13,7 @@ library EventTypes {
     }
 
     struct EventUploadData {
-        uint8 bizId; // data type, WIP, 0 for `WithdrawData`
+        bytes32 bizTypeHash; // keccak256(bizType)
         uint64 eventId;
         bytes data;
     }
