@@ -8,7 +8,7 @@ import "../library/types/EventTypes.sol";
 
 interface IOperatorManager {
     error OnlyOperatorCanCall();
-    error InvalidBizId(uint256 bizId);
+    error InvalidBizId(bytes32 bizTypeHash);
     error BatchIdNotMatch(uint64 batchId, uint64 futuresUploadBatchId);
     error CountNotMatch(uint256 length, uint256 count);
 
