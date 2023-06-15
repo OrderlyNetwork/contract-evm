@@ -106,18 +106,18 @@ contract OperatorManager is IOperatorManager, Ownable {
 
     // process each event upload
     function _processEventUpload(EventTypes.EventUploadData memory data) internal {
-        uint256 bizId = data.bizId;
-        if (bizId == 0) {
+        bytes32 bizTypeHash = data.bizTypeHash;
+        if (bizTypeHash == 0x0000000000000000000000000000000000000000000000000000000000000000) {
             // withdraw
             ledger.executeWithdrawAction(abi.decode(data.data, (EventTypes.WithdrawData)), data.eventId);
-        } else if (bizId == 1) {
+        } else if (bizTypeHash == 0x0000000000000000000000000000000000000000000000000000000000000001) {
             // ledger
             ledger.executeSettlement(abi.decode(data.data, (EventTypes.LedgerData)), data.eventId);
-        } else if (bizId == 2) {
+        } else if (bizTypeHash == 0x0000000000000000000000000000000000000000000000000000000000000002) {
             // liquidation
             ledger.executeLiquidation(abi.decode(data.data, (EventTypes.LiquidationData)), data.eventId);
         } else {
-            revert InvalidBizId(bizId);
+            revert InvalidBizId(bizTypeHash);
         }
     }
 
