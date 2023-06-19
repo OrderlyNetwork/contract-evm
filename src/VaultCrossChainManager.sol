@@ -66,11 +66,11 @@ contract VaultCrossChainManager is IOrderlyCrossChainReceiver, IVaultCrossChainM
             withdrawNonce: data.withdrawNonce
         });
 
-        withdraw(withdrawData);
+        sendWithdrawToVault(withdrawData);
     }
 
     // user withdraw USDC
-    function withdraw(VaultTypes.VaultWithdraw memory data) internal {
+    function sendWithdrawToVault(VaultTypes.VaultWithdraw memory data) internal {
         vault.withdraw(data);
     }
 
@@ -79,6 +79,22 @@ contract VaultCrossChainManager is IOrderlyCrossChainReceiver, IVaultCrossChainM
             method: uint8(OrderlyCrossChainMessage.CrossChainMethod.Deposit),
             option: uint8(OrderlyCrossChainMessage.CrossChainOption.LayerZero),
             payloadDataType: uint8(OrderlyCrossChainMessage.PayloadDataType.VaultTypesVaultDeposit),
+            srcCrossChainManager: address(this),
+            dstCrossChainManager: ledgerCrossChainManagers[ledgerChainId],
+            srcChainId: chainId,
+            dstChainId: ledgerChainId
+        });
+        // encode message
+        bytes memory payload = abi.encode(data);
+
+        crossChainRelay.sendMessage(message, payload);
+    }
+
+    function withdraw(VaultTypes.VaultWithdraw memory data) external override {
+        OrderlyCrossChainMessage.MessageV1 memory message = OrderlyCrossChainMessage.MessageV1({
+            method: uint8(OrderlyCrossChainMessage.CrossChainMethod.WithdrawFinish),
+            option: uint8(OrderlyCrossChainMessage.CrossChainOption.LayerZero),
+            payloadDataType: uint8(OrderlyCrossChainMessage.PayloadDataType.VaultTypesVaultWithdraw),
             srcCrossChainManager: address(this),
             dstCrossChainManager: ledgerCrossChainManagers[ledgerChainId],
             srcChainId: chainId,

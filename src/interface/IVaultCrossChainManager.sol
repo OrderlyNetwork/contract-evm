@@ -6,7 +6,7 @@ import "../library/types/AccountTypes.sol";
 import "../library/types/VaultTypes.sol";
 
 interface IVaultCrossChainManager {
-    // function withdraw(VaultTypes.VaultWithdraw memory withdraw) external;
+    function withdraw(VaultTypes.VaultWithdraw memory withdraw) external;
 
     function deposit(VaultTypes.VaultDeposit memory data) external;
 }
