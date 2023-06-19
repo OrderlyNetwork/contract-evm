@@ -6,13 +6,9 @@ import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "crosschain/interface/IOrderlyCrossChain.sol";
 
 contract LedgerCrossChainManagerMock is IOrderlyCrossChainReceiver, ILedgerCrossChainManager, Ownable {
-    function receiveMessage(bytes memory payload, uint256 srcChainId, uint256 dstChainId) external override {}
-
-    function deposit(OrderlyCrossChainMessage.MessageV1 memory message) external override {}
+    function receiveMessage(OrderlyCrossChainMessage.MessageV1 memory message, bytes memory payload) external override {}
 
     function withdraw(EventTypes.WithdrawData calldata data) external override {}
-
-    function withdrawFinish(OrderlyCrossChainMessage.MessageV1 memory message) external override {}
 
     function setLedger(address _ledger) external override {}
 
