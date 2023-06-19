@@ -4,6 +4,7 @@ pragma solidity ^0.8.18;
 import "./interface/ILedger.sol";
 import "./interface/IVaultManager.sol";
 import "./interface/ILedgerCrossChainManager.sol";
+import "./interface/IMarketManager.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "./library/FeeCollector.sol";
 import "./library/Utils.sol";
@@ -38,6 +39,8 @@ contract Ledger is ILedger, Ownable {
     IVaultManager public vaultManager;
     // CrossChainManager contract
     ILedgerCrossChainManager public crossChainManager;
+    // MarketManager contract
+    IMarketManager public marketManager;
 
     // require operator
     modifier onlyOperatorManager() {
@@ -70,6 +73,11 @@ contract Ledger is ILedger, Ownable {
     // set vaultManager
     function setVaultManager(address _vaultManagerAddress) public override onlyOwner {
         vaultManager = IVaultManager(_vaultManagerAddress);
+    }
+
+    // set marketManager
+    function setMarketManager(address _marketManagerAddress) public override onlyOwner {
+        marketManager = IMarketManager(_marketManagerAddress);
     }
 
     // get userLedger balance
@@ -146,7 +154,8 @@ contract Ledger is ILedger, Ownable {
         perpPosition.lastExecutedPrice = trade.executedPrice;
         // TODO fee_swap_position
         account.lastPerpTradeId = trade.tradeId;
-        // TODO perpMarket.lastFundingUpdated = block.timestamp
+        // update last funding update timestamp
+        marketManager.setLastFundingUpdated(trade.symbolHash, trade.timestamp);
     }
 
     function executeWithdrawAction(EventTypes.WithdrawData calldata withdraw, uint64 eventId)

@@ -93,4 +93,5 @@ interface ILedger {
     function setInsuranceFundAccountId(bytes32 _insuranceFundAccountId) external;
     function setCrossChainManager(address _crossChainManagerAddress) external;
     function setVaultManager(address _vaultManagerAddress) external;
+    function setMarketManager(address _marketManagerAddress) external;
 }
