@@ -4,9 +4,13 @@ pragma solidity ^0.8.18;
 library AccountTypes {
     struct PerpPosition {
         int256 positionQty;
-        int256 cost_position;
+        int256 costPosition;
         int256 lastSumUnitaryFundings;
         uint256 lastExecutedPrice;
+        uint256 lastSettledPrice;
+        uint256 averageEntryPrice;
+        int256 openingCost;
+        uint256 lastAdlPrice;
     }
 
     // account id, unique for each account, should be accountId -> {addr, brokerId}
@@ -23,11 +27,13 @@ library AccountTypes {
         // mapping symbol => totalFrozenBalance
         mapping(bytes32 => uint256) totalFrozenBalances;
         // mapping withdrawNonce => symbol => balance
-        mapping(uint64 => mapping(bytes32 => uint256)) frozenBalances; 
+        mapping(uint64 => mapping(bytes32 => uint256)) frozenBalances;
         // last perp trade id
-        uint256 lastPerpTradeId;
+        uint64 lastPerpTradeId;
         // last cefi event id
-        uint256 lastCefiEventId;
+        uint64 lastCefiEventId;
+        // last deposit event id
+        uint64 lastDepositEventId;
         // perp position
         mapping(bytes32 => PerpPosition) perpPositions;
         // reentrancy lock

@@ -7,7 +7,8 @@ import "./interface/ILedgerCrossChainManager.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "./library/FeeCollector.sol";
 import "./library/Utils.sol";
-import "./library/TypesHelper/AccountTypeHelper.sol";
+import "./library/typesHelper/AccountTypeHelper.sol";
+import "./library/typesHelper/AccountTypePositionHelper.sol";
 import "./library/VerifyEIP712.sol";
 
 /**
@@ -17,7 +18,7 @@ import "./library/VerifyEIP712.sol";
  */
 contract Ledger is ILedger, Ownable {
     using AccountTypeHelper for AccountTypes.Account;
-    using AccountTypeHelper for AccountTypes.PerpPosition;
+    using AccountTypePositionHelper for AccountTypes.PerpPosition;
 
     // OperatorManager contract address
     address public operatorManagerAddress;
@@ -115,10 +116,11 @@ contract Ledger is ILedger, Ownable {
         }
         account.addBalance(data.tokenHash, data.tokenAmount);
         vaultManager.addBalance(data.srcChainId, data.tokenHash, data.tokenAmount);
+        account.lastDepositEventId = _newGlobalDepositId();
         // emit deposit event
         emit AccountDeposit(
             data.accountId,
-            _newGlobalDepositId(),
+            globalDepositId,
             _newGlobalEventId(),
             data.userAddress,
             data.tokenHash,
@@ -136,8 +138,15 @@ contract Ledger is ILedger, Ownable {
         onlyOperatorManager
     {
         AccountTypes.Account storage account = userLedger[trade.accountId];
+        AccountTypes.PerpPosition storage perpPosition = account.perpPositions[trade.symbolHash];
+        perpPosition.chargeFundingFee(trade.sumUnitaryFundings);
+        perpPosition.calAverageEntryPrice(trade.tradeQty, int256(trade.executedPrice), 0);
+        perpPosition.positionQty += trade.tradeQty;
+        perpPosition.costPosition += trade.notional;
+        perpPosition.lastExecutedPrice = trade.executedPrice;
+        // TODO fee_swap_position
         account.lastPerpTradeId = trade.tradeId;
-        // TODO update account.prep_position
+        // TODO perpMarket.lastFundingUpdated = block.timestamp
     }
 
     function executeWithdrawAction(EventTypes.WithdrawData calldata withdraw, uint64 eventId)
@@ -260,7 +269,7 @@ contract Ledger is ILedger, Ownable {
             AccountTypes.PerpPosition storage position = account.perpPositions[ledgerExecution.symbol];
             if (position.positionQty != 0) {
                 position.chargeFundingFee(ledgerExecution.sumUnitaryFundings);
-                position.cost_position += ledgerExecution.settledAmount;
+                position.costPosition += ledgerExecution.settledAmount;
                 position.lastExecutedPrice = ledgerExecution.markPrice;
             }
             // check balance + settledAmount >= 0, where balance should cast to int256 first
