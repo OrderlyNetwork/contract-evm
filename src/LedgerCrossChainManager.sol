@@ -9,6 +9,7 @@ import "crosschain/interface/IOrderlyCrossChain.sol";
 import "crosschain/utils/OrderlyCrossChainMessage.sol";
 import "./library/types/AccountTypes.sol";
 import "./library/types/EventTypes.sol";
+import "./library/types/VaultTypes.sol";
 
 /**
  * CrossChainManager is responsible for executing cross-chain tx.
@@ -61,36 +62,69 @@ contract LedgerCrossChainManager is
         vaultCrossChainManagers[_chainId] = _vaultCrossChainManager;
     }
 
-    function receiveMessage(
-        bytes calldata payload,
-        uint256 srcChainId,
-        uint256 dstChainId
-    ) external override {
-        emit MessageReceived(payload, srcChainId, dstChainId);
-        require(
-            msg.sender == address(crossChainRelay),
-            "caller is not crossChainRelay"
-        );
-        // convert payload to CrossChainMessageTypes.MessageV1
-        OrderlyCrossChainMessage.MessageV1
-            memory message = OrderlyCrossChainMessage.decodeMessageV1(payload);
-        // execute deposit
-        deposit(message);
+    function deposit(
+        AccountTypes.AccountDeposit memory data) internal {
+        ledger.accountDeposit(data);
     }
 
-    function deposit(
-        OrderlyCrossChainMessage.MessageV1 memory message
-    ) public override onlyOwner {
-        // convert message to AccountTypes.AccountDeposit
-        // AccountTypes.AccountDeposit memory data = AccountTypes.AccountDeposit({
-        //     accountId: message.accountId,
-        //     addr: message.userAddress,
-        //     symbol: message.tokenSymbol,
-        //     amount: message.tokenAmount,
-        //     chainId: message.srcChainId
-        // });
-        // ledger.accountDeposit(data);
+    function receiveMessage(
+        OrderlyCrossChainMessage.MessageV1 memory message,
+        bytes memory payload
+    ) external override {
+        require(
+            msg.sender == address(crossChainRelay),
+            "LedgerCrossChainManager: only crossChainRelay can call"
+        );
+        require(
+            message.dstChainId == chainId,
+            "LedgerCrossChainManager: dstChainId not match"
+        );
+        if (message.payloadDataType == uint8(
+            OrderlyCrossChainMessage.PayloadDataType.VaultTypesVaultDeposit
+        )) {
+            VaultTypes.VaultDeposit memory data = abi.decode(
+                payload,
+                (VaultTypes.VaultDeposit)
+            );
+
+            AccountTypes.AccountDeposit memory depositData = AccountTypes.AccountDeposit({
+                accountId: data.accountId,
+                brokerHash: data.brokerHash,
+                userAddress: data.userAddress,
+                tokenHash: data.tokenHash,
+                tokenAmount: data.tokenAmount,
+                srcChainId: message.srcChainId,
+                srcChainDepositNonce: 0 
+            });
+
+            deposit(depositData);
+
+        } else if (message.payloadDataType == uint8(
+            OrderlyCrossChainMessage.PayloadDataType.VaultTypesVaultWithdraw
+        )) {
+            VaultTypes.VaultWithdraw memory data = abi.decode(
+                payload,
+                (VaultTypes.VaultWithdraw)
+            );
+
+            AccountTypes.AccountWithdraw memory withdrawData = AccountTypes.AccountWithdraw({
+                accountId: data.accountId,
+                sender: data.sender,
+                receiver: data.receiver,
+                brokerHash: data.brokerHash,
+                tokenHash: data.tokenHash,
+                tokenAmount: data.tokenAmount,
+                fee: data.fee,
+                chainId: message.srcChainId,
+                withdrawNonce: data.withdrawNonce
+            });
+
+            withdrawFinish(withdrawData);
+        } else {
+            revert("LedgerCrossChainManager: payloadDataType not match");
+        }
     }
+
 
     function withdraw(
         EventTypes.WithdrawData calldata data
@@ -98,36 +132,24 @@ contract LedgerCrossChainManager is
         // only ledger can call this function
         require(msg.sender == address(ledger), "caller is not ledger");
 
-        // TODO temporary value
-        uint256 brokerId = 123;
-
-        // convert data to CrossChainMessageTypes.MessageV1
         OrderlyCrossChainMessage.MessageV1
             memory message = OrderlyCrossChainMessage.MessageV1({
-                version: 1,
                 method: uint8(OrderlyCrossChainMessage.CrossChainMethod.Withdraw),
-                userAddress: data.receiver,
+                option: uint8(OrderlyCrossChainMessage.CrossChainOption.LayerZero),
+                payloadDataType: uint8(OrderlyCrossChainMessage.PayloadDataType.EventTypesWithdrawData),
+                srcCrossChainManager: address(this),
+                dstCrossChainManager: vaultCrossChainManagers[data.chainId],
                 srcChainId: chainId,
-                dstChainId: data.chainId,
-                accountId: data.accountId,
-                brokerHash: bytes32(brokerId), // TODO (need to be changed
-                tokenHash: bytes32(0),    // TODO fixme
-                tokenAmount: data.tokenAmount
+                dstChainId: data.chainId
             });
-        // encode message
-        bytes memory payload = OrderlyCrossChainMessage.encodeMessageV1(message);
-        // send message
-        crossChainRelay.sendMessage(
-            payload,
-            message.srcChainId,
-            message.dstChainId
-        );
+        bytes memory payload = abi.encode(data);
+
+        crossChainRelay.sendMessage(message, payload);
     }
 
     function withdrawFinish(
-        OrderlyCrossChainMessage.MessageV1 memory message
-    ) external override onlyOwner {
-        // TODO
-        // ledger.AccountWithdrawFinish(data);
+        AccountTypes.AccountWithdraw memory message
+    ) internal {
+        ledger.accountWithDrawFinish(message);
     }
 }
