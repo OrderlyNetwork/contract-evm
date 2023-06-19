@@ -5,19 +5,22 @@ library PerpTypes {
     // FuturesTradeUploadData
     struct FuturesTradeUploadData {
         uint64 batchId;
-        uint256 count;
+        uint8 count;
         FuturesTradeUpload[] trades;
     }
 
     struct FuturesTradeUpload {
-        uint256 tradeId;
-        uint256 matchId;
+        uint64 tradeId;
+        string matchId;
         bytes32 accountId;
-        address addr;
-        string symbol;
+        bytes32 symbolHash;
         bool side;
-        uint256 tradeQty;
-        // signature for validate signed by real user
-        bytes signature;
+        int256 tradeQty;
+        int256 sumUnitaryFundings;
+        uint256 executedPrice;
+        int256 notional;
+        uint256 fee;
+        bytes32 feeAssetHash;
+        uint64 timestamp;
     }
 }
