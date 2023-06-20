@@ -5,6 +5,7 @@ import "./interface/ILedger.sol";
 import "./interface/IVaultManager.sol";
 import "./interface/ILedgerCrossChainManager.sol";
 import "./interface/IMarketManager.sol";
+import "./interface/IFeeManager.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "./library/FeeCollector.sol";
 import "./library/Utils.sol";
@@ -41,6 +42,8 @@ contract Ledger is ILedger, Ownable {
     ILedgerCrossChainManager public crossChainManager;
     // MarketManager contract
     IMarketManager public marketManager;
+    // FeeManager contract
+    IFeeManager public feeManager;
 
     // require operator
     modifier onlyOperatorManager() {
@@ -152,7 +155,8 @@ contract Ledger is ILedger, Ownable {
         perpPosition.positionQty += trade.tradeQty;
         perpPosition.costPosition += trade.notional;
         perpPosition.lastExecutedPrice = trade.executedPrice;
-        // TODO fee_swap_position
+        // fee_swap_position
+        feeSwapPosition(perpPosition, trade.symbolHash, trade.fee, trade.tradeId, trade.sumUnitaryFundings);
         account.lastPerpTradeId = trade.tradeId;
         // update last funding update timestamp
         marketManager.setLastFundingUpdated(trade.symbolHash, trade.timestamp);
@@ -229,6 +233,10 @@ contract Ledger is ILedger, Ownable {
         AccountTypes.Account storage account = userLedger[withdraw.accountId];
         // finish frozen balance
         account.finishFrozenBalance(withdraw.withdrawNonce, withdraw.tokenHash, withdraw.tokenAmount);
+        // withdraw fee
+        feeManager.setOperatorGasFeeBalance(
+            withdraw.tokenHash, feeManager.getOperatorGasFeeBalance(withdraw.tokenHash) + withdraw.fee
+        );
         // emit withdraw finish event
         emit AccountWithdrawFinish(
             withdraw.accountId,
@@ -325,5 +333,32 @@ contract Ledger is ILedger, Ownable {
     function _newGlobalDepositId() internal returns (uint64) {
         globalDepositId += 1;
         return globalDepositId;
+    }
+
+    // =================== internal =================== //
+
+    function feeSwapPosition(
+        AccountTypes.PerpPosition storage traderPosition,
+        bytes32 symbol,
+        uint256 feeAmount,
+        uint64 tradeId,
+        int256 sumUnitaryFundings
+    ) internal {
+        if (feeAmount == 0) return;
+        perpFeeCollectorDeposit(symbol, feeAmount, tradeId, sumUnitaryFundings);
+        traderPosition.costPosition += int256(feeAmount);
+    }
+
+    function perpFeeCollectorDeposit(bytes32 symbol, uint256 amount, uint64 tradeId, int256 sumUnitaryFundings)
+        internal
+    {
+        bytes32 feeCollectorAccountId = feeManager.getFeeCollector(IFeeManager.FeeCollectorType.FuturesFeeCollector);
+        AccountTypes.Account storage feeCollectorAccount = userLedger[feeCollectorAccountId];
+        AccountTypes.PerpPosition storage feeCollectorPosition = feeCollectorAccount.perpPositions[symbol];
+        feeCollectorPosition.costPosition -= int256(amount);
+        feeCollectorPosition.lastSumUnitaryFundings = sumUnitaryFundings;
+        if (tradeId > feeCollectorAccount.lastPerpTradeId) {
+            feeCollectorAccount.lastPerpTradeId = tradeId;
+        }
     }
 }
