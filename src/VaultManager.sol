@@ -3,28 +3,16 @@ pragma solidity ^0.8.18;
 
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "./interface/IVaultManager.sol";
+import "./LedgerComponent.sol";
 
 /**
  * VaultManager is responsible for saving vaults' balance, to ensure the cross-chain tx should success
  */
-contract VaultManager is IVaultManager, Ownable {
+contract VaultManager is IVaultManager, LedgerComponent {
     // crossChainManagerAddress contract address
     address public crossChainManagerAddress;
-    // Ledger address
-    address public ledgerAddress;
     // valut balance, used for check if withdraw is valid
     mapping(uint256 => mapping(bytes32 => uint256)) chain2symbol2balance;
-
-    // only ledger
-    modifier onlyLedger() {
-        if (msg.sender != ledgerAddress) revert OnlyLedgerCanCall();
-        _;
-    }
-
-    // set ledgerAddress
-    function setLedgerAddress(address _ledgerAddress) public override onlyOwner {
-        ledgerAddress = _ledgerAddress;
-    }
 
     // get balance
     function getBalance(uint256 _chainId, bytes32 _symbol) public view override returns (uint256) {

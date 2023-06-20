@@ -4,25 +4,13 @@ pragma solidity ^0.8.18;
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "./interface/IMarketManager.sol";
 import "./library/typesHelper/MarketTypeHelper.sol";
+import "./LedgerComponent.sol";
 
-contract MarketManager is IMarketManager, Ownable {
+contract MarketManager is IMarketManager, LedgerComponent {
     using MarketTypeHelper for MarketTypes.PerpMarketCfg;
 
     // pairSymbol => PerpMarketCfg
     mapping(bytes32 => MarketTypes.PerpMarketCfg) public perpMarketCfg;
-    // Ledger address
-    address public ledgerAddress;
-
-    // only ledger
-    modifier onlyLedger() {
-        if (msg.sender != ledgerAddress) revert OnlyLedgerCanCall();
-        _;
-    }
-
-    // set ledgerAddress
-    function setLedgerAddress(address _ledgerAddress) public override onlyOwner {
-        ledgerAddress = _ledgerAddress;
-    }
 
     function setPerpMarketCfg(bytes32 _pairSymbol, MarketTypes.PerpMarketCfg memory _perpMarketCfg)
         external
