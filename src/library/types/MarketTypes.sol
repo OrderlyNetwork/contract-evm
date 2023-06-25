@@ -5,10 +5,10 @@ library MarketTypes {
     struct PerpMarketCfg {
         uint32 baseMaintenanceMargin;
         uint32 baseInitialMargin;
-        uint256 liquidationFeeMax;
-        uint256 markPrice;
-        uint256 indexPriceOrderly;
-        int256 sumUnitaryFundings;
+        uint128 liquidationFeeMax;
+        uint128 markPrice;
+        uint128 indexPriceOrderly;
+        int128 sumUnitaryFundings;
         uint64 lastMarkPriceUpdated;
         uint64 lastFundingUpdated;
     }

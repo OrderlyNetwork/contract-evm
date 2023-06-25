@@ -8,14 +8,14 @@ interface IVault {
     error TokenNotExist();
     error TransferFromFailed();
     error TransferFailed();
-    error BalanceNotEnough(uint256 balance, uint256 amount);
+    error BalanceNotEnough(uint256 balance, uint128 amount);
 
     event AccountDeposit(
         bytes32 indexed accountId,
         address indexed userAddress,
         uint64 indexed depositNonce,
         bytes32 tokenHash,
-        uint256 tokenAmount
+        uint128 tokenAmount
     );
 
     event AccountWithdraw(
@@ -25,8 +25,8 @@ interface IVault {
         address sender,
         address receiver,
         bytes32 tokenHash,
-        uint256 tokenAmount,
-        uint256 fee,
+        uint128 tokenAmount,
+        uint128 fee,
         uint256 blocktime
     );
 

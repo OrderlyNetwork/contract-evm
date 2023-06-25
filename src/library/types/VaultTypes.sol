@@ -6,7 +6,7 @@ library VaultTypes {
         bytes32 accountId;
         bytes32 brokerHash;
         bytes32 tokenHash;
-        uint256 tokenAmount;
+        uint128 tokenAmount;
     }
 
     struct VaultDeposit {
@@ -14,7 +14,7 @@ library VaultTypes {
         address userAddress;
         bytes32 brokerHash;
         bytes32 tokenHash;
-        uint256 tokenAmount;
+        uint128 tokenAmount;
         uint64 depositNonce; // deposit nonce
     }
 
@@ -24,8 +24,8 @@ library VaultTypes {
         address receiver;
         bytes32 brokerHash;
         bytes32 tokenHash;
-        uint256 tokenAmount;
-        uint256 fee;
+        uint128 tokenAmount;
+        uint128 fee;
         uint64 withdrawNonce; // withdraw nonce
     }
 }

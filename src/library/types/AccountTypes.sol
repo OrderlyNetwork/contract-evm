@@ -3,14 +3,14 @@ pragma solidity ^0.8.18;
 
 library AccountTypes {
     struct PerpPosition {
-        int256 positionQty;
-        int256 costPosition;
-        int256 lastSumUnitaryFundings;
-        uint256 lastExecutedPrice;
-        uint256 lastSettledPrice;
-        uint256 averageEntryPrice;
-        int256 openingCost;
-        uint256 lastAdlPrice;
+        int128 positionQty;
+        int128 costPosition;
+        int128 lastSumUnitaryFundings;
+        uint128 lastExecutedPrice;
+        uint128 lastSettledPrice;
+        uint128 averageEntryPrice;
+        int128 openingCost;
+        uint128 lastAdlPrice;
     }
 
     // account id, unique for each account, should be accountId -> {addr, brokerId}
@@ -23,11 +23,11 @@ library AccountTypes {
         // lastwithdraw nonce
         uint64 lastWithdrawNonce;
         // mapping symbol => balance
-        mapping(bytes32 => uint256) balances;
+        mapping(bytes32 => uint128) balances;
         // mapping symbol => totalFrozenBalance
-        mapping(bytes32 => uint256) totalFrozenBalances;
+        mapping(bytes32 => uint128) totalFrozenBalances;
         // mapping withdrawNonce => symbol => balance
-        mapping(uint64 => mapping(bytes32 => uint256)) frozenBalances;
+        mapping(uint64 => mapping(bytes32 => uint128)) frozenBalances;
         // last perp trade id
         uint64 lastPerpTradeId;
         // last cefi event id
@@ -45,7 +45,7 @@ library AccountTypes {
         bytes32 brokerHash;
         address userAddress;
         bytes32 tokenHash;
-        uint256 tokenAmount;
+        uint128 tokenAmount;
         uint256 srcChainId;
         uint64 srcChainDepositNonce;
     }
@@ -57,8 +57,8 @@ library AccountTypes {
         address receiver;
         bytes32 brokerHash;
         bytes32 tokenHash;
-        uint256 tokenAmount;
-        uint256 fee;
+        uint128 tokenAmount;
+        uint128 fee;
         uint256 chainId;
         uint64 withdrawNonce;
     }

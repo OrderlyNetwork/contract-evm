@@ -8,9 +8,9 @@ import "../library/types/EventTypes.sol";
 interface ILedger {
     error OnlyOperatorCanCall();
     error OnlyCrossChainManagerCanCall();
-    error TotalSettleAmountNotZero(int256 amount);
-    error BalanceNotEnough(uint256 balance, int256 amount);
-    error InsuranceTransferAmountInvalid(uint256 balance, uint256 insuranceTransferAmount, int256 settledAmount);
+    error TotalSettleAmountNotZero(int128 amount);
+    error BalanceNotEnough(uint128 balance, int128 amount);
+    error InsuranceTransferAmountInvalid(uint128 balance, uint128 insuranceTransferAmount, int128 settledAmount);
 
     event AccountRegister(
         bytes32 indexed accountId, bytes32 indexed brokerId, address indexed userAddress, uint256 blocktime
@@ -21,7 +21,7 @@ interface ILedger {
         uint64 indexed eventId,
         address userAddress,
         bytes32 tokenHash,
-        uint256 tokenAmount,
+        uint128 tokenAmount,
         uint256 srcChainId,
         uint64 srcChainDepositNonce,
         bytes32 brokerHash,
@@ -36,8 +36,8 @@ interface ILedger {
         address receiver,
         uint256 chainId,
         bytes32 tokenHash,
-        uint256 tokenAmount,
-        uint256 fee,
+        uint128 tokenAmount,
+        uint128 fee,
         uint256 blocktime
     );
     event AccountWithdrawFinish(
@@ -49,8 +49,8 @@ interface ILedger {
         address receiver,
         uint256 chainId,
         bytes32 tokenHash,
-        uint256 tokenAmount,
-        uint256 fee,
+        uint128 tokenAmount,
+        uint128 fee,
         uint256 blocktime
     );
     event AccountWithdrawFail(
@@ -62,8 +62,8 @@ interface ILedger {
         address receiver,
         uint256 chainId,
         bytes32 tokenHash,
-        uint256 tokenAmount,
-        uint256 fee,
+        uint128 tokenAmount,
+        uint128 fee,
         uint256 blocktime,
         uint8 failReson
     );
@@ -79,14 +79,14 @@ interface ILedger {
     function executeLiquidation(EventTypes.LiquidationData calldata liquidation, uint64 eventId) external;
 
     // view call
-    function getUserLedgerBalance(bytes32 accountId, bytes32 symbol) external view returns (uint256);
+    function getUserLedgerBalance(bytes32 accountId, bytes32 symbol) external view returns (uint128);
     function getUserLedgerBrokerHash(bytes32 accountId) external view returns (bytes32);
-    function getUserLedgerLastCefiEventId(bytes32 accountId) external view returns (uint256);
-    function getFrozenTotalBalance(bytes32 accountId, bytes32 tokenHash) external view returns (uint256);
+    function getUserLedgerLastCefiEventId(bytes32 accountId) external view returns (uint64);
+    function getFrozenTotalBalance(bytes32 accountId, bytes32 tokenHash) external view returns (uint128);
     function getFrozenWithdrawNonce(bytes32 accountId, uint64 withdrawNonce, bytes32 tokenHash)
         external
         view
-        returns (uint256);
+        returns (uint128);
 
     // admin call
     function setOperatorManagerAddress(address _operatorManagerAddress) external;
