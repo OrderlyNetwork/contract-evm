@@ -9,7 +9,7 @@ library AccountTypeHelper {
     // ====================
 
     // get balance
-    function getBalance(AccountTypes.Account storage account, bytes32 tokenHash) internal view returns (uint256) {
+    function getBalance(AccountTypes.Account storage account, bytes32 tokenHash) internal view returns (uint128) {
         return account.balances[tokenHash];
     }
 
@@ -28,7 +28,7 @@ library AccountTypeHelper {
     // ====================
 
     // add balance
-    function addBalance(AccountTypes.Account storage account, bytes32 tokenHash, uint256 amount) internal {
+    function addBalance(AccountTypes.Account storage account, bytes32 tokenHash, uint128 amount) internal {
         account.balances[tokenHash] += amount;
     }
 
@@ -37,7 +37,7 @@ library AccountTypeHelper {
         AccountTypes.Account storage account,
         uint64 withdrawNonce,
         bytes32 tokenHash,
-        uint256 amount
+        uint128 amount
     ) internal {
         account.balances[tokenHash] -= amount;
         account.totalFrozenBalances[tokenHash] += amount;
@@ -49,7 +49,7 @@ library AccountTypeHelper {
         AccountTypes.Account storage account,
         uint64 withdrawNonce,
         bytes32 tokenHash,
-        uint256 amount
+        uint128 amount
     ) internal {
         account.balances[tokenHash] += amount;
         account.totalFrozenBalances[tokenHash] -= amount;
@@ -61,7 +61,7 @@ library AccountTypeHelper {
         AccountTypes.Account storage account,
         uint64 withdrawNonce,
         bytes32 tokenHash,
-        uint256 amount
+        uint128 amount
     ) internal {
         account.totalFrozenBalances[tokenHash] -= amount;
         account.frozenBalances[withdrawNonce][tokenHash] = 0;
@@ -70,7 +70,7 @@ library AccountTypeHelper {
     function getFrozenTotalBalance(AccountTypes.Account storage account, bytes32 tokenHash)
         internal
         view
-        returns (uint256)
+        returns (uint128)
     {
         return account.totalFrozenBalances[tokenHash];
     }
@@ -79,7 +79,7 @@ library AccountTypeHelper {
         AccountTypes.Account storage account,
         uint64 withdrawNonce,
         bytes32 tokenHash
-    ) internal view returns (uint256) {
+    ) internal view returns (uint128) {
         return account.frozenBalances[withdrawNonce][tokenHash];
     }
 }
