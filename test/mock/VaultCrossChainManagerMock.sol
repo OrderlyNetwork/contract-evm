@@ -6,7 +6,10 @@ import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "crosschain/interface/IOrderlyCrossChain.sol";
 
 contract VaultCrossChainManagerMock is IOrderlyCrossChainReceiver, IVaultCrossChainManager, Ownable {
-    function receiveMessage(OrderlyCrossChainMessage.MessageV1 memory message, bytes memory payload) external override {}
+    function receiveMessage(OrderlyCrossChainMessage.MessageV1 memory message, bytes memory payload)
+        external
+        override
+    {}
 
     function deposit(VaultTypes.VaultDeposit memory data) external override {}
 
