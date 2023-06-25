@@ -6,13 +6,15 @@ import "../src/OperatorManager.sol";
 import "../src/Ledger.sol";
 import "../src/VaultManager.sol";
 import "./mock/LedgerCrossChainManagerMock.sol";
+import "./mock/FeeManagerMock.sol";
 
 contract LedgerTest is Test {
     address constant operatorAddress = address(0x1234567890);
-    ILedgerCrossChainManager ledgerCrossChainManager;
+    LedgerCrossChainManagerMock ledgerCrossChainManager;
     IOperatorManager operatorManager;
     IVaultManager vaultManager;
     ILedger ledger;
+    IFeeManager feeManager;
 
     uint128 constant AMOUNT = 1000000;
     address constant SENDER = 0x4FDDB51ADe1fa66952de254bE7E1a84EEB153331;
@@ -65,15 +67,29 @@ contract LedgerTest is Test {
         "USDC"
     );
 
+    AccountTypes.AccountWithdraw accountWithdraw = AccountTypes.AccountWithdraw({
+        accountId: ACCOUNT_ID,
+        sender: SENDER,
+        receiver: SENDER,
+        brokerHash: BROKER_HASH,
+        tokenHash: TOKEN_HASH,
+        tokenAmount: AMOUNT,
+        fee: 0,
+        chainId: CHAIN_ID,
+        withdrawNonce: WITHDRAW_NONCE
+    });
+
     function setUp() public {
         ledgerCrossChainManager = new LedgerCrossChainManagerMock();
         operatorManager = new OperatorManager();
         vaultManager = new VaultManager();
         ledger = new Ledger();
+        feeManager = new FeeManagerMock();
 
         ledger.setOperatorManagerAddress(address(operatorManager));
         ledger.setCrossChainManager(address(ledgerCrossChainManager));
         ledger.setVaultManager(address(vaultManager));
+        ledger.setFeeManager(address(feeManager));
 
         operatorManager.setOperator(operatorAddress);
         operatorManager.setLedger(address(ledger));
@@ -82,6 +98,8 @@ contract LedgerTest is Test {
         ledgerCrossChainManager.setOperatorManager(address(operatorManager));
 
         vaultManager.setLedgerAddress(address(ledger));
+
+        feeManager.setLedgerAddress(address(ledger));
     }
 
     function test_verify_EIP712() public {
@@ -112,5 +130,20 @@ contract LedgerTest is Test {
         assertEq(ledger.getUserLedgerBalance(ACCOUNT_ID, TOKEN_HASH), 0);
         assertEq(ledger.getFrozenTotalBalance(ACCOUNT_ID, TOKEN_HASH), AMOUNT);
         assertEq(ledger.getFrozenWithdrawNonce(ACCOUNT_ID, WITHDRAW_NONCE, TOKEN_HASH), AMOUNT);
+    }
+
+    function test_withdraw_finish() public {
+        vm.prank(address(ledgerCrossChainManager));
+        ledger.accountDeposit(depositData);
+        vm.prank(address(operatorManager));
+        vm.chainId(CHAIN_ID);
+        ledger.executeWithdrawAction(withdrawData2, 1);
+        assertEq(ledger.getUserLedgerBalance(ACCOUNT_ID, TOKEN_HASH), 0);
+        assertEq(ledger.getFrozenTotalBalance(ACCOUNT_ID, TOKEN_HASH), AMOUNT);
+        assertEq(ledger.getFrozenWithdrawNonce(ACCOUNT_ID, WITHDRAW_NONCE, TOKEN_HASH), AMOUNT);
+        ledgerCrossChainManager.withdrawFinishMock(accountWithdraw);
+        assertEq(ledger.getUserLedgerBalance(ACCOUNT_ID, TOKEN_HASH), 0);
+        assertEq(ledger.getFrozenTotalBalance(ACCOUNT_ID, TOKEN_HASH), 0);
+        assertEq(ledger.getFrozenWithdrawNonce(ACCOUNT_ID, WITHDRAW_NONCE, TOKEN_HASH), 0);
     }
 }

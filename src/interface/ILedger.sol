@@ -94,4 +94,5 @@ interface ILedger {
     function setCrossChainManager(address _crossChainManagerAddress) external;
     function setVaultManager(address _vaultManagerAddress) external;
     function setMarketManager(address _marketManagerAddress) external;
+    function setFeeManager(address _feeManagerAddress) external;
 }

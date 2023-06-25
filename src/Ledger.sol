@@ -83,6 +83,11 @@ contract Ledger is ILedger, Ownable {
         marketManager = IMarketManager(_marketManagerAddress);
     }
 
+    // set feeManager
+    function setFeeManager(address _feeManagerAddress) public override onlyOwner {
+        feeManager = IFeeManager(_feeManagerAddress);
+    }
+
     // get userLedger balance
     function getUserLedgerBalance(bytes32 accountId, bytes32 tokenHash) public view override returns (uint128) {
         return userLedger[accountId].getBalance(tokenHash);
