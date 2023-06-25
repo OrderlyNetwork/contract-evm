@@ -84,7 +84,7 @@ contract Ledger is ILedger, Ownable {
     }
 
     // get userLedger balance
-    function getUserLedgerBalance(bytes32 accountId, bytes32 tokenHash) public view override returns (uint256) {
+    function getUserLedgerBalance(bytes32 accountId, bytes32 tokenHash) public view override returns (uint128) {
         return userLedger[accountId].getBalance(tokenHash);
     }
 
@@ -94,12 +94,12 @@ contract Ledger is ILedger, Ownable {
     }
 
     // get userLedger lastCefiEventId
-    function getUserLedgerLastCefiEventId(bytes32 accountId) public view override returns (uint256) {
+    function getUserLedgerLastCefiEventId(bytes32 accountId) public view override returns (uint64) {
         return userLedger[accountId].getLastCefiEventId();
     }
 
     // get frozen total balance
-    function getFrozenTotalBalance(bytes32 accountId, bytes32 tokenHash) public view override returns (uint256) {
+    function getFrozenTotalBalance(bytes32 accountId, bytes32 tokenHash) public view override returns (uint128) {
         return userLedger[accountId].getFrozenTotalBalance(tokenHash);
     }
 
@@ -108,7 +108,7 @@ contract Ledger is ILedger, Ownable {
         public
         view
         override
-        returns (uint256)
+        returns (uint128)
     {
         return userLedger[accountId].getFrozenWithdrawNonceBalance(withdrawNonce, tokenHash);
     }
@@ -151,7 +151,7 @@ contract Ledger is ILedger, Ownable {
         AccountTypes.Account storage account = userLedger[trade.accountId];
         AccountTypes.PerpPosition storage perpPosition = account.perpPositions[trade.symbolHash];
         perpPosition.chargeFundingFee(trade.sumUnitaryFundings);
-        perpPosition.calAverageEntryPrice(trade.tradeQty, int256(trade.executedPrice), 0);
+        perpPosition.calAverageEntryPrice(trade.tradeQty, int128(trade.executedPrice), 0);
         perpPosition.positionQty += trade.tradeQty;
         perpPosition.costPosition += trade.notional;
         perpPosition.lastExecutedPrice = trade.executedPrice;
@@ -259,7 +259,7 @@ contract Ledger is ILedger, Ownable {
         onlyOperatorManager
     {
         // check total settle amount zero
-        int256 totalSettleAmount = 0;
+        int128 totalSettleAmount = 0;
         // gas saving
         uint256 length = ledger.ledgerExecutions.length;
         EventTypes.LedgerExecution[] calldata ledgerExecutions = ledger.ledgerExecutions;
@@ -269,11 +269,11 @@ contract Ledger is ILedger, Ownable {
         if (totalSettleAmount != 0) revert TotalSettleAmountNotZero(totalSettleAmount);
 
         AccountTypes.Account storage account = userLedger[ledger.accountId];
-        uint256 balance = account.balances[ledger.settledAsset];
+        uint128 balance = account.balances[ledger.settledAsset];
         account.hasPendingLedgerRequest = false;
         if (ledger.insuranceTransferAmount != 0) {
             // transfer insurance fund
-            if (int256(balance) + int256(ledger.insuranceTransferAmount) + ledger.settledAmount < 0) {
+            if (int128(balance) + int128(ledger.insuranceTransferAmount) + ledger.settledAmount < 0) {
                 // overflow
                 revert InsuranceTransferAmountInvalid(balance, ledger.insuranceTransferAmount, ledger.settledAmount);
             }
@@ -289,11 +289,11 @@ contract Ledger is ILedger, Ownable {
                 position.costPosition += ledgerExecution.settledAmount;
                 position.lastExecutedPrice = ledgerExecution.markPrice;
             }
-            // check balance + settledAmount >= 0, where balance should cast to int256 first
-            if (int256(balance) + ledgerExecution.settledAmount < 0) {
+            // check balance + settledAmount >= 0, where balance should cast to int128 first
+            if (int128(balance) + ledgerExecution.settledAmount < 0) {
                 revert BalanceNotEnough(balance, ledgerExecution.settledAmount);
             }
-            balance = uint256(int256(balance) + ledgerExecution.settledAmount);
+            balance = uint128(int128(balance) + ledgerExecution.settledAmount);
         }
         account.lastCefiEventId = eventId;
         // TODO emit event
@@ -340,22 +340,22 @@ contract Ledger is ILedger, Ownable {
     function feeSwapPosition(
         AccountTypes.PerpPosition storage traderPosition,
         bytes32 symbol,
-        uint256 feeAmount,
+        uint128 feeAmount,
         uint64 tradeId,
-        int256 sumUnitaryFundings
+        int128 sumUnitaryFundings
     ) internal {
         if (feeAmount == 0) return;
         perpFeeCollectorDeposit(symbol, feeAmount, tradeId, sumUnitaryFundings);
-        traderPosition.costPosition += int256(feeAmount);
+        traderPosition.costPosition += int128(feeAmount);
     }
 
-    function perpFeeCollectorDeposit(bytes32 symbol, uint256 amount, uint64 tradeId, int256 sumUnitaryFundings)
+    function perpFeeCollectorDeposit(bytes32 symbol, uint128 amount, uint64 tradeId, int128 sumUnitaryFundings)
         internal
     {
         bytes32 feeCollectorAccountId = feeManager.getFeeCollector(IFeeManager.FeeCollectorType.FuturesFeeCollector);
         AccountTypes.Account storage feeCollectorAccount = userLedger[feeCollectorAccountId];
         AccountTypes.PerpPosition storage feeCollectorPosition = feeCollectorAccount.perpPositions[symbol];
-        feeCollectorPosition.costPosition -= int256(amount);
+        feeCollectorPosition.costPosition -= int128(amount);
         feeCollectorPosition.lastSumUnitaryFundings = sumUnitaryFundings;
         if (tradeId > feeCollectorAccount.lastPerpTradeId) {
             feeCollectorAccount.lastPerpTradeId = tradeId;

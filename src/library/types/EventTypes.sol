@@ -20,8 +20,8 @@ library EventTypes {
 
     // WithdrawData
     struct WithdrawData {
-        uint256 tokenAmount;
-        uint256 fee;
+        uint128 tokenAmount;
+        uint128 fee;
         uint256 chainId; // target withdraw chain
         bytes32 accountId;
         bytes32 r; // String to bytes32, big endian?
@@ -37,37 +37,37 @@ library EventTypes {
 
     struct LedgerData {
         bytes32 accountId;
-        int256 settledAmount;
         bytes32 settledAsset;
-        uint256 insuranceTransferAmount;
+        int128 settledAmount;
+        uint128 insuranceTransferAmount;
         LedgerExecution[] ledgerExecutions;
     }
 
     struct LiquidationData {
         bytes32 accountId;
-        int256 settledAmount;
-        LiquidationTransfer[] liquidationTransfers;
-        uint256 timestamp;
+        int128 settledAmount;
+        uint64 timestamp;
         bytes32 liquidatedAsset;
+        LiquidationTransfer[] liquidationTransfers;
     }
 
     struct LiquidationTransfer {
-        uint256 liquidationTransferId;
+        uint64 liquidationTransferId;
         bytes32 liquidatorAccountId;
         bytes32 listSymbol;
-        int256 positionQtyTransfer;
-        int256 costPositionTransfer;
-        uint256 liquidatorFee;
-        uint256 insuranceFee;
-        uint256 markPrice;
-        int256 sumUnitaryFundings;
-        uint256 liquidationFee;
+        int128 positionQtyTransfer;
+        int128 costPositionTransfer;
+        uint128 liquidatorFee;
+        uint128 insuranceFee;
+        uint128 markPrice;
+        int128 sumUnitaryFundings;
+        uint128 liquidationFee;
     }
 
     struct LedgerExecution {
         bytes32 symbol;
-        int256 sumUnitaryFundings;
-        uint256 markPrice;
-        int256 settledAmount;
+        int128 sumUnitaryFundings;
+        uint128 markPrice;
+        int128 settledAmount;
     }
 }

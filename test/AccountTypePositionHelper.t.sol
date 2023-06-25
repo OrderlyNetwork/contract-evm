@@ -20,7 +20,7 @@ contract AccountTypePositionHelperTest is Test {
             openingCost: 0,
             lastAdlPrice: 0
         });
-        int256 lastSumUnitaryFundings = 1.1e15;
+        int128 lastSumUnitaryFundings = 1.1e15;
         position.chargeFundingFee(lastSumUnitaryFundings);
         assertEq(position.costPosition, 1e3);
 
@@ -128,9 +128,9 @@ contract AccountTypePositionHelperTest is Test {
 
     function test_half_down_up_boundary() public {
         // half_down16_8
-        int256 openingCost = -50_000_000_000_000_000;
-        int256 holding = 200_000_000;
-        int256 perpPosition = AccountTypePositionHelper.halfDown16_8(openingCost, holding);
+        int128 openingCost = -50_000_000_000_000_000;
+        int128 holding = 200_000_000;
+        int128 perpPosition = AccountTypePositionHelper.halfDown16_8(openingCost, holding);
         assertEq(perpPosition, -250_000_000);
 
         openingCost = -50_000_000_100_000_000;
@@ -219,8 +219,8 @@ contract AccountTypePositionHelperTest is Test {
         });
 
         // 100 billion*10^8
-        int256 qtyDiff = 10_000_000_000_000_000_000;
-        int256 price = 222_222_000;
+        int128 qtyDiff = 10_000_000_000_000_000_000;
+        int128 price = 222_222_000;
         // sell 20000000.11111 @ 2.22222
         position.calAverageEntryPrice(qtyDiff, price, 0);
         assertEq(position.openingCost, -22222200000000000000);

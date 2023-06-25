@@ -15,11 +15,11 @@ library PerpTypes {
         bytes32 accountId;
         bytes32 symbolHash;
         bool side;
-        int256 tradeQty;
-        int256 sumUnitaryFundings;
-        uint256 executedPrice;
-        int256 notional;
-        uint256 fee;
+        int128 tradeQty;
+        int128 sumUnitaryFundings;
+        uint128 executedPrice;
+        int128 notional;
+        uint128 fee;
         bytes32 feeAssetHash;
         uint64 timestamp;
     }

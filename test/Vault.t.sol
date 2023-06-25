@@ -10,7 +10,7 @@ contract VaultTest is Test {
     IVaultCrossChainManager vaultCrossChainManager;
     TestUSDC tUSDC;
     IVault vault;
-    uint256 constant AMOUNT = 1000000;
+    uint128 constant AMOUNT = 1000000;
     address constant SENDER = 0x4FDDB51ADe1fa66952de254bE7E1a84EEB153331;
     bytes32 constant ACCOUNT_ID = 0x1794513e2fc05828d3205892dbef3c91eb7ffd6df62e0360acadd55650c9b672;
     bytes32 constant BROKER_HASH = 0xfb08c0b22085b07c3787ca55e02cc585a966b0799bfef3d32fc335d7107cedef;

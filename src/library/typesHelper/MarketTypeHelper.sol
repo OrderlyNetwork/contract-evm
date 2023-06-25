@@ -16,23 +16,23 @@ library MarketTypeHelper {
         _perpMarketCfg.baseInitialMargin = _baseInitialMargin;
     }
 
-    function setLiquidationFeeMax(MarketTypes.PerpMarketCfg storage _perpMarketCfg, uint256 _liquidationFeeMax)
+    function setLiquidationFeeMax(MarketTypes.PerpMarketCfg storage _perpMarketCfg, uint128 _liquidationFeeMax)
         internal
     {
         _perpMarketCfg.liquidationFeeMax = _liquidationFeeMax;
     }
 
-    function setMarkPrice(MarketTypes.PerpMarketCfg storage _perpMarketCfg, uint256 _markPrice) internal {
+    function setMarkPrice(MarketTypes.PerpMarketCfg storage _perpMarketCfg, uint128 _markPrice) internal {
         _perpMarketCfg.markPrice = _markPrice;
     }
 
-    function setIndexPriceOrderly(MarketTypes.PerpMarketCfg storage _perpMarketCfg, uint256 _indexPriceOrderly)
+    function setIndexPriceOrderly(MarketTypes.PerpMarketCfg storage _perpMarketCfg, uint128 _indexPriceOrderly)
         internal
     {
         _perpMarketCfg.indexPriceOrderly = _indexPriceOrderly;
     }
 
-    function setSumUnitaryFundings(MarketTypes.PerpMarketCfg storage _perpMarketCfg, int256 _sumUnitaryFundings)
+    function setSumUnitaryFundings(MarketTypes.PerpMarketCfg storage _perpMarketCfg, int128 _sumUnitaryFundings)
         internal
     {
         _perpMarketCfg.sumUnitaryFundings = _sumUnitaryFundings;
