@@ -5,7 +5,8 @@ import "./../library/types/VaultTypes.sol";
 
 interface IVault {
     error OnlyCrossChainManagerCanCall();
-    error TokenNotExist();
+    error TokenNotAllowed();
+    error BrokerNotAllowed();
     error TransferFromFailed();
     error TransferFailed();
     error BalanceNotEnough(uint256 balance, uint128 amount);
@@ -35,5 +36,6 @@ interface IVault {
 
     // admin call
     function setCrossChainManager(address _crossChainManagerAddress) external;
-    function addTokenAddress(bytes32 _symbol, address _tokenAddress) external;
+    function addToken(bytes32 _tokenHash, address _tokenAddress) external;
+    function addBroker(bytes32 _brokerHash) external;
 }
