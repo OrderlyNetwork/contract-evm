@@ -13,28 +13,28 @@ contract FeeManager is IFeeManager, LedgerComponent {
     // accountId
     bytes32 public futuresFeeCollector;
     // amount
-    uint256 public withdrawFeeAmount;
+    uint128 public withdrawFeeAmount;
     // tokenHash => amount
-    mapping(bytes32 => uint256) public operatorGasFeeBalances;
+    mapping(bytes32 => uint128) public operatorGasFeeBalances;
 
     // get_operator_gas_fee_balance
-    function getOperatorGasFeeBalance(bytes32 tokenHash) external view override returns (uint256) {
+    function getOperatorGasFeeBalance(bytes32 tokenHash) external view override returns (uint128) {
         return operatorGasFeeBalances[tokenHash];
     }
 
     // set_operator_gas_fee_balance
-    function setOperatorGasFeeBalance(bytes32 tokenHash, uint256 amount) external override onlyLedger {
+    function setOperatorGasFeeBalance(bytes32 tokenHash, uint128 amount) external override onlyLedger {
         operatorGasFeeBalances[tokenHash] = amount;
     }
 
     // get_fee_amount
-    function getFeeAmount() external view override returns (uint256) {
+    function getFeeAmount() external view override returns (uint128) {
         return withdrawFeeAmount;
     }
 
     // change_fee_amount
     // WIP scope
-    function changeFeeAmount(uint256 amount) external override onlyOwner {
+    function changeFeeAmount(uint128 amount) external override onlyOwner {
         withdrawFeeAmount = amount;
     }
 

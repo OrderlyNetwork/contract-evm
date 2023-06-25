@@ -36,19 +36,19 @@ contract MarketManager is IMarketManager, LedgerComponent {
         perpMarketCfg[_pairSymbol].setBaseInitialMargin(_baseInitialMargin);
     }
 
-    function setLiquidationFeeMax(bytes32 _pairSymbol, uint256 _liquidationFeeMax) external override onlyLedger {
+    function setLiquidationFeeMax(bytes32 _pairSymbol, uint128 _liquidationFeeMax) external override onlyLedger {
         perpMarketCfg[_pairSymbol].setLiquidationFeeMax(_liquidationFeeMax);
     }
 
-    function setMarkPrice(bytes32 _pairSymbol, uint256 _markPrice) external override onlyLedger {
+    function setMarkPrice(bytes32 _pairSymbol, uint128 _markPrice) external override onlyLedger {
         perpMarketCfg[_pairSymbol].setMarkPrice(_markPrice);
     }
 
-    function setIndexPriceOrderly(bytes32 _pairSymbol, uint256 _indexPriceOrderly) external override onlyLedger {
+    function setIndexPriceOrderly(bytes32 _pairSymbol, uint128 _indexPriceOrderly) external override onlyLedger {
         perpMarketCfg[_pairSymbol].setIndexPriceOrderly(_indexPriceOrderly);
     }
 
-    function setSumUnitaryFundings(bytes32 _pairSymbol, int256 _sumUnitaryFundings) external override onlyLedger {
+    function setSumUnitaryFundings(bytes32 _pairSymbol, int128 _sumUnitaryFundings) external override onlyLedger {
         perpMarketCfg[_pairSymbol].setSumUnitaryFundings(_sumUnitaryFundings);
     }
 
