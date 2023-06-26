@@ -11,16 +11,16 @@ library PerpTypes {
 
     struct FuturesTradeUpload {
         uint64 tradeId;
-        string matchId;
+        uint64 matchId;
         bytes32 accountId;
         bytes32 symbolHash;
         bool side;
         int128 tradeQty;
-        int128 sumUnitaryFundings;
-        uint128 executedPrice;
         int128 notional;
+        uint128 executedPrice;
         uint128 fee;
         bytes32 feeAssetHash;
+        int128 sumUnitaryFundings;
         uint64 timestamp;
     }
 }
