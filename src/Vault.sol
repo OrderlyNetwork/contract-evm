@@ -19,8 +19,10 @@ contract Vault is IVault, ReentrancyGuard, Ownable {
     bytes32 constant USDC = bytes32(uint256(0x61fc29e9a6b4b52b423e75ca44734454f94ea60ddff3dc47af01a2a646fe9572));
     // cross-chain operator address
     address public crossChainManagerAddress;
-    // symbol to token address mapping
-    mapping(bytes32 => IERC20) public symbol2TokenAddress;
+    // tokenHash to token contract address mapping
+    mapping(bytes32 => IERC20) public allowedTokenList;
+    // list to record the hash value of allowed brokerIds
+    mapping(bytes32 => bool) public allowedBrokerList;
     // deposit id / nonce
     uint64 public depositId;
     // CrossChainManager contract
@@ -38,21 +40,27 @@ contract Vault is IVault, ReentrancyGuard, Ownable {
         crossChainManager = IVaultCrossChainManager(_crossChainManagerAddress);
     }
 
-    // add token address
-    function addTokenAddress(bytes32 _symbol, address _tokenAddress) public override onlyOwner {
-        symbol2TokenAddress[_symbol] = IERC20(_tokenAddress);
+    // add contract address for an allowed token
+    function addToken(bytes32 _tokenHash, address _tokenAddress) public onlyOwner {
+        allowedTokenList[_tokenHash] = IERC20(_tokenAddress);
+    }
+
+    // add the hash value for an allowed brokerId
+    function addBroker(bytes32 _brokerHash) external onlyOwner {
+        allowedBrokerList[_brokerHash] = true;
     }
 
     // call `setCrossChainManager` later
     constructor(address _usdcAddress) {
-        symbol2TokenAddress[USDC] = IERC20(_usdcAddress);
+        allowedTokenList[USDC] = IERC20(_usdcAddress);
     }
 
     // user deposit USDC
     function deposit(VaultTypes.VaultDepositFE calldata data) public override {
-        IERC20 tokenAddress = symbol2TokenAddress[data.tokenHash];
+        IERC20 tokenAddress = allowedTokenList[data.tokenHash];
         // require tokenAddress exist
-        if (address(tokenAddress) == address(0)) revert TokenNotExist();
+        if (address(tokenAddress) == address(0)) revert TokenNotAllowed();
+        if (!allowedBrokerList[data.brokerHash]) revert BrokerNotAllowed();
         bool succ = tokenAddress.transferFrom(msg.sender, address(this), data.tokenAmount);
         if (!succ) revert TransferFromFailed();
         // cross-chain tx to ledger
@@ -66,7 +74,7 @@ contract Vault is IVault, ReentrancyGuard, Ownable {
 
     // user withdraw USDC
     function withdraw(VaultTypes.VaultWithdraw calldata data) public override onlyCrossChainManager nonReentrant {
-        IERC20 tokenAddress = symbol2TokenAddress[data.tokenHash];
+        IERC20 tokenAddress = allowedTokenList[data.tokenHash];
         uint128 amount = data.tokenAmount - data.fee;
         // check balane gt amount
         if (tokenAddress.balanceOf(address(this)) < amount) {
