@@ -2,14 +2,14 @@
 pragma solidity ^0.8.18;
 
 library Utils {
-    function getAccountId(address addr, string calldata brokerRaw) public pure returns (bytes32 accountId) {
+    function getAccountId(address addr, string calldata brokerRaw) internal pure returns (bytes32 accountId) {
         // get brokerId from brokerRaw
         bytes32 brokerHash = string2HashedBytes32(brokerRaw);
         // call `getAccountId(address,bytes32)`
         accountId = getAccountId(addr, brokerHash);
     }
 
-    function getAccountId(address addr, bytes32 brokerHash) public pure returns (bytes32 accountId) {
+    function getAccountId(address addr, bytes32 brokerHash) internal pure returns (bytes32 accountId) {
         // data is encode addr + brokerId
         bytes memory data = abi.encode(addr, brokerHash);
         // accountId is keccak data
@@ -28,7 +28,7 @@ library Utils {
     }
 
     // string to keccack bytes32
-    function string2HashedBytes32(string memory source) public pure returns (bytes32) {
+    function string2HashedBytes32(string memory source) internal pure returns (bytes32) {
         return keccak256(abi.encode(string2Bytes32(source)));
     }
 }
