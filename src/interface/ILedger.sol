@@ -68,6 +68,16 @@ interface ILedger {
         uint8 failReson
     );
 
+    event SettlementResult(
+        bytes32 indexed accountId,
+        int128 settledAmount,
+        bytes32 settledAsset,
+        bytes32 insuranceAccountId,
+        uint128 insuranceTransferAmount,
+        uint64 settlementExecutionsCount,
+        uint64 eventId
+    );
+
     // called by cross chain manager
     function accountDeposit(AccountTypes.AccountDeposit calldata accountDeposit) external;
     function accountWithDrawFinish(AccountTypes.AccountWithdraw calldata withdraw) external;
@@ -75,8 +85,8 @@ interface ILedger {
     // called by operator manager
     function updateUserLedgerByTradeUpload(PerpTypes.FuturesTradeUpload calldata trade) external;
     function executeWithdrawAction(EventTypes.WithdrawData calldata withdraw, uint64 eventId) external;
-    function executeSettlement(EventTypes.LedgerData calldata ledger, uint64 eventId) external;
-    function executeLiquidation(EventTypes.LiquidationData calldata liquidation, uint64 eventId) external;
+    function executeSettlement(EventTypes.Settlement calldata ledger, uint64 eventId) external;
+    function executeLiquidation(EventTypes.Liquidation calldata liquidation, uint64 eventId) external;
 
     // view call
     function getUserLedgerBalance(bytes32 accountId, bytes32 symbol) external view returns (uint128);
@@ -90,7 +100,6 @@ interface ILedger {
 
     // admin call
     function setOperatorManagerAddress(address _operatorManagerAddress) external;
-    function setInsuranceFundAccountId(bytes32 _insuranceFundAccountId) external;
     function setCrossChainManager(address _crossChainManagerAddress) external;
     function setVaultManager(address _vaultManagerAddress) external;
     function setMarketManager(address _marketManagerAddress) external;

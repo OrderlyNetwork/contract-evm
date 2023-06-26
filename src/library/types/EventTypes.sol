@@ -13,7 +13,7 @@ library EventTypes {
     }
 
     struct EventUploadData {
-        bytes32 bizTypeHash; // keccak256(bizType)
+        uint8 bizType; // 0 - withdraw, 1 - settlement, 2 - adl, 3 - liquidation
         uint64 eventId;
         bytes data;
     }
@@ -35,39 +35,53 @@ library EventTypes {
         string tokenSymbol; // only this field is string, others should be bytes32 hashedTokenSymbol
     }
 
-    struct LedgerData {
+    struct Settlement {
         bytes32 accountId;
-        bytes32 settledAsset;
         int128 settledAmount;
+        bytes32 settledAsset;
+        bytes32 insuranceAccountId;
         uint128 insuranceTransferAmount;
-        LedgerExecution[] ledgerExecutions;
+        SettlementExecution[] settlementExecutions;
+        uint64 timestamp;
     }
 
-    struct LiquidationData {
-        bytes32 accountId;
+    struct SettlementExecution {
+        bytes32 symbolHash;
+        uint128 markPrice;
+        int128 sumUnitaryFundings;
         int128 settledAmount;
+    }
+
+    struct Adl {
+        bytes32 accountId;
+        bytes32 insuranceAccountId;
+        bytes32 symbolHash;
+        int128 positionQtyTransfer;
+        int128 costPositionTransfer;
+        uint128 adlPrice;
+        int128 sumUnitaryFundings;
         uint64 timestamp;
-        bytes32 liquidatedAsset;
+    }
+
+    struct Liquidation {
+        bytes32 liquidatedAccountId;
+        bytes32 insuranceAccountId;
+        uint128 insuranceTransferAmount;
+        bytes32 liquidatedAssetHash;
         LiquidationTransfer[] liquidationTransfers;
+        uint64 timestamp;
     }
 
     struct LiquidationTransfer {
         uint64 liquidationTransferId;
         bytes32 liquidatorAccountId;
-        bytes32 listSymbol;
+        bytes32 symbolHash;
         int128 positionQtyTransfer;
         int128 costPositionTransfer;
         uint128 liquidatorFee;
         uint128 insuranceFee;
-        uint128 markPrice;
-        int128 sumUnitaryFundings;
         uint128 liquidationFee;
-    }
-
-    struct LedgerExecution {
-        bytes32 symbol;
-        int128 sumUnitaryFundings;
         uint128 markPrice;
-        int128 settledAmount;
+        int128 sumUnitaryFundings;
     }
 }

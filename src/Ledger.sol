@@ -11,7 +11,7 @@ import "./library/FeeCollector.sol";
 import "./library/Utils.sol";
 import "./library/typesHelper/AccountTypeHelper.sol";
 import "./library/typesHelper/AccountTypePositionHelper.sol";
-import "./library/VerifyEIP712.sol";
+import "./library/Signature.sol";
 
 /**
  * Ledger is responsible for saving traders' Account (balance, perpPosition, and other meta)
@@ -34,8 +34,6 @@ contract Ledger is ILedger, Ownable {
     uint64 public globalDepositId;
     // userLedger accountId -> Account
     mapping(bytes32 => AccountTypes.Account) private userLedger;
-    // insuranceFundAccountId
-    bytes32 private insuranceFundAccountId;
     // VaultManager contract
     IVaultManager public vaultManager;
     // CrossChainManager contract
@@ -66,11 +64,6 @@ contract Ledger is ILedger, Ownable {
     function setCrossChainManager(address _crossChainManagerAddress) public override onlyOwner {
         crossChainManagerAddress = _crossChainManagerAddress;
         crossChainManager = ILedgerCrossChainManager(_crossChainManagerAddress);
-    }
-
-    // set insuranceFundAccountId
-    function setInsuranceFundAccountId(bytes32 _insuranceFundAccountId) public override onlyOwner {
-        insuranceFundAccountId = _insuranceFundAccountId;
     }
 
     // set vaultManager
@@ -184,7 +177,7 @@ contract Ledger is ILedger, Ownable {
         } else if (account.lastWithdrawNonce >= withdraw.withdrawNonce) {
             // require withdraw nonce inc
             state = 3;
-        } else if (!VerifyEIP712.verifyWithdraw(withdraw.sender, withdraw)) {
+        } else if (!Signature.verifyWithdraw(withdraw.sender, withdraw)) {
             // require signature verify
             state = 4;
         }
@@ -258,7 +251,7 @@ contract Ledger is ILedger, Ownable {
         );
     }
 
-    function executeSettlement(EventTypes.LedgerData calldata ledger, uint64 eventId)
+    function executeSettlement(EventTypes.Settlement calldata settlement, uint64 eventId)
         public
         override
         onlyOperatorManager
@@ -266,29 +259,31 @@ contract Ledger is ILedger, Ownable {
         // check total settle amount zero
         int128 totalSettleAmount = 0;
         // gas saving
-        uint256 length = ledger.ledgerExecutions.length;
-        EventTypes.LedgerExecution[] calldata ledgerExecutions = ledger.ledgerExecutions;
+        uint256 length = settlement.settlementExecutions.length;
+        EventTypes.SettlementExecution[] calldata settlementExecutions = settlement.settlementExecutions;
         for (uint256 i = 0; i < length; ++i) {
-            totalSettleAmount += ledgerExecutions[i].settledAmount;
+            totalSettleAmount += settlementExecutions[i].settledAmount;
         }
         if (totalSettleAmount != 0) revert TotalSettleAmountNotZero(totalSettleAmount);
 
-        AccountTypes.Account storage account = userLedger[ledger.accountId];
-        uint128 balance = account.balances[ledger.settledAsset];
+        AccountTypes.Account storage account = userLedger[settlement.accountId];
+        uint128 balance = account.balances[settlement.settledAsset];
         account.hasPendingLedgerRequest = false;
-        if (ledger.insuranceTransferAmount != 0) {
+        if (settlement.insuranceTransferAmount != 0) {
             // transfer insurance fund
-            if (int128(balance) + int128(ledger.insuranceTransferAmount) + ledger.settledAmount < 0) {
+            if (int128(balance) + int128(settlement.insuranceTransferAmount) + settlement.settledAmount < 0) {
                 // overflow
-                revert InsuranceTransferAmountInvalid(balance, ledger.insuranceTransferAmount, ledger.settledAmount);
+                revert InsuranceTransferAmountInvalid(
+                    balance, settlement.insuranceTransferAmount, settlement.settledAmount
+                );
             }
-            AccountTypes.Account storage insuranceFund = userLedger[insuranceFundAccountId];
-            insuranceFund.balances[ledger.settledAsset] += ledger.insuranceTransferAmount;
+            AccountTypes.Account storage insuranceFund = userLedger[settlement.insuranceAccountId];
+            insuranceFund.balances[settlement.settledAsset] += settlement.insuranceTransferAmount;
         }
         // for-loop ledger execution
         for (uint256 i = 0; i < length; ++i) {
-            EventTypes.LedgerExecution calldata ledgerExecution = ledgerExecutions[i];
-            AccountTypes.PerpPosition storage position = account.perpPositions[ledgerExecution.symbol];
+            EventTypes.SettlementExecution calldata ledgerExecution = settlementExecutions[i];
+            AccountTypes.PerpPosition storage position = account.perpPositions[ledgerExecution.symbolHash];
             if (position.positionQty != 0) {
                 position.chargeFundingFee(ledgerExecution.sumUnitaryFundings);
                 position.costPosition += ledgerExecution.settledAmount;
@@ -301,21 +296,30 @@ contract Ledger is ILedger, Ownable {
             balance = uint128(int128(balance) + ledgerExecution.settledAmount);
         }
         account.lastCefiEventId = eventId;
-        // TODO emit event
+        // emit event
+        emit SettlementResult(
+            settlement.accountId,
+            settlement.settledAmount,
+            settlement.settledAsset,
+            settlement.insuranceAccountId,
+            settlement.insuranceTransferAmount,
+            uint64(length),
+            eventId
+        );
     }
 
-    function executeLiquidation(EventTypes.LiquidationData calldata liquidation, uint64 eventId)
+    function executeLiquidation(EventTypes.Liquidation calldata liquidation, uint64 eventId)
         public
         override
         onlyOperatorManager
     {
-        AccountTypes.Account storage liquidated_user = userLedger[liquidation.accountId];
+        AccountTypes.Account storage liquidated_user = userLedger[liquidation.liquidatedAccountId];
         // for-loop liquidation execution
         uint256 length = liquidation.liquidationTransfers.length;
         EventTypes.LiquidationTransfer[] calldata liquidationTransfers = liquidation.liquidationTransfers;
         // chargeFundingFee for liquidated_user.perpPosition
         for (uint256 i = 0; i < length; ++i) {
-            liquidated_user.perpPositions[liquidation.liquidatedAsset].chargeFundingFee(
+            liquidated_user.perpPositions[liquidation.liquidatedAssetHash].chargeFundingFee(
                 liquidationTransfers[i].sumUnitaryFundings
             );
         }
