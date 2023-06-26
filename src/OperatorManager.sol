@@ -3,6 +3,7 @@ pragma solidity ^0.8.18;
 
 import "./interface/ILedger.sol";
 import "./interface/IOperatorManager.sol";
+import "./library/Signature.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 /**
@@ -71,6 +72,9 @@ contract OperatorManager is IOperatorManager, Ownable {
         if (data.batchId != futuresUploadBatchId) revert BatchIdNotMatch(data.batchId, futuresUploadBatchId);
         PerpTypes.FuturesTradeUpload[] memory trades = data.trades; // gas saving
         if (trades.length != data.count) revert CountNotMatch(trades.length, data.count);
+        bool succ = Signature.perpUploadEncodeHashVerify(data, operator);
+        if (!succ) revert SignatureNotMatch();
+
         _validatePerp(trades);
         // process each validated perp trades
         for (uint256 i = 0; i < data.count; i++) {
@@ -106,18 +110,21 @@ contract OperatorManager is IOperatorManager, Ownable {
 
     // process each event upload
     function _processEventUpload(EventTypes.EventUploadData memory data) internal {
-        bytes32 bizTypeHash = data.bizTypeHash;
-        if (bizTypeHash == 0x0000000000000000000000000000000000000000000000000000000000000000) {
+        uint8 bizType = data.bizType;
+        if (bizType == 0) {
             // withdraw
             ledger.executeWithdrawAction(abi.decode(data.data, (EventTypes.WithdrawData)), data.eventId);
-        } else if (bizTypeHash == 0x0000000000000000000000000000000000000000000000000000000000000001) {
-            // ledger
-            ledger.executeSettlement(abi.decode(data.data, (EventTypes.LedgerData)), data.eventId);
-        } else if (bizTypeHash == 0x0000000000000000000000000000000000000000000000000000000000000002) {
+        } else if (bizType == 1) {
+            // settlement
+            ledger.executeSettlement(abi.decode(data.data, (EventTypes.Settlement)), data.eventId);
+        } else if (bizType == 2) {
+            // adl
+            // WIP
+        } else if (bizType == 3) {
             // liquidation
-            ledger.executeLiquidation(abi.decode(data.data, (EventTypes.LiquidationData)), data.eventId);
+            ledger.executeLiquidation(abi.decode(data.data, (EventTypes.Liquidation)), data.eventId);
         } else {
-            revert InvalidBizId(bizTypeHash);
+            revert InvalidBizType(bizType);
         }
     }
 

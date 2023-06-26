@@ -4,6 +4,9 @@ pragma solidity ^0.8.18;
 library PerpTypes {
     // FuturesTradeUploadData
     struct FuturesTradeUploadData {
+        bytes32 r;
+        bytes32 s;
+        uint8 v;
         uint64 batchId;
         uint8 count;
         FuturesTradeUpload[] trades;
@@ -14,7 +17,7 @@ library PerpTypes {
         uint64 matchId;
         bytes32 accountId;
         bytes32 symbolHash;
-        bool side;
+        bool side; // buy (false) or sell (true)
         int128 tradeQty;
         int128 notional;
         uint128 executedPrice;
