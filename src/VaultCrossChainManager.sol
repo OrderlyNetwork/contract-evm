@@ -48,10 +48,6 @@ contract VaultCrossChainManager is IOrderlyCrossChainReceiver, IVaultCrossChainM
     {
         require(msg.sender == address(crossChainRelay), "VaultCrossChainManager: only crossChainRelay can call");
         require(message.dstChainId == chainId, "VaultCrossChainManager: dstChainId not match");
-        require(
-            message.payloadDataType == uint8(OrderlyCrossChainMessage.PayloadDataType.AccountTypesAccountWithdraw),
-            "VaultCrossChainManager: payloadDataType not match"
-        );
 
         EventTypes.WithdrawData memory data = abi.decode(payload, (EventTypes.WithdrawData));
 
