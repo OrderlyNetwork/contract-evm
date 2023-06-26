@@ -104,13 +104,13 @@ contract LedgerTest is Test {
 
     function test_verify_EIP712() public {
         vm.chainId(CHAIN_ID);
-        bool succ = VerifyEIP712.verifyWithdraw(withdrawData.sender, withdrawData);
+        bool succ = Signature.verifyWithdraw(withdrawData.sender, withdrawData);
         require(succ, "verify failed");
     }
 
     function testFail_verify_EIP712() public {
         vm.chainId(0xdead);
-        bool succ = VerifyEIP712.verifyWithdraw(withdrawData.sender, withdrawData);
+        bool succ = Signature.verifyWithdraw(withdrawData.sender, withdrawData);
         require(succ, "verify failed");
     }
 
