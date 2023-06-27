@@ -73,7 +73,7 @@ library Signature {
         uint64 eventId; // flat map to this
         bytes32 accountId;
         int128 settledAmount;
-        bytes32 settledAsset;
+        bytes32 settledAssetHash;
         bytes32 insuranceAccountId;
         uint128 insuranceTransferAmount;
         EventTypes.SettlementExecution[] settlementExecutions;
@@ -150,7 +150,7 @@ library Signature {
                     eventId: eventUploadData.eventId,
                     accountId: settlement.accountId,
                     settledAmount: settlement.settledAmount,
-                    settledAsset: settlement.settledAsset,
+                    settledAssetHash: settlement.settledAssetHash,
                     insuranceAccountId: settlement.insuranceAccountId,
                     insuranceTransferAmount: settlement.insuranceTransferAmount,
                     settlementExecutions: settlement.settlementExecutions,
