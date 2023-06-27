@@ -4,6 +4,7 @@ pragma solidity ^0.8.18;
 import "../library/types/AccountTypes.sol";
 import "../library/types/PerpTypes.sol";
 import "../library/types/EventTypes.sol";
+import "../library/types/MarketTypes.sol";
 
 interface ILedger {
     error OnlyOperatorCanCall();
@@ -87,6 +88,7 @@ interface ILedger {
     function executeWithdrawAction(EventTypes.WithdrawData calldata withdraw, uint64 eventId) external;
     function executeSettlement(EventTypes.Settlement calldata ledger, uint64 eventId) external;
     function executeLiquidation(EventTypes.Liquidation calldata liquidation, uint64 eventId) external;
+    function executePerpMarketInfo(MarketTypes.PerpMarketUpload calldata data) external;
 
     // view call
     function getUserLedgerBalance(bytes32 accountId, bytes32 symbol) external view returns (uint128);

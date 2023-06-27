@@ -38,13 +38,13 @@ library MarketTypeHelper {
         _perpMarketCfg.sumUnitaryFundings = _sumUnitaryFundings;
     }
 
-    function setLastMarkPriceUpdated(MarketTypes.PerpMarketCfg storage _perpMarketCfg, uint64 _lastMarkPriceUpdated)
+    function setLastMarkPriceUpdated(MarketTypes.PerpMarketCfg storage _perpMarketCfg, uint256 _lastMarkPriceUpdated)
         internal
     {
         _perpMarketCfg.lastMarkPriceUpdated = _lastMarkPriceUpdated;
     }
 
-    function setLastFundingUpdated(MarketTypes.PerpMarketCfg storage _perpMarketCfg, uint64 _lastFundingUpdated)
+    function setLastFundingUpdated(MarketTypes.PerpMarketCfg storage _perpMarketCfg, uint256 _lastFundingUpdated)
         internal
     {
         _perpMarketCfg.lastFundingUpdated = _lastFundingUpdated;
