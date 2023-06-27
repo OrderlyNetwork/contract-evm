@@ -13,6 +13,7 @@ interface IOperatorManager {
     error CountNotMatch(uint256 length, uint256 count);
     error SignatureNotMatch();
 
+    event FuturesTradeUpload(uint64 indexed batchId, uint256 blocktime);
     event EventUpload(uint64 indexed batchId, uint256 blocktime);
 
     // operator call futures trade upload
