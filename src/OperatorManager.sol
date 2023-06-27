@@ -53,25 +53,32 @@ contract OperatorManager is IOperatorManager, Ownable {
 
     // futuresTradeUpload
     function futuresTradeUpload(PerpTypes.FuturesTradeUploadData calldata data) public override onlyOperator {
+        if (data.batchId != futuresUploadBatchId) revert BatchIdNotMatch(data.batchId, futuresUploadBatchId);
         _innerPing();
         _futuresTradeUploadData(data);
+        // emit event
+        emit FuturesTradeUpload(data.batchId, block.timestamp);
+        // next wanted futuresUploadBatchId
+        futuresUploadBatchId += 1;
     }
 
     // eventUpload
     function eventUpload(EventTypes.EventUpload calldata data) public override onlyOperator {
+        if (data.batchId != eventUploadBatchId) revert BatchIdNotMatch(data.batchId, eventUploadBatchId);
         _innerPing();
         _eventUploadData(data);
         // emit event
         emit EventUpload(eventUploadBatchId, block.timestamp);
-        // next wanted batchId
+        // next wanted eventUploadBatchId
         eventUploadBatchId += 1;
     }
 
     // futures trade upload data
     function _futuresTradeUploadData(PerpTypes.FuturesTradeUploadData memory data) internal {
-        if (data.batchId != futuresUploadBatchId) revert BatchIdNotMatch(data.batchId, futuresUploadBatchId);
         PerpTypes.FuturesTradeUpload[] memory trades = data.trades; // gas saving
         if (trades.length != data.count) revert CountNotMatch(trades.length, data.count);
+
+        // check cefi signature
         bool succ = Signature.perpUploadEncodeHashVerify(data, operator);
         if (!succ) revert SignatureNotMatch();
 
@@ -80,8 +87,6 @@ contract OperatorManager is IOperatorManager, Ownable {
         for (uint256 i = 0; i < data.count; i++) {
             _processValidatedFutures(trades[i]);
         }
-        // update_futuresUploadBatchId
-        futuresUploadBatchId += 1;
     }
 
     // validate futres trade upload data
@@ -99,9 +104,13 @@ contract OperatorManager is IOperatorManager, Ownable {
 
     // event upload data
     function _eventUploadData(EventTypes.EventUpload memory data) internal {
-        if (data.batchId != eventUploadBatchId) revert BatchIdNotMatch(data.batchId, eventUploadBatchId);
         EventTypes.EventUploadData[] memory events = data.events; // gas saving
         if (events.length != data.count) revert CountNotMatch(events.length, data.count);
+
+        // check cefi signature
+        bool succ = Signature.eventsUploadEncodeHashVerify(data, operator);
+        if (!succ) revert SignatureNotMatch();
+
         // process each event upload
         for (uint256 i = 0; i < data.count; i++) {
             _processEventUpload(events[i]);
