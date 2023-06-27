@@ -5,7 +5,7 @@ import "./types/PerpTypes.sol";
 import "./types/EventTypes.sol";
 
 library Signature {
-    function verifyWithdraw(address sender, EventTypes.WithdrawData calldata data) external view returns (bool) {
+    function verifyWithdraw(address sender, EventTypes.WithdrawData memory data) internal view returns (bool) {
         bytes32 typeHash =
             keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
 
@@ -33,7 +33,7 @@ library Signature {
         return signer == sender && signer != address(0);
     }
 
-    function getEthSignedMessageHash(bytes32 _messageHash) public pure returns (bytes32) {
+    function getEthSignedMessageHash(bytes32 _messageHash) internal pure returns (bytes32) {
         /*
         Signature is produced by signing a keccak256 hash with the following format:
         "\x19Ethereum Signed Message\n" + len(msg) + msg
@@ -41,12 +41,12 @@ library Signature {
         return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _messageHash));
     }
 
-    function verify(bytes32 hash, bytes32 r, bytes32 s, uint8 v, address signer) public pure returns (bool) {
+    function verify(bytes32 hash, bytes32 r, bytes32 s, uint8 v, address signer) internal pure returns (bool) {
         return ecrecover(hash, v, r, s) == signer;
     }
 
-    function perpUploadEncodeHashVerify(PerpTypes.FuturesTradeUploadData calldata data, address signer)
-        public
+    function perpUploadEncodeHashVerify(PerpTypes.FuturesTradeUploadData memory data, address signer)
+        internal
         pure
         returns (bool)
     {
@@ -110,7 +110,7 @@ library Signature {
         LiquidationSignature[] liquidations;
     }
 
-    function eventsUploadEncodeHash(EventTypes.EventUpload calldata data) internal pure returns (bytes memory) {
+    function eventsUploadEncodeHash(EventTypes.EventUpload memory data) internal pure returns (bytes memory) {
         uint8[] memory countArray = new uint8[](4);
         uint8[] memory countArray2 = new uint8[](4);
         uint256 len = data.events.length;
@@ -125,7 +125,7 @@ library Signature {
             liquidations: new LiquidationSignature[](countArray[3])
         });
         for (uint256 i = 0; i < len; i++) {
-            EventTypes.EventUploadData calldata eventUploadData = data.events[i];
+            EventTypes.EventUploadData memory eventUploadData = data.events[i];
             if (eventUploadData.bizType == 0) {
                 EventTypes.WithdrawData memory withdrawData =
                     abi.decode(eventUploadData.data, (EventTypes.WithdrawData));
@@ -198,8 +198,8 @@ library Signature {
         return encoded;
     }
 
-    function eventsUploadEncodeHashVerify(EventTypes.EventUpload calldata data, address signer)
-        public
+    function eventsUploadEncodeHashVerify(EventTypes.EventUpload memory data, address signer)
+        internal
         pure
         returns (bool)
     {

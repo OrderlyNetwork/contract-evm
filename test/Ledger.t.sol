@@ -33,36 +33,36 @@ contract LedgerTest is Test {
         srcChainDepositNonce: 1
     });
 
-    // address(this) is 0x90193C961A926261B756D1E5bb255e67ff9498A1
+    // address(this) is 0x7FA9385bE102ac3EAc297483Dd6233D62b3e1496
     EventTypes.WithdrawData withdrawData = EventTypes.WithdrawData(
         AMOUNT,
         0,
         CHAIN_ID,
         ACCOUNT_ID,
-        0x90b44cb1c50eaca38cdbb972180d5bd6a328825aa60dc8e25f1c2cb9f1abc4a8,
-        0x5bb52b33ae0d9e1733c80da1163a33034ee433bf949e8c96beb940ece3ab5683,
-        27,
+        0x6de54cc89be3597db5275c7d4dd135e20cd5e4bf9e15b91290652911c41079d6,
+        0x2a9a28562e693658390672be9386e89f121a2f95d5c3fc395c77e2e8da2d867f,
+        0x1b,
         SENDER,
         WITHDRAW_NONCE,
         SENDER,
-        1686648201277,
+        1687834683953,
         "woofi_dex",
         "USDC"
     );
 
-    // address(this) is 0x78cA0A67bF6Cbe8Bf2429f0c7934eE5Dd687a32c
+    // address(this) is 0x5991A2dF15A8F6A256D3Ec51E99254Cd3fb576A9
     EventTypes.WithdrawData withdrawData2 = EventTypes.WithdrawData(
         AMOUNT,
         0,
         CHAIN_ID,
         ACCOUNT_ID,
-        0x53461c50a139b3124efcba37be7eb96ee842453bcb24a841475bbc3898b997ac,
-        0x503c4cb84c2139d03f39be7cc49bef7764e5dcb8fd48ed64fc26a133c0e90462,
-        28,
+        0xaf7765a771fb84359306155d44437e4cc2474dd6b3440730abec525e25894f9e,
+        0x60cf03fc33c4f42c4313e722386a9e2a29e8e51e26f001e95c13d6780eefe403,
+        0x1b,
         SENDER,
         WITHDRAW_NONCE,
         SENDER,
-        1686723941381,
+        1687835301453,
         "woofi_dex",
         "USDC"
     );
@@ -121,7 +121,7 @@ contract LedgerTest is Test {
         assertEq(vaultManager.getBalance(CHAIN_ID, TOKEN_HASH), AMOUNT);
     }
 
-    function test_withdraw() public {
+    function test_withdraw_approve() public {
         vm.prank(address(ledgerCrossChainManager));
         ledger.accountDeposit(depositData);
         vm.prank(address(operatorManager));
