@@ -12,6 +12,29 @@ contract MarketManager is IMarketManager, LedgerComponent {
     // pairSymbol => PerpMarketCfg
     mapping(bytes32 => MarketTypes.PerpMarketCfg) public perpMarketCfg;
 
+    function updatePerpPrices(MarketTypes.PerpPriceInner calldata data) external onlyLedger {
+        uint256 length = data.perpPrices.length;
+        for (uint256 i = 0; i < length; i++) {
+            MarketTypes.PerpPrice calldata perpPrice = data.perpPrices[i];
+            MarketTypes.PerpMarketCfg storage cfg = perpMarketCfg[perpPrice.symbolHash];
+            cfg.setIndexPriceOrderly(perpPrice.indexPrice);
+            cfg.setMarkPrice(perpPrice.markPrice);
+            cfg.setLastMarkPriceUpdated(block.timestamp);
+        }
+        emit MarketData(data.maxTimestamp);
+    }
+
+    function updateSumUnitaryFundings(MarketTypes.SumUnitaryFundingsInner calldata data) external onlyLedger {
+        uint256 length = data.sumUnitaryFundings.length;
+        for (uint256 i = 0; i < length; i++) {
+            MarketTypes.SumUnitaryFunding calldata sumUnitaryFunding = data.sumUnitaryFundings[i];
+            MarketTypes.PerpMarketCfg storage cfg = perpMarketCfg[sumUnitaryFunding.symbolHash];
+            cfg.setSumUnitaryFundings(sumUnitaryFunding.sumUnitaryFunding);
+            cfg.setLastFundingUpdated(block.timestamp);
+        }
+        emit FundingData(data.maxTimestamp);
+    }
+
     function setPerpMarketCfg(bytes32 _pairSymbol, MarketTypes.PerpMarketCfg memory _perpMarketCfg)
         external
         override

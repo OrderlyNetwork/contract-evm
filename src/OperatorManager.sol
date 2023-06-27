@@ -73,9 +73,15 @@ contract OperatorManager is IOperatorManager, Ownable {
         eventUploadBatchId += 1;
     }
 
+    // PerpMarketInfo
+    function PerpMarketInfo(MarketTypes.PerpMarketUpload calldata data) public override onlyOperator {
+        _innerPing();
+        _perpMarketInfo(data);
+    }
+
     // futures trade upload data
-    function _futuresTradeUploadData(PerpTypes.FuturesTradeUploadData memory data) internal {
-        PerpTypes.FuturesTradeUpload[] memory trades = data.trades; // gas saving
+    function _futuresTradeUploadData(PerpTypes.FuturesTradeUploadData calldata data) internal {
+        PerpTypes.FuturesTradeUpload[] calldata trades = data.trades;
         if (trades.length != data.count) revert CountNotMatch(trades.length, data.count);
 
         // check cefi signature
@@ -90,7 +96,7 @@ contract OperatorManager is IOperatorManager, Ownable {
     }
 
     // validate futres trade upload data
-    function _validatePerp(PerpTypes.FuturesTradeUpload[] memory trades) internal pure {
+    function _validatePerp(PerpTypes.FuturesTradeUpload[] calldata trades) internal pure {
         for (uint256 i = 0; i < trades.length; i++) {
             // check symbol (and maybe other value) is valid
             // TODO
@@ -98,13 +104,13 @@ contract OperatorManager is IOperatorManager, Ownable {
     }
 
     // process each validated perp trades
-    function _processValidatedFutures(PerpTypes.FuturesTradeUpload memory trade) internal {
+    function _processValidatedFutures(PerpTypes.FuturesTradeUpload calldata trade) internal {
         ledger.updateUserLedgerByTradeUpload(trade);
     }
 
     // event upload data
-    function _eventUploadData(EventTypes.EventUpload memory data) internal {
-        EventTypes.EventUploadData[] memory events = data.events; // gas saving
+    function _eventUploadData(EventTypes.EventUpload calldata data) internal {
+        EventTypes.EventUploadData[] calldata events = data.events; // gas saving
         if (events.length != data.count) revert CountNotMatch(events.length, data.count);
 
         // check cefi signature
@@ -118,7 +124,7 @@ contract OperatorManager is IOperatorManager, Ownable {
     }
 
     // process each event upload
-    function _processEventUpload(EventTypes.EventUploadData memory data) internal {
+    function _processEventUpload(EventTypes.EventUploadData calldata data) internal {
         uint8 bizType = data.bizType;
         if (bizType == 0) {
             // withdraw
@@ -135,6 +141,12 @@ contract OperatorManager is IOperatorManager, Ownable {
         } else {
             revert InvalidBizType(bizType);
         }
+    }
+
+    // perp market info
+    function _perpMarketInfo(MarketTypes.PerpMarketUpload calldata data) internal {
+        // process perp market info
+        ledger.executePerpMarketInfo(data);
     }
 
     function _innerPing() internal {

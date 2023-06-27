@@ -5,6 +5,13 @@ import "../library/types/MarketTypes.sol";
 import "./ILedgerComponent.sol";
 
 interface IMarketManager is ILedgerComponent {
+    event MarketData(uint64 maxTimestamp);
+    event FundingData(uint64 maxTimestamp);
+
+    // update functions
+    function updatePerpPrices(MarketTypes.PerpPriceInner calldata data) external;
+    function updateSumUnitaryFundings(MarketTypes.SumUnitaryFundingsInner calldata data) external;
+
     function setPerpMarketCfg(bytes32 _pairSymbol, MarketTypes.PerpMarketCfg memory _perpMarketCfg) external;
     function getPerpMarketCfg(bytes32 _pairSymbol) external view returns (MarketTypes.PerpMarketCfg memory);
 
