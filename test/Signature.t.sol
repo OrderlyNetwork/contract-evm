@@ -133,4 +133,65 @@ contract SignatureTest is Test {
         bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
         assertEq(succ, true);
     }
+
+    // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/299009164/Test+vector#%E6%95%B0%E6%8D%AE2.1
+    function test_eventUploadEncodeHash_2() public {
+        EventTypes.WithdrawData memory w1 = EventTypes.WithdrawData({
+            tokenAmount: 123,
+            fee: 5000,
+            chainId: 10086,
+            accountId: 0x1723cb226c337a417a6022890bc5671ebb4db551db0273536bf1094edf39ed63,
+            r: 0x0,
+            s: 0x0,
+            v: 0x0,
+            sender: 0x6a9961Ace9bF0C1B8B98ba11558A4125B1f5EA3f,
+            withdrawNonce: 9,
+            receiver: 0x6a9961Ace9bF0C1B8B98ba11558A4125B1f5EA3f,
+            timestamp: 1683270380530,
+            brokerId: "woo_dex",
+            tokenSymbol: "USDC"
+        });
+
+        EventTypes.Adl memory a1 = EventTypes.Adl({
+            accountId: 0x1723cb226c337a417a6022890bc5671ebb4db551db0273536bf1094edf39ed64,
+            insuranceAccountId: 0x1723cb226c337a417a6022890bc5671ebb4db551db0273536bf1094edf39ed65,
+            symbolHash: 0x1723cb226c337a417a6022890bc5671ebb4db551db0273536bf1094edf39ed66,
+            positionQtyTransfer: 2000000000,
+            costPositionTransfer: 44000000,
+            adlPrice: 220000000,
+            sumUnitaryFundings: 12340000000,
+            timestamp: 1683270380531
+        });
+
+        EventTypes.WithdrawData memory w2 = EventTypes.WithdrawData({
+            tokenAmount: 12356,
+            fee: 5001,
+            chainId: 10087,
+            accountId: 0x1723cb226c337a417a6022890bc5671ebb4db551db0273536bf1094edf39ed64,
+            r: 0x0,
+            s: 0x0,
+            v: 0x0,
+            sender: 0x6a9961Ace9bF0C1B8B98ba11558A4125B1f5EA3f,
+            withdrawNonce: 10,
+            receiver: 0x6a9961Ace9bF0C1B8B98ba11558A4125B1f5EA3f,
+            timestamp: 1683270380531,
+            brokerId: "woofi_dex",
+            tokenSymbol: "USDC"
+        });
+        EventTypes.EventUploadData[] memory events = new EventTypes.EventUploadData[](3);
+        events[0] = EventTypes.EventUploadData({bizType: 0, eventId: 1, data: abi.encode(w1)});
+        events[1] = EventTypes.EventUploadData({bizType: 2, eventId: 3, data: abi.encode(a1)});
+        events[2] = EventTypes.EventUploadData({bizType: 0, eventId: 4, data: abi.encode(w2)});
+        EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
+            events: events,
+            r: 0xfd3ee24f871ae1c8a16aa336b81558f9cc42d2b7891eea8ba1403b1224286419,
+            s: 0x1aa444dac958a78d7f6a5fe07909118ef2882203a339e37c8bc138f61566449e,
+            v: 0x1c,
+            count: 4,
+            batchId: 18
+        });
+
+        bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
+        assertEq(succ, true);
+    }
 }
