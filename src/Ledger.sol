@@ -267,7 +267,7 @@ contract Ledger is ILedger, Ownable {
         if (totalSettleAmount != 0) revert TotalSettleAmountNotZero(totalSettleAmount);
 
         AccountTypes.Account storage account = userLedger[settlement.accountId];
-        uint128 balance = account.balances[settlement.settledAsset];
+        uint128 balance = account.balances[settlement.settledAssetHash];
         account.hasPendingLedgerRequest = false;
         if (settlement.insuranceTransferAmount != 0) {
             // transfer insurance fund
@@ -278,7 +278,7 @@ contract Ledger is ILedger, Ownable {
                 );
             }
             AccountTypes.Account storage insuranceFund = userLedger[settlement.insuranceAccountId];
-            insuranceFund.balances[settlement.settledAsset] += settlement.insuranceTransferAmount;
+            insuranceFund.balances[settlement.settledAssetHash] += settlement.insuranceTransferAmount;
         }
         // for-loop ledger execution
         for (uint256 i = 0; i < length; ++i) {
@@ -300,7 +300,7 @@ contract Ledger is ILedger, Ownable {
         emit SettlementResult(
             settlement.accountId,
             settlement.settledAmount,
-            settlement.settledAsset,
+            settlement.settledAssetHash,
             settlement.insuranceAccountId,
             settlement.insuranceTransferAmount,
             uint64(length),
