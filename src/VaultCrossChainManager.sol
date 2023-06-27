@@ -39,6 +39,7 @@ contract VaultCrossChainManager is IOrderlyCrossChainReceiver, IVaultCrossChainM
 
     // set ledgerCrossChainManager
     function setLedgerCrossChainManager(uint256 _chainId, address _ledgerCrossChainManager) public onlyOwner {
+        ledgerChainId = _chainId;
         ledgerCrossChainManagers[_chainId] = _ledgerCrossChainManager;
     }
 
