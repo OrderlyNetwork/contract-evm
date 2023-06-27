@@ -71,7 +71,7 @@ interface ILedger {
     event SettlementResult(
         bytes32 indexed accountId,
         int128 settledAmount,
-        bytes32 settledAsset,
+        bytes32 settledAssetHash,
         bytes32 insuranceAccountId,
         uint128 insuranceTransferAmount,
         uint64 settlementExecutionsCount,

@@ -38,7 +38,7 @@ library EventTypes {
     struct Settlement {
         bytes32 accountId;
         int128 settledAmount;
-        bytes32 settledAsset;
+        bytes32 settledAssetHash;
         bytes32 insuranceAccountId;
         uint128 insuranceTransferAmount;
         SettlementExecution[] settlementExecutions;
