@@ -23,6 +23,9 @@ contract LedgerCrossChainManager is
     ILedgerCrossChainManager,
     Ownable
 {
+
+    event DepositReceived(AccountTypes.AccountDeposit data);
+
     // chain id of this contract
     uint256 public chainId;
     // ledger Interface
@@ -64,6 +67,7 @@ contract LedgerCrossChainManager is
 
     function deposit(
         AccountTypes.AccountDeposit memory data) internal {
+        emit DepositReceived(data);
         ledger.accountDeposit(data);
     }
 
