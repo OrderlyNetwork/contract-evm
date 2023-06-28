@@ -21,7 +21,9 @@ forge test -vvvv
 ```
 
 ## CrossChain Setup
+
 ## CrossChainRelay Vault Side 43113
+
 1. deploy 0xBfc0B179da8551C8cf62460B93e40071C5ef131D
 2. setSrcChainId
 3. addCaller(VaultCrossChainManager)
@@ -30,6 +32,7 @@ forge test -vvvv
 6. transfer native token to Contract
 
 ## CrossChainRelay Ledger Side 986532
+
 1. deploy 0x2558B46b5a31d0C3d221d9f13f14275eD6C6FdCA
 2. setSrcChainId
 3. addCaller(LedgerCrossChainManager)
@@ -37,16 +40,29 @@ forge test -vvvv
 5. setTrustedRemote
 6. transfer native token to Contract
 
-### LedgerCrossChainManager 
+### LedgerCrossChainManager
+
 1. deploy 0x095d45c24687e87C6832E8d1C90fa755C16BA382
 2. setChainId
 3. setLedger
 4. setCrossChainRelay
 5. setVaultCrossChainManager(chainId, address)
 
-### VaultCrossChainManager 
+### VaultCrossChainManager
+
 1. deploy 0x4B4E25e461d8Cdc9333196Bc2A27527f3cFc3209
 2. setChainId
 3. setVault
 4. setCrossChainRelay
 5. setLedgerCrossChainManager(chainId, address)
+
+## Ledger deploy
+
+command:
+`forge script script/Ledger/DeployLedger.s.sol -f $NETWORK --json --broadcast --verify`
+make sure all the ENV is set:
+
+1. ORDERLY_PRIVATE_KEY
+2. OPERATOR_ADDRESS
+3. LedgerCrossChainManager_ADDRESS
+4. NETWORK
