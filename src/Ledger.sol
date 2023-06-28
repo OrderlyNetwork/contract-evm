@@ -333,6 +333,18 @@ contract Ledger is ILedger, Ownable {
         // TODO emit event
     }
 
+    function executePerpMarketInfo(MarketTypes.PerpMarketUpload calldata data) public override onlyOperatorManager {
+        // TODO change me
+        if (data.bizType == 0) {
+            MarketTypes.PerpPriceInner memory innerData = abi.decode(data.data, (MarketTypes.PerpPriceInner));
+            marketManager.updatePerpPrices(innerData);
+        } else if (data.bizType == 1) {
+            MarketTypes.SumUnitaryFundingsInner memory innerData =
+                abi.decode(data.data, (MarketTypes.SumUnitaryFundingsInner));
+            marketManager.updateSumUnitaryFundings(innerData);
+        }
+    }
+
     function _newGlobalEventId() internal returns (uint64) {
         globalEventId += 1;
         return globalEventId;

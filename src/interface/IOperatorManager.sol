@@ -5,6 +5,7 @@ import "../library/types/OperatorTypes.sol";
 import "../library/types/AccountTypes.sol";
 import "../library/types/PerpTypes.sol";
 import "../library/types/EventTypes.sol";
+import "../library/types/MarketTypes.sol";
 
 interface IOperatorManager {
     error OnlyOperatorCanCall();
@@ -20,6 +21,8 @@ interface IOperatorManager {
     function futuresTradeUpload(PerpTypes.FuturesTradeUploadData calldata data) external;
     // operator call event upload
     function eventUpload(EventTypes.EventUpload calldata data) external;
+    // operator call perp market info
+    function PerpMarketInfo(MarketTypes.PerpMarketUpload calldata data) external;
     // operator call ping
     function operatorPing() external;
 
