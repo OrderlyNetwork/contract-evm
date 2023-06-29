@@ -5,7 +5,6 @@ import "forge-std/Script.sol";
 import "../../src/OperatorManager.sol";
 import "../../src/Ledger.sol";
 import "../../src/VaultManager.sol";
-import "../../src/LedgerCrossChainManager.sol";
 import "../../src/FeeManager.sol";
 import "../../src/MarketManager.sol";
 
@@ -13,11 +12,11 @@ contract DeployLedger is Script {
     function run() external {
         uint256 orderlyPrivateKey = vm.envUint("ORDERLY_PRIVATE_KEY");
         address operatorAddress = vm.envAddress("OPERATOR_ADDRESS");
-        address ledgerCrossChainManagerAddress = vm.envAddress("LedgerCrossChainManager_ADDRESS");
+        address ledgerCrossChainManagerAddress = vm.envAddress("LEDGER_CROSS_CHAIN_MANAGER_ADDRESS");
         vm.startBroadcast(orderlyPrivateKey);
 
         ILedgerCrossChainManager ledgerCrossChainManager =
-            LedgerCrossChainManager(payable(ledgerCrossChainManagerAddress));
+            ILedgerCrossChainManager(payable(ledgerCrossChainManagerAddress));
         IOperatorManager operatorManager = new OperatorManager();
         IVaultManager vaultManager = new VaultManager();
         ILedger ledger = new Ledger();
@@ -34,7 +33,7 @@ contract DeployLedger is Script {
         operatorManager.setLedger(address(ledger));
 
         ledgerCrossChainManager.setLedger(address(ledger));
-        ledgerCrossChainManager.setOperatorManager(address(operatorManager));
+        // ledgerCrossChainManager.setOperatorManager(address(operatorManager));
 
         vaultManager.setLedgerAddress(address(ledger));
 
