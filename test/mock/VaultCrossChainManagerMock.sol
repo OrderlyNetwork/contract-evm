@@ -14,4 +14,8 @@ contract VaultCrossChainManagerMock is IOrderlyCrossChainReceiver, IVaultCrossCh
     function deposit(VaultTypes.VaultDeposit memory data) external override {}
 
     function withdraw(VaultTypes.VaultWithdraw memory data) external override {}
+
+    function setVault(address _vault) external override {}
+
+    function setCrossChainRelay(address _crossChainRelay) external override {}
 }

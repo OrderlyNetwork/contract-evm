@@ -28,12 +28,12 @@ contract VaultCrossChainManager is IOrderlyCrossChainReceiver, IVaultCrossChainM
     }
 
     // set vault
-    function setVault(address _vault) public onlyOwner {
+    function setVault(address _vault) public override onlyOwner {
         vault = IVault(_vault);
     }
 
     // set crossChainRelay
-    function setCrossChainRelay(address _crossChainRelay) public onlyOwner {
+    function setCrossChainRelay(address _crossChainRelay) public override onlyOwner {
         crossChainRelay = IOrderlyCrossChain(_crossChainRelay);
     }
 
