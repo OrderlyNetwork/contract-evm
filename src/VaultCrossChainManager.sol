@@ -23,22 +23,22 @@ contract VaultCrossChainManager is IOrderlyCrossChainReceiver, IVaultCrossChainM
     mapping(uint256 => address) public ledgerCrossChainManagers;
 
     // set chain id
-    function setChainId(uint256 _chainId) public onlyOwner {
+    function setChainId(uint256 _chainId) public {
         chainId = _chainId;
     }
 
     // set vault
-    function setVault(address _vault) public override onlyOwner {
+    function setVault(address _vault) public {
         vault = IVault(_vault);
     }
 
     // set crossChainRelay
-    function setCrossChainRelay(address _crossChainRelay) public override onlyOwner {
+    function setCrossChainRelay(address _crossChainRelay) public {
         crossChainRelay = IOrderlyCrossChain(_crossChainRelay);
     }
 
     // set ledgerCrossChainManager
-    function setLedgerCrossChainManager(uint256 _chainId, address _ledgerCrossChainManager) public onlyOwner {
+    function setLedgerCrossChainManager(uint256 _chainId, address _ledgerCrossChainManager) public {
         ledgerChainId = _chainId;
         ledgerCrossChainManagers[_chainId] = _ledgerCrossChainManager;
     }
