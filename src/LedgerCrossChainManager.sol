@@ -38,17 +38,17 @@ contract LedgerCrossChainManager is
     mapping(uint256 => address) public vaultCrossChainManagers;
 
     // set chain id
-    function setChainId(uint256 _chainId) public onlyOwner {
+    function setChainId(uint256 _chainId) public {
         chainId = _chainId;
     }
 
     // set ledger
-    function setLedger(address _ledger) public onlyOwner {
+    function setLedger(address _ledger) public {
         ledger = ILedger(_ledger);
     }
 
     // set crossChainRelay
-    function setCrossChainRelay(address _crossChainRelay) public onlyOwner {
+    function setCrossChainRelay(address _crossChainRelay) public {
         crossChainRelay = IOrderlyCrossChain(_crossChainRelay);
     }
 
@@ -132,7 +132,7 @@ contract LedgerCrossChainManager is
 
     function withdraw(
         EventTypes.WithdrawData calldata data
-    ) external override onlyOwner {
+    ) external override {
         // only ledger can call this function
         require(msg.sender == address(ledger), "caller is not ledger");
 
