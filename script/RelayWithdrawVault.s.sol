@@ -20,7 +20,7 @@ contract RelayWithdrawVault is Script{
         // 100 native token
         uint256 ledgerTransferAmount = 100_000_000_000_000_000_000;
         // 2 native token
-        uint256 vaultTransferAmount = 1_000_000_000_000_000_000;
+        uint256 vaultTransferAmount = 1_055_000_000_000_000_000;
 
         vm.startBroadcast(fujiPrivateKey);
 
