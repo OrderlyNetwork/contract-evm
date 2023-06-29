@@ -41,18 +41,13 @@ contract Vault is IVault, ReentrancyGuard, Ownable {
     }
 
     // add contract address for an allowed token
-    function addToken(bytes32 _tokenHash, address _tokenAddress) public onlyOwner {
+    function addToken(bytes32 _tokenHash, address _tokenAddress) public override onlyOwner {
         allowedTokenList[_tokenHash] = IERC20(_tokenAddress);
     }
 
     // add the hash value for an allowed brokerId
-    function addBroker(bytes32 _brokerHash) external onlyOwner {
+    function addBroker(bytes32 _brokerHash) external override onlyOwner {
         allowedBrokerList[_brokerHash] = true;
-    }
-
-    // call `setCrossChainManager` later
-    constructor(address _usdcAddress) {
-        allowedTokenList[USDC] = IERC20(_usdcAddress);
     }
 
     // user deposit USDC

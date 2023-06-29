@@ -59,10 +59,17 @@ forge test -vvvv
 ## Ledger deploy
 
 command:
-`forge script script/Ledger/DeployLedger.s.sol -f $NETWORK --json --broadcast --verify`
+`forge script script/ledger/DeployLedger.s.sol -f $LEDGER_NETWORK --json --broadcast --legacy`
+
 make sure all the ENV is set:
 
 1. ORDERLY_PRIVATE_KEY
 2. OPERATOR_ADDRESS
-3. LedgerCrossChainManager_ADDRESS
-4. NETWORK
+3. LEDGER_CROSS_CHAIN_MANAGER_ADDRESS
+4. LEDGER_NETWORK
+
+## Vault deploy
+
+command:
+`forge script script/vault/DeployVault.s.sol -f $VAULT_NETWORK --json --broadcast`
+`forge script script/vault/StartDeposit.s.sol -f $VAULT_NETWORK --json --broadcast`
