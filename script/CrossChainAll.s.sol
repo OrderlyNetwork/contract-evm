@@ -27,9 +27,9 @@ contract RelayWithdrawLedgerMumbai is Script{
             address otherCrossChainManagerAddress,
             string memory network,
             uint256 srcChainId,
-            uint256 srcLzChainId,
+            uint16 srcLzChainId,
             uint256 dstChainId,
-            uint256 dstLzChainId,
+            uint16 dstLzChainId
         ) = getCrossChainInfo(currentSide, config);
 
         /* Call Steps
@@ -50,11 +50,11 @@ contract RelayWithdrawLedgerMumbai is Script{
                 3. update cross chain manager on other side
             7. forceResume
          */
-        vm.broadcast(getPrivateKey(network));
+        vm.startBroadcast(getPrivateKey(network));
 
         // initialize cross chain
         if (method.compare("init")) {
-            initRelay(relayAddress, otherRelayAddress, srcChainId, dstLzChainId, allConfig);
+            initRelay(relayAddress, otherRelayAddress, crossChainManagerAddress, srcChainId, dstLzChainId, allConfig);
             initCrossChainManager(currentSide, relayAddress, crossChainManagerAddress, otherCrossChainManagerAddress, srcChainId, dstChainId);
         } else if (method.compare("withdrawRelay")) {
             withdrawRelay(relayAddress, network);
@@ -65,7 +65,7 @@ contract RelayWithdrawLedgerMumbai is Script{
 
         // when you deploy a new relay, update relay
         } else if (method.compare("updateRelay")) {
-            initRelay(relayAddress, otherRelayAddress, srcChainId, dstLzChainId, allConfig);
+            initRelay(relayAddress, otherRelayAddress, crossChainManagerAddress, srcChainId, dstLzChainId, allConfig);
             updateRelayOnCrossChainManager(currentSide, relayAddress, crossChainManagerAddress);
         } else if (method.compare("updateOtherSideRelay")) {
             updateOtherSideRelay(relayAddress, otherRelayAddress, dstLzChainId);
@@ -98,11 +98,12 @@ contract RelayWithdrawLedgerMumbai is Script{
 
     function transferRelay(address relayAddress) internal {
         uint256 transferAmount = vm.envUint("RELAY_TRANSFER_AMOUNT");
-        payable(relayAddress).call{value: transferAmount}("");
+
+        (bool ret, ) = payable(relayAddress).call{value: transferAmount}("");
+        require(ret, "Transfer relay failed");
     }
 
-    function initRelay(address relayAddress, address otherRelayAddress, uint256 srcChainId, uint16 dstLzChainId, CrossChainConfig allConfig ) internal {
-        CrossChainConfig.ChainConfig memory config = allConfig.getChainConfig(crosschainOption);
+    function initRelay(address relayAddress, address otherRelayAddress, address crossChainManagerAddress, uint256 srcChainId, uint16 dstLzChainId, CrossChainConfig allConfig ) internal {
 
         CrossChainRelay relay = CrossChainRelay(payable(relayAddress));
 
@@ -137,7 +138,7 @@ contract RelayWithdrawLedgerMumbai is Script{
         relay.setTrustedRemote(dstLzChainId, lzPath);
     }
 
-    function initCrossChainManager(string memory currentSide, address relayAddress, address crossChainManagerAddress, address otherCrossChainManagerAddress, uint256 srcChainId, uint16 dstChainId) internal {
+    function initCrossChainManager(string memory currentSide, address relayAddress, address crossChainManagerAddress, address otherCrossChainManagerAddress, uint256 srcChainId, uint256 dstChainId) internal {
         if (currentSide.compare("vault")) {
 
             VaultCrossChainManager vaultCrossChainManager = VaultCrossChainManager(payable(crossChainManagerAddress));
@@ -150,7 +151,7 @@ contract RelayWithdrawLedgerMumbai is Script{
 
             ledgerCrossChainManager.setChainId(srcChainId);
             ledgerCrossChainManager.setCrossChainRelay(relayAddress);
-            ledgerCrossChainManager.setLedgerCrossChainManager(dstChainId, otherCrossChainManagerAddress);
+            ledgerCrossChainManager.setVaultCrossChainManager(dstChainId, otherCrossChainManagerAddress);
 
         }
     }
@@ -160,7 +161,7 @@ contract RelayWithdrawLedgerMumbai is Script{
         relay.addCaller(crossChainManagerAddress);
     }
 
-    function updateOtherSideCrossChainManager(string memory currentSide, address crossChainManagerAddress, address otherCrossChainManagerAddress, uint16 dstChainId) internal {
+    function updateOtherSideCrossChainManager(string memory currentSide, address crossChainManagerAddress, address otherCrossChainManagerAddress, uint256 dstChainId) internal {
         if (currentSide.compare("vault")) {
             VaultCrossChainManager vaultCrossChainManager = VaultCrossChainManager(payable(otherCrossChainManagerAddress));
             vaultCrossChainManager.setLedgerCrossChainManager(dstChainId, crossChainManagerAddress);
@@ -187,7 +188,7 @@ contract RelayWithdrawLedgerMumbai is Script{
         relay.forceResumeReceive(dstLzChainId, lzPath);
     }
 
-    function getPrivateKey(string memory network) internal pure returns (uint256) {
+    function getPrivateKey(string memory network) internal returns (uint256) {
         if (network.compare("fuji")) {
             return vm.envUint("FUJI_PRIVATE_KEY");
         } else if (network.compare("mumbai")) {
@@ -197,18 +198,18 @@ contract RelayWithdrawLedgerMumbai is Script{
         }
     }
 
-    function getCrossChainInfo(string memory currentSide, CrossChainConfig.ChainConfig memory config) internal pure returns (address, address, address, address, string) {
+    function getCrossChainInfo(string memory currentSide, CrossChainConfig.ChainConfig memory config) internal pure returns (address, address, address, address, string memory, uint256, uint16, uint256, uint16) {
         if (currentSide.compare("vault")) {
             return (
                 config.vaultRelay,
                 config.ledgerRelay,
-                config.vaultCrossChainManager,
-                config.ledgerCrossChainManager,
-                config.vaultNetwork,
-                config.vaultChainId,
-                config.vaultLzChainId,
-                config.ledgerChainId,
-                config.ledgerLzChainId,
+                config.vaultCrossChainManager, 
+                config.ledgerCrossChainManager, 
+                config.vaultNetwork, 
+                config.vaultChainId, 
+                config.vaultLzChainId, 
+                config.ledgerChainId, 
+                config.ledgerLzChainId
             );
         } else if (currentSide.compare("ledger")){
             return (
@@ -220,7 +221,7 @@ contract RelayWithdrawLedgerMumbai is Script{
                 config.ledgerChainId,
                 config.ledgerLzChainId,
                 config.vaultChainId,
-                config.vaultLzChainId,
+                config.vaultLzChainId
             );
         } else {
             revert("Invalid currentSide");
