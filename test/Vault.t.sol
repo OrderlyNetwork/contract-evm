@@ -34,7 +34,8 @@ contract VaultTest is Test {
 
     function setUp() public {
         tUSDC = new TestUSDC();
-        vault = new Vault(address(tUSDC));
+        vault = new Vault();
+        vault.addToken(TOKEN_HASH, address(tUSDC));
         vault.addBroker(BROKER_HASH);
         vaultCrossChainManager = new VaultCrossChainManagerMock();
         vault.setCrossChainManager(address(vaultCrossChainManager));

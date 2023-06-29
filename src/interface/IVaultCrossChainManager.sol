@@ -9,4 +9,7 @@ interface IVaultCrossChainManager {
     function withdraw(VaultTypes.VaultWithdraw memory withdraw) external;
 
     function deposit(VaultTypes.VaultDeposit memory data) external;
+
+    function setVault(address _vault) external;
+    function setCrossChainRelay(address _crossChainRelay) external;
 }
