@@ -12,9 +12,9 @@ contract VaultTest is Test {
     IVault vault;
     uint128 constant AMOUNT = 1000000;
     address constant SENDER = 0x4FDDB51ADe1fa66952de254bE7E1a84EEB153331;
-    bytes32 constant ACCOUNT_ID = 0x1794513e2fc05828d3205892dbef3c91eb7ffd6df62e0360acadd55650c9b672;
-    bytes32 constant BROKER_HASH = 0xfb08c0b22085b07c3787ca55e02cc585a966b0799bfef3d32fc335d7107cedef;
-    bytes32 constant TOKEN_HASH = 0x61fc29e9a6b4b52b423e75ca44734454f94ea60ddff3dc47af01a2a646fe9572;
+    bytes32 constant ACCOUNT_ID = 0x89bf2019fe60f13ec6c3f8de8c10156c2691ba5e743260dbcd81c2c66e87cba0;
+    bytes32 constant BROKER_HASH = 0x083098c593f395bea1de45dda552d9f14e8fcb0be3faaa7a1903c5477d7ba7fd;  // woofi_dex
+    bytes32 constant TOKEN_HASH = 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa;   // USDC
     VaultTypes.VaultDepositFE depositData = VaultTypes.VaultDepositFE({
         accountId: ACCOUNT_ID,
         brokerHash: BROKER_HASH,
