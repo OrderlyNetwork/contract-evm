@@ -17,12 +17,12 @@ contract LedgerTest is Test {
     IFeeManager feeManager;
 
     uint128 constant AMOUNT = 1000000;
-    address constant SENDER = 0x4FDDB51ADe1fa66952de254bE7E1a84EEB153331;
-    bytes32 constant ACCOUNT_ID = 0x1794513e2fc05828d3205892dbef3c91eb7ffd6df62e0360acadd55650c9b672;
-    bytes32 constant BROKER_HASH = 0xfb08c0b22085b07c3787ca55e02cc585a966b0799bfef3d32fc335d7107cedef;
-    bytes32 constant TOKEN_HASH = 0x61fc29e9a6b4b52b423e75ca44734454f94ea60ddff3dc47af01a2a646fe9572;
+    address constant SENDER = 0xc7ef8C0853CCB92232Aa158b2AF3e364f1BaE9a1;
+    bytes32 constant ACCOUNT_ID = 0x6b97733ca568eddf2559232fa831f8de390a76d4f29a2962c3a9d0020383f7e3;
+    bytes32 constant BROKER_HASH = 0x083098c593f395bea1de45dda552d9f14e8fcb0be3faaa7a1903c5477d7ba7fd;
+    bytes32 constant TOKEN_HASH = 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa;
     uint256 constant CHAIN_ID = 986532;
-    uint64 constant WITHDRAW_NONCE = 123;
+    uint64 constant WITHDRAW_NONCE = 233;
     AccountTypes.AccountDeposit depositData = AccountTypes.AccountDeposit({
         accountId: ACCOUNT_ID,
         brokerHash: BROKER_HASH,
@@ -39,13 +39,13 @@ contract LedgerTest is Test {
         0,
         CHAIN_ID,
         ACCOUNT_ID,
-        0x6de54cc89be3597db5275c7d4dd135e20cd5e4bf9e15b91290652911c41079d6,
-        0x2a9a28562e693658390672be9386e89f121a2f95d5c3fc395c77e2e8da2d867f,
+        0x545c50021214976d1ef2ca5be753718b1b951050dc619c9ebb0a500465df0ac5,
+        0x79f323773c4b34008e50e8b067a78669b341a3d5ebab1658847c9e03ff545cf3,
         0x1b,
         SENDER,
         WITHDRAW_NONCE,
         SENDER,
-        1687834683953,
+        1688110729953,
         "woofi_dex",
         "USDC"
     );
@@ -56,13 +56,13 @@ contract LedgerTest is Test {
         0,
         CHAIN_ID,
         ACCOUNT_ID,
-        0xaf7765a771fb84359306155d44437e4cc2474dd6b3440730abec525e25894f9e,
-        0x60cf03fc33c4f42c4313e722386a9e2a29e8e51e26f001e95c13d6780eefe403,
+        0xb107b0cb221d45555aa61fe9ea8ee372e4e310d6381f08cb99f06883836641ac,
+        0x0927097d7625e8b73f2d87c3a60a06204667305f0369c1aa79f4f71e1dc99bbf,
         0x1b,
         SENDER,
         WITHDRAW_NONCE,
         SENDER,
-        1687835301453,
+        1688111795719,
         "woofi_dex",
         "USDC"
     );

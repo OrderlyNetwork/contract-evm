@@ -56,8 +56,8 @@ contract VaultCrossChainManager is IOrderlyCrossChainReceiver, IVaultCrossChainM
             accountId: data.accountId,
             sender: data.sender,
             receiver: data.receiver,
-            brokerHash: Utils.string2HashedBytes32(data.brokerId),
-            tokenHash: Utils.string2HashedBytes32(data.tokenSymbol),
+            brokerHash: Utils.getBrokerHash(data.brokerId),
+            tokenHash: Utils.getTokenHash(data.tokenSymbol),
             tokenAmount: data.tokenAmount,
             fee: data.fee,
             withdrawNonce: data.withdrawNonce

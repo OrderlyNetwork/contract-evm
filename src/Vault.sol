@@ -16,7 +16,8 @@ import "openzeppelin-contracts/contracts/access/Ownable.sol";
  */
 contract Vault is IVault, ReentrancyGuard, Ownable {
     // equal to `Utils.string2HashedBytes32('USDC')`
-    bytes32 constant USDC = bytes32(uint256(0x61fc29e9a6b4b52b423e75ca44734454f94ea60ddff3dc47af01a2a646fe9572));
+    // equal to `Utils.getTokenHash('USDC')`
+    bytes32 constant USDC = bytes32(uint256(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa));
     // cross-chain operator address
     address public crossChainManagerAddress;
     // tokenHash to token contract address mapping
