@@ -66,7 +66,7 @@ forge test -vvvv
 
 command:
 
-`forge script script/ledger/DeployLedger.s.sol -f $LEDGER_NETWORK --json --broadcast --legacy`
+`forge script myScript/ledger/DeployLedger.s.sol -f $LEDGER_NETWORK --json --broadcast --legacy`
 
 make sure all the ENV is set:
 
@@ -79,9 +79,9 @@ make sure all the ENV is set:
 
 command:
 
-`forge script script/vault/DeployVault.s.sol -f $VAULT_NETWORK --json --broadcast`
+`forge script myScript/vault/DeployVault.s.sol -f $VAULT_NETWORK --json --broadcast`
 
-`forge script script/vault/StartDeposit.s.sol -f $VAULT_NETWORK --json --broadcast`
+`forge script myScript/vault/StartDeposit.s.sol -f $VAULT_NETWORK --json --broadcast`
 
 ## Contract address
 
