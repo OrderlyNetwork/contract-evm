@@ -164,7 +164,7 @@ contract Ledger is ILedger, Ownable {
         override
         onlyOperatorManager
     {
-        bytes32 tokenHash = Utils.string2HashedBytes32(withdraw.tokenSymbol);
+        bytes32 tokenHash = Utils.getTokenHash(withdraw.tokenSymbol);
         AccountTypes.Account storage account = userLedger[withdraw.accountId];
         uint8 state = 0;
         if (account.balances[tokenHash] < withdraw.tokenAmount) {
