@@ -12,6 +12,9 @@ interface ILedger {
     error TotalSettleAmountNotZero(int128 amount);
     error BalanceNotEnough(uint128 balance, int128 amount);
     error InsuranceTransferAmountInvalid(uint128 balance, uint128 insuranceTransferAmount, int128 settledAmount);
+    error AccountIdInvalid();
+    error TokenNotAllowed(bytes32 tokenHash, uint256 chainId);
+    error BrokerNotAllowed();
 
     event AccountRegister(
         bytes32 indexed accountId, bytes32 indexed brokerId, address indexed userAddress, uint256 blocktime
