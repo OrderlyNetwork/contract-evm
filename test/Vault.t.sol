@@ -35,8 +35,8 @@ contract VaultTest is Test {
     function setUp() public {
         tUSDC = new TestUSDC();
         vault = new Vault();
-        vault.addToken(TOKEN_HASH, address(tUSDC));
-        vault.addBroker(BROKER_HASH);
+        vault.setAllowedToken(TOKEN_HASH, address(tUSDC));
+        vault.setAllowedBroker(BROKER_HASH, true);
         vaultCrossChainManager = new VaultCrossChainManagerMock();
         vault.setCrossChainManager(address(vaultCrossChainManager));
     }
@@ -53,6 +53,38 @@ contract VaultTest is Test {
         assertEq(tUSDC.balanceOf(address(vault)), AMOUNT);
     }
 
+    function testFail_depositInsufficientApproval() public {
+        vm.startPrank(SENDER);
+        tUSDC.mint(SENDER, AMOUNT-1);
+        tUSDC.approve(address(vault), AMOUNT);
+        assertEq(tUSDC.balanceOf(address(SENDER)), AMOUNT-1);
+        vault.deposit(depositData);
+    }
+
+    function testFail_depositNotAllowedToken() public {
+        vm.startPrank(SENDER);
+        depositData.tokenHash = 0x96706879d29c248edfb2a2563a8a9d571c49634c0f82013e6f5a7cde739d35d4; // "TOKEN"
+        vault.deposit(depositData);
+        vm.stopPrank();
+    }
+
+    function testFail_depositNotAllowedBroker() public {
+        vm.startPrank(SENDER);
+        depositData.brokerHash = 0x2804e22f743595918807e939e50f80985ef77d3aa68cd82cff712cc69eee98ec; // "brokerId"
+        vault.deposit(depositData);
+        vm.stopPrank();
+    }
+
+    function testFail_depositIncorrectAccountId() public {
+        vm.startPrank(SENDER);
+        tUSDC.mint(SENDER, AMOUNT);
+        tUSDC.approve(address(vault), AMOUNT);
+        assertEq(tUSDC.balanceOf(address(SENDER)), AMOUNT);
+        depositData.accountId = 0x44a4d91d025846561e99ca284b96d282bc1f183c12c36471c58dee3747487d99; // keccak(SENDER, keccak("brokerId"))
+        vault.deposit(depositData);
+        vm.stopPrank();
+    }
+
     function test_withdraw() public {
         vm.startPrank(SENDER);
         tUSDC.mint(SENDER, AMOUNT);
@@ -64,5 +96,17 @@ contract VaultTest is Test {
         vault.withdraw(withdrawData);
         assertEq(tUSDC.balanceOf(address(SENDER)), AMOUNT);
         assertEq(tUSDC.balanceOf(address(vault)), 0);
+    }
+
+    function testFail_withdrawInsufficientBalance() public {
+        vm.startPrank(SENDER);
+        tUSDC.mint(SENDER, AMOUNT);
+        tUSDC.approve(address(vault), AMOUNT);
+        depositData.tokenAmount = AMOUNT - 1;   
+        vault.deposit(depositData);
+        vm.stopPrank();
+
+        vm.prank(address(vaultCrossChainManager));
+        vault.withdraw(withdrawData);
     }
 }

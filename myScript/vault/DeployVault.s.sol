@@ -6,8 +6,8 @@ import "../../src/Vault.sol";
 import "../../src/testUSDC/tUSDC.sol";
 
 contract DeployVault is Script {
-    bytes32 constant USDC = 0x61fc29e9a6b4b52b423e75ca44734454f94ea60ddff3dc47af01a2a646fe9572;
-    bytes32 constant BROKER_HASH = 0xfb08c0b22085b07c3787ca55e02cc585a966b0799bfef3d32fc335d7107cedef;
+    bytes32 constant USDC = 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa;
+    bytes32 constant BROKER_HASH = 0x083098c593f395bea1de45dda552d9f14e8fcb0be3faaa7a1903c5477d7ba7fd;
 
     function run() external {
         uint256 orderlyPrivateKey = vm.envUint("ORDERLY_PRIVATE_KEY");
@@ -18,8 +18,8 @@ contract DeployVault is Script {
 
         IVault vault = new Vault();
         TestUSDC tUSDC = new TestUSDC();
-        vault.addToken(USDC, address(tUSDC));
-        vault.addBroker(BROKER_HASH);
+        vault.setAllowedToken(USDC, address(tUSDC));
+        vault.setAllowedBroker(BROKER_HASH, true);
         vault.setCrossChainManager(address(vaultCrossChainManager));
 
         vaultCrossChainManager.setVault(address(vault));
