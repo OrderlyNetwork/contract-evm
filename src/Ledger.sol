@@ -33,6 +33,7 @@ contract Ledger is ILedger, Ownable {
     uint64 public globalDepositId;
     // userLedger accountId -> Account
     mapping(bytes32 => AccountTypes.Account) private userLedger;
+    
     // VaultManager contract
     IVaultManager public vaultManager;
     // CrossChainManager contract
@@ -123,7 +124,7 @@ contract Ledger is ILedger, Ownable {
             emit AccountRegister(data.accountId, data.brokerHash, data.userAddress, block.timestamp);
         }
         account.addBalance(data.tokenHash, data.tokenAmount);
-        vaultManager.addBalance(data.srcChainId, data.tokenHash, data.tokenAmount);
+        vaultManager.addBalance(data.tokenHash, data.srcChainId, data.tokenAmount);
         account.lastDepositEventId = _newGlobalDepositId();
         // emit deposit event
         emit AccountDeposit(
@@ -164,13 +165,17 @@ contract Ledger is ILedger, Ownable {
         override
         onlyOperatorManager
     {
+        bytes32 brokerHash = Utils.getBrokerHash(withdraw.brokerId);
         bytes32 tokenHash = Utils.getTokenHash(withdraw.tokenSymbol);
+        if (!vaultManager.getAllowedBroker(brokerHash)) revert BrokerNotAllowed();
+        if (!vaultManager.getAllowedToken(tokenHash, withdraw.chainId)) revert TokenNotAllowed(tokenHash, withdraw.chainId);
+        if (!Utils.validateAccountId(withdraw.accountId, brokerHash, withdraw.sender)) revert AccountIdInvalid();
         AccountTypes.Account storage account = userLedger[withdraw.accountId];
         uint8 state = 0;
         if (account.balances[tokenHash] < withdraw.tokenAmount) {
             // require balance enough
             state = 1;
-        } else if (vaultManager.getBalance(withdraw.chainId, tokenHash) < withdraw.tokenAmount) {
+        } else if (vaultManager.getBalance(tokenHash, withdraw.chainId) < withdraw.tokenAmount) {
             // require chain has enough balance
             state = 2;
         } else if (account.lastWithdrawNonce >= withdraw.withdrawNonce) {
@@ -202,7 +207,7 @@ contract Ledger is ILedger, Ownable {
         // frozen balance
         account.frozenBalance(withdraw.withdrawNonce, tokenHash, withdraw.tokenAmount);
         account.lastWithdrawNonce = withdraw.withdrawNonce;
-        vaultManager.subBalance(withdraw.chainId, tokenHash, withdraw.tokenAmount);
+        vaultManager.subBalance(tokenHash, withdraw.chainId, withdraw.tokenAmount);
         account.lastCefiEventId = eventId;
         // emit withdraw approve event
         emit AccountWithdrawApprove(

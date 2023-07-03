@@ -5,9 +5,16 @@ import "./ILedgerComponent.sol";
 
 interface IVaultManager is ILedgerComponent {
     // get balance
-    function getBalance(uint256 _chainId, bytes32 _symbol) external view returns (uint128);
+    function getBalance(bytes32 _tokenHash, uint256 _chainId) external view returns (uint128);
     // add balance
-    function addBalance(uint256 _chainId, bytes32 _symbol, uint128 _deltaBalance) external;
+    function addBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) external;
     // sub balance
-    function subBalance(uint256 _chainId, bytes32 _symbol, uint128 _deltaBalance) external;
+    function subBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) external;
+
+    function setAllowedBroker(bytes32 _brokerHash, bool _allowed) external;
+    function getAllowedBroker(bytes32 _brokerHash) external view returns (bool);
+
+    function setAllowedToken(bytes32 _tokenHash, uint256 _chainId, bool _allowed) external;
+    function getAllowedToken(bytes32 _tokenHash, uint256 _chainId) external view returns (bool);
+
 }
