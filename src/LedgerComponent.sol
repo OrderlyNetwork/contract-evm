@@ -7,7 +7,7 @@ import "openzeppelin-contracts/contracts/access/Ownable.sol";
 /**
  * LedgerComponent is an component which can only be called by ledger (setter)
  */
-contract LedgerComponent is ILedgerComponent, Ownable {
+abstract contract LedgerComponent is ILedgerComponent, Ownable {
     // Ledger address
     address public ledgerAddress;
 
