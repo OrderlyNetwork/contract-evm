@@ -20,20 +20,20 @@ contract VaultManagerTest is Test {
 
     function test_sub_add_get() public {
         vm.startPrank(address(ledger));
-        vaultManager.addBalance(CHAIN_ID, TOKEN_HASH, 100);
-        assertEq(vaultManager.getBalance(CHAIN_ID, TOKEN_HASH), 100);
-        vaultManager.addBalance(CHAIN_ID, TOKEN_HASH, 200);
-        assertEq(vaultManager.getBalance(CHAIN_ID, TOKEN_HASH), 300);
-        vaultManager.subBalance(CHAIN_ID, TOKEN_HASH, 150);
-        assertEq(vaultManager.getBalance(CHAIN_ID, TOKEN_HASH), 150);
+        vaultManager.addBalance(TOKEN_HASH, CHAIN_ID, 100);
+        assertEq(vaultManager.getBalance(TOKEN_HASH, CHAIN_ID), 100);
+        vaultManager.addBalance(TOKEN_HASH, CHAIN_ID, 200);
+        assertEq(vaultManager.getBalance(TOKEN_HASH, CHAIN_ID), 300);
+        vaultManager.subBalance(TOKEN_HASH, CHAIN_ID, 150);
+        assertEq(vaultManager.getBalance(TOKEN_HASH, CHAIN_ID), 150);
         vm.stopPrank();
     }
 
     function testFail_sub_overflow() public {
         vm.startPrank(address(ledger));
-        vaultManager.addBalance(CHAIN_ID, TOKEN_HASH, 100);
-        assertEq(vaultManager.getBalance(CHAIN_ID, TOKEN_HASH), 100);
-        vaultManager.subBalance(CHAIN_ID, TOKEN_HASH, 150);
+        vaultManager.addBalance(TOKEN_HASH, CHAIN_ID, 100);
+        assertEq(vaultManager.getBalance(TOKEN_HASH, CHAIN_ID), 100);
+        vaultManager.subBalance(TOKEN_HASH, CHAIN_ID, 150);
         vm.stopPrank();
     }
 }

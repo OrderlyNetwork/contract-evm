@@ -12,20 +12,38 @@ contract VaultManager is IVaultManager, LedgerComponent {
     // crossChainManagerAddress contract address
     address public crossChainManagerAddress;
     // valut balance, used for check if withdraw is valid
-    mapping(uint256 => mapping(bytes32 => uint128)) chain2symbol2balance;
-
+    mapping(bytes32 => mapping(uint256 => uint128)) private tokenBalanceOnchain;
+    mapping(bytes32 => mapping(uint256 => bool)) private allowedToken; // supported token on each chain
+    mapping(bytes32 => bool) private allowedBroker;  // supported broker
     // get balance
-    function getBalance(uint256 _chainId, bytes32 _symbol) public view override returns (uint128) {
-        return chain2symbol2balance[_chainId][_symbol];
+    function getBalance(bytes32 _tokenHash, uint256 _chainId) public view override returns (uint128) {
+        return tokenBalanceOnchain[_tokenHash][_chainId];
     }
 
     // add balance
-    function addBalance(uint256 _chainId, bytes32 _symbol, uint128 _deltaBalance) public override onlyLedger {
-        chain2symbol2balance[_chainId][_symbol] += _deltaBalance;
+    function addBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) public override onlyLedger {
+        tokenBalanceOnchain[_tokenHash][_chainId] += _deltaBalance;
     }
 
     // sub balance
-    function subBalance(uint256 _chainId, bytes32 _symbol, uint128 _deltaBalance) public override onlyLedger {
-        chain2symbol2balance[_chainId][_symbol] -= _deltaBalance;
+    function subBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) public override onlyLedger {
+        tokenBalanceOnchain[_tokenHash][_chainId] -= _deltaBalance;
     }
+
+    function setAllowedBroker(bytes32 _brokerHash, bool _allowed) public override onlyLedger {
+        allowedBroker[_brokerHash] = _allowed;
+    }
+
+    function getAllowedBroker(bytes32 _brokerHash) public view override returns (bool) {
+        return allowedBroker[_brokerHash];
+    }
+
+    function setAllowedToken(bytes32 _tokenHash, uint256 _chainId, bool _allowed) public override onlyLedger {
+        allowedToken[_tokenHash][_chainId] = _allowed;
+    }
+    
+    function getAllowedToken(bytes32 _tokenHash, uint256 _chainId) public view override returns (bool) {
+        return allowedToken[_tokenHash][_chainId];
+    }
+
 }
