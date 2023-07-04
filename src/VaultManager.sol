@@ -14,7 +14,8 @@ contract VaultManager is IVaultManager, LedgerComponent {
     // valut balance, used for check if withdraw is valid
     mapping(bytes32 => mapping(uint256 => uint128)) private tokenBalanceOnchain;
     mapping(bytes32 => mapping(uint256 => bool)) private allowedToken; // supported token on each chain
-    mapping(bytes32 => bool) private allowedBroker;  // supported broker
+    mapping(bytes32 => bool) private allowedBroker; // supported broker
+
     // get balance
     function getBalance(bytes32 _tokenHash, uint256 _chainId) public view override returns (uint128) {
         return tokenBalanceOnchain[_tokenHash][_chainId];
@@ -30,7 +31,7 @@ contract VaultManager is IVaultManager, LedgerComponent {
         tokenBalanceOnchain[_tokenHash][_chainId] -= _deltaBalance;
     }
 
-    function setAllowedBroker(bytes32 _brokerHash, bool _allowed) public override onlyLedger {
+    function setAllowedBroker(bytes32 _brokerHash, bool _allowed) public override onlyOwner {
         allowedBroker[_brokerHash] = _allowed;
     }
 
@@ -38,12 +39,11 @@ contract VaultManager is IVaultManager, LedgerComponent {
         return allowedBroker[_brokerHash];
     }
 
-    function setAllowedToken(bytes32 _tokenHash, uint256 _chainId, bool _allowed) public override onlyLedger {
+    function setAllowedToken(bytes32 _tokenHash, uint256 _chainId, bool _allowed) public override onlyOwner {
         allowedToken[_tokenHash][_chainId] = _allowed;
     }
-    
+
     function getAllowedToken(bytes32 _tokenHash, uint256 _chainId) public view override returns (bool) {
         return allowedToken[_tokenHash][_chainId];
     }
-
 }
