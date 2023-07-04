@@ -90,7 +90,7 @@ contract LedgerTest is Test {
         ledger.setCrossChainManager(address(ledgerCrossChainManager));
         ledger.setVaultManager(address(vaultManager));
         ledger.setFeeManager(address(feeManager));
-        
+
         operatorManager.setOperator(operatorAddress);
         operatorManager.setLedger(address(ledger));
 
@@ -98,13 +98,10 @@ contract LedgerTest is Test {
         ledgerCrossChainManager.setOperatorManager(address(operatorManager));
 
         vaultManager.setLedgerAddress(address(ledger));
-        
-        feeManager.setLedgerAddress(address(ledger));
-
-        vm.startPrank(address(ledger));
         vaultManager.setAllowedBroker(BROKER_HASH, true);
         vaultManager.setAllowedToken(TOKEN_HASH, CHAIN_ID, true);
-        vm.stopPrank();
+
+        feeManager.setLedgerAddress(address(ledger));
     }
 
     function test_verify_EIP712() public {
@@ -149,7 +146,7 @@ contract LedgerTest is Test {
 
     function testFail_withdrawNotAllowedToken() public {
         vm.prank(address(ledger));
-        vaultManager.setAllowedToken(TOKEN_HASH,CHAIN_ID, false);
+        vaultManager.setAllowedToken(TOKEN_HASH, CHAIN_ID, false);
         vm.prank(address(ledgerCrossChainManager));
         ledger.accountDeposit(depositData);
         vm.prank(address(operatorManager));
@@ -162,7 +159,7 @@ contract LedgerTest is Test {
         ledger.accountDeposit(depositData);
         vm.prank(address(operatorManager));
         vm.chainId(CHAIN_ID);
-        withdrawData2.accountId = 0x44a4d91d025846561e99ca284b96d282bc1f183c12c36471c58dee3747487d99;   // keccak(SENDER, keccak("brokerId"))
+        withdrawData2.accountId = 0x44a4d91d025846561e99ca284b96d282bc1f183c12c36471c58dee3747487d99; // keccak(SENDER, keccak("brokerId"))
         ledger.executeWithdrawAction(withdrawData2, 1);
     }
 
