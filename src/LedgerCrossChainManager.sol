@@ -98,7 +98,7 @@ contract LedgerCrossChainManager is
                 tokenHash: data.tokenHash,
                 tokenAmount: data.tokenAmount,
                 srcChainId: message.srcChainId,
-                srcChainDepositNonce: 0 
+                srcChainDepositNonce: data.depositNonce
             });
 
             deposit(depositData);
