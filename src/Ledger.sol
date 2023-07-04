@@ -33,7 +33,7 @@ contract Ledger is ILedger, Ownable {
     uint64 public globalDepositId;
     // userLedger accountId -> Account
     mapping(bytes32 => AccountTypes.Account) private userLedger;
-    
+
     // VaultManager contract
     IVaultManager public vaultManager;
     // CrossChainManager contract
@@ -114,6 +114,13 @@ contract Ledger is ILedger, Ownable {
     // Interface implementation
 
     function accountDeposit(AccountTypes.AccountDeposit calldata data) public override onlyCrossChainManager {
+        // validate data first
+        if (!vaultManager.getAllowedBroker(data.brokerHash)) revert BrokerNotAllowed();
+        if (!vaultManager.getAllowedToken(data.tokenHash, data.srcChainId)) {
+            revert TokenNotAllowed(data.tokenHash, data.srcChainId);
+        }
+        if (!Utils.validateAccountId(data.accountId, data.brokerHash, data.userAddress)) revert AccountIdInvalid();
+
         // a not registerd account can still deposit, because of the consistency
         AccountTypes.Account storage account = userLedger[data.accountId];
         if (account.userAddress == address(0)) {
@@ -168,7 +175,9 @@ contract Ledger is ILedger, Ownable {
         bytes32 brokerHash = Utils.getBrokerHash(withdraw.brokerId);
         bytes32 tokenHash = Utils.getTokenHash(withdraw.tokenSymbol);
         if (!vaultManager.getAllowedBroker(brokerHash)) revert BrokerNotAllowed();
-        if (!vaultManager.getAllowedToken(tokenHash, withdraw.chainId)) revert TokenNotAllowed(tokenHash, withdraw.chainId);
+        if (!vaultManager.getAllowedToken(tokenHash, withdraw.chainId)) {
+            revert TokenNotAllowed(tokenHash, withdraw.chainId);
+        }
         if (!Utils.validateAccountId(withdraw.accountId, brokerHash, withdraw.sender)) revert AccountIdInvalid();
         AccountTypes.Account storage account = userLedger[withdraw.accountId];
         uint8 state = 0;
