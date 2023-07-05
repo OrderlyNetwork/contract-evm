@@ -10,7 +10,7 @@ library Signature {
             keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
 
         bytes32 eip712DomainHash = keccak256(
-            abi.encode(typeHash, keccak256(bytes("Orderly")), keccak256(bytes("1")), block.chainid, address(this))
+            abi.encode(typeHash, keccak256(bytes("Orderly")), keccak256(bytes("1")), data.chainId, address(this))
         );
 
         bytes32 hashStruct = keccak256(
