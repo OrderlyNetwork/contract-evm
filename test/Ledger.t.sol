@@ -111,7 +111,7 @@ contract LedgerTest is Test {
     }
 
     function testFail_verify_EIP712() public {
-        vm.chainId(0xdead);
+        withdrawData.chainId = 0xdead;
         bool succ = Signature.verifyWithdraw(withdrawData.sender, withdrawData);
         require(succ, "verify failed");
     }
