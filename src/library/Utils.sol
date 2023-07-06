@@ -17,8 +17,12 @@ library Utils {
     function calculateStringHash(string memory _str) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(_str));
     }
-    
-    function validateAccountId(bytes32 _accountId, bytes32 _tokenHash, address _userAddress) internal pure returns (bool) {
-        return keccak256(abi.encode(_userAddress, _tokenHash)) == _accountId;
+
+    function validateAccountId(bytes32 _accountId, bytes32 _brokerHash, address _userAddress)
+        internal
+        pure
+        returns (bool)
+    {
+        return keccak256(abi.encode(_userAddress, _brokerHash)) == _accountId;
     }
 }
