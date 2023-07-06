@@ -4,13 +4,13 @@ pragma solidity ^0.8.18;
 import "./interface/ILedger.sol";
 import "./interface/IOperatorManager.sol";
 import "./library/Signature.sol";
-import "openzeppelin-contracts/contracts/access/Ownable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 
 /**
  * OperatorManager is responsible for executing cefi tx, only called by operator.
  * This contract should only have one in main-chain (avalanche)
  */
-contract OperatorManager is IOperatorManager, Ownable {
+contract OperatorManager is IOperatorManager, OwnableUpgradeable {
     // operator address
     address public operator;
     // ledger Interface
@@ -41,6 +41,11 @@ contract OperatorManager is IOperatorManager, Ownable {
     }
 
     constructor() {
+        _disableInitializers();
+    }
+
+    function initialize() public override initializer {
+        __Ownable_init();
         futuresUploadBatchId = 1;
         eventUploadBatchId = 1;
         lastOperatorInteraction = block.timestamp;

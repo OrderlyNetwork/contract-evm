@@ -82,6 +82,8 @@ interface ILedger {
         uint64 eventId
     );
 
+    function initialize() external;
+
     // called by cross chain manager
     function accountDeposit(AccountTypes.AccountDeposit calldata accountDeposit) external;
     function accountWithDrawFinish(AccountTypes.AccountWithdraw calldata withdraw) external;

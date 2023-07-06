@@ -5,8 +5,8 @@ import "./interface/IVault.sol";
 import "./interface/IVaultCrossChainManager.sol";
 import "./library/Utils.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import "openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
-import "openzeppelin-contracts/contracts/access/Ownable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 
 /**
  * Vault is responsible for saving user's USDC (where USDC which is a IERC20 token).
@@ -14,17 +14,17 @@ import "openzeppelin-contracts/contracts/access/Ownable.sol";
  * User can deposit USDC from Vault.
  * Only crossChainManager can approve withdraw request.
  */
-contract Vault is IVault, ReentrancyGuard, Ownable {
+contract Vault is IVault, ReentrancyGuardUpgradeable, OwnableUpgradeable {
     // equal to `Utils.string2HashedBytes32('USDC')`
     // equal to `Utils.getTokenHash('USDC')`
     bytes32 constant USDC = bytes32(uint256(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa));
     // cross-chain operator address
     address public crossChainManagerAddress;
-     // list to record the hash value of allowed brokerIds
+    // list to record the hash value of allowed brokerIds
     mapping(bytes32 => bool) public allowedBroker;
     // tokenHash to token contract address mapping
     mapping(bytes32 => IERC20) public allowedToken;
-   
+
     // deposit id / nonce
     uint64 public depositId;
     // CrossChainManager contract
@@ -34,6 +34,15 @@ contract Vault is IVault, ReentrancyGuard, Ownable {
     modifier onlyCrossChainManager() {
         if (msg.sender != crossChainManagerAddress) revert OnlyCrossChainManagerCanCall();
         _;
+    }
+
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize() public override initializer {
+        __Ownable_init();
+        __ReentrancyGuard_init();
     }
 
     // change crossChainManager
@@ -54,7 +63,6 @@ contract Vault is IVault, ReentrancyGuard, Ownable {
 
     // user deposit USDC
     function deposit(VaultTypes.VaultDepositFE calldata data) public override {
-
         IERC20 tokenAddress = allowedToken[data.tokenHash];
         // require tokenAddress exist
         if (address(tokenAddress) == address(0)) revert TokenNotAllowed();
@@ -103,5 +111,4 @@ contract Vault is IVault, ReentrancyGuard, Ownable {
         depositId += 1;
         return depositId;
     }
-
 }
