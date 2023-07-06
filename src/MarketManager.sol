@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
-import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "./interface/IMarketManager.sol";
 import "./library/typesHelper/MarketTypeHelper.sol";
 import "./LedgerComponent.sol";
@@ -11,6 +10,14 @@ contract MarketManager is IMarketManager, LedgerComponent {
 
     // pairSymbol => PerpMarketCfg
     mapping(bytes32 => MarketTypes.PerpMarketCfg) public perpMarketCfg;
+
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize() public override initializer {
+        __Ownable_init();
+    }
 
     function updatePerpPrices(MarketTypes.PerpPriceInner calldata data) external onlyLedger {
         uint256 length = data.perpPrices.length;

@@ -32,6 +32,8 @@ interface IVault {
         uint256 blocktime
     );
 
+    function initialize() external;
+
     function deposit(VaultTypes.VaultDepositFE calldata data) external;
     function withdraw(VaultTypes.VaultWithdraw calldata data) external;
 

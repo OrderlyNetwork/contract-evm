@@ -12,6 +12,8 @@ interface IFeeManager is ILedgerComponent {
         FuturesFeeCollector
     }
 
+    function initialize() external;
+
     function getOperatorGasFeeBalance(bytes32 tokenHash) external returns (uint128);
     function setOperatorGasFeeBalance(bytes32 tokenHash, uint128 amount) external;
     function getFeeAmount() external returns (uint128);

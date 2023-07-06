@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
-import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "./interface/IFeeManager.sol";
 import "./LedgerComponent.sol";
 
@@ -16,6 +15,14 @@ contract FeeManager is IFeeManager, LedgerComponent {
     uint128 public withdrawFeeAmount;
     // tokenHash => amount
     mapping(bytes32 => uint128) public operatorGasFeeBalances;
+
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize() public override initializer {
+        __Ownable_init();
+    }
 
     // get_operator_gas_fee_balance
     function getOperatorGasFeeBalance(bytes32 tokenHash) external view override returns (uint128) {
