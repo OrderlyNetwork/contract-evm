@@ -4,6 +4,8 @@ pragma solidity ^0.8.18;
 import "./ILedgerComponent.sol";
 
 interface IVaultManager is ILedgerComponent {
+    function initialize() external;
+
     // get balance
     function getBalance(bytes32 _tokenHash, uint256 _chainId) external view returns (uint128);
     // add balance
@@ -16,5 +18,4 @@ interface IVaultManager is ILedgerComponent {
 
     function setAllowedToken(bytes32 _tokenHash, uint256 _chainId, bool _allowed) external;
     function getAllowedToken(bytes32 _tokenHash, uint256 _chainId) external view returns (bool);
-
 }

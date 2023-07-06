@@ -6,6 +6,14 @@ import "../../src/interface/IFeeManager.sol";
 import "../../src/LedgerComponent.sol";
 
 contract FeeManagerMock is IFeeManager, LedgerComponent {
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize() public override initializer {
+        __Ownable_init();
+    }
+
     function getOperatorGasFeeBalance(bytes32 tokenHash) external override returns (uint128) {}
 
     function setOperatorGasFeeBalance(bytes32 tokenHash, uint128 amount) external override {}

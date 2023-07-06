@@ -17,6 +17,8 @@ interface IOperatorManager {
     event FuturesTradeUpload(uint64 indexed batchId, uint256 blocktime);
     event EventUpload(uint64 indexed batchId, uint256 blocktime);
 
+    function initialize() external;
+
     // operator call futures trade upload
     function futuresTradeUpload(PerpTypes.FuturesTradeUploadData calldata data) external;
     // operator call event upload

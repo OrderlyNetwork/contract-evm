@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
-import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "./interface/IVaultManager.sol";
 import "./LedgerComponent.sol";
 
@@ -15,6 +14,14 @@ contract VaultManager is IVaultManager, LedgerComponent {
     mapping(bytes32 => mapping(uint256 => uint128)) private tokenBalanceOnchain;
     mapping(bytes32 => mapping(uint256 => bool)) private allowedToken; // supported token on each chain
     mapping(bytes32 => bool) private allowedBroker; // supported broker
+
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize() public override initializer {
+        __Ownable_init();
+    }
 
     // get balance
     function getBalance(bytes32 _tokenHash, uint256 _chainId) public view override returns (uint128) {
