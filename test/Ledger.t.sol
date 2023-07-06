@@ -2,19 +2,29 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
+import "openzeppelin-contracts/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
+import "openzeppelin-contracts/contracts/proxy/transparent/ProxyAdmin.sol";
 import "../src/OperatorManager.sol";
 import "../src/Ledger.sol";
 import "../src/VaultManager.sol";
+import "../src/marketManager.sol";
 import "./mock/LedgerCrossChainManagerMock.sol";
 import "./mock/FeeManagerMock.sol";
 
 contract LedgerTest is Test {
+    ProxyAdmin admin;
     address constant operatorAddress = address(0x1234567890);
     LedgerCrossChainManagerMock ledgerCrossChainManager;
     IOperatorManager operatorManager;
     IVaultManager vaultManager;
     ILedger ledger;
     IFeeManager feeManager;
+    IMarketManager marketManager;
+    TransparentUpgradeableProxy operatorProxy;
+    TransparentUpgradeableProxy vaultProxy;
+    TransparentUpgradeableProxy ledgerProxy;
+    TransparentUpgradeableProxy feeProxy;
+    TransparentUpgradeableProxy marketProxy;
 
     uint128 constant AMOUNT = 1000000;
     address constant SENDER = 0xc7ef8C0853CCB92232Aa158b2AF3e364f1BaE9a1;
@@ -50,22 +60,39 @@ contract LedgerTest is Test {
         "USDC"
     );
 
-    // address(this) is 0x5991A2dF15A8F6A256D3Ec51E99254Cd3fb576A9
+    // address(this) is 0xD6BbDE9174b1CdAa358d2Cf4D57D1a9F7178FBfF
     EventTypes.WithdrawData withdrawData2 = EventTypes.WithdrawData(
         AMOUNT,
         0,
         CHAIN_ID,
         ACCOUNT_ID,
-        0xb107b0cb221d45555aa61fe9ea8ee372e4e310d6381f08cb99f06883836641ac,
-        0x0927097d7625e8b73f2d87c3a60a06204667305f0369c1aa79f4f71e1dc99bbf,
+        0xd07bc78e77ab1dac61bcfce876189e6d0458920658f3cf20fdde16b8d55a6d03,
+        0x24fe74240344f3c40b9674f68a11c117f7be62bc307a0d449d3da6484e9ae18e,
         0x1b,
         SENDER,
         WITHDRAW_NONCE,
         SENDER,
-        1688111795719,
+        1688558006579,
         "woofi_dex",
         "USDC"
     );
+
+    // // address(this) is 0x5991A2dF15A8F6A256D3Ec51E99254Cd3fb576A9
+    // EventTypes.WithdrawData withdrawData2 = EventTypes.WithdrawData(
+    //     AMOUNT,
+    //     0,
+    //     CHAIN_ID,
+    //     ACCOUNT_ID,
+    //     0xb107b0cb221d45555aa61fe9ea8ee372e4e310d6381f08cb99f06883836641ac,
+    //     0x0927097d7625e8b73f2d87c3a60a06204667305f0369c1aa79f4f71e1dc99bbf,
+    //     0x1b,
+    //     SENDER,
+    //     WITHDRAW_NONCE,
+    //     SENDER,
+    //     1688111795719,
+    //     "woofi_dex",
+    //     "USDC"
+    // );
 
     AccountTypes.AccountWithdraw accountWithdraw = AccountTypes.AccountWithdraw({
         accountId: ACCOUNT_ID,
@@ -80,28 +107,53 @@ contract LedgerTest is Test {
     });
 
     function setUp() public {
+        admin = new ProxyAdmin();
+
         ledgerCrossChainManager = new LedgerCrossChainManagerMock();
-        operatorManager = new OperatorManager();
-        vaultManager = new VaultManager();
-        ledger = new Ledger();
-        feeManager = new FeeManagerMock();
+
+        IOperatorManager operatorManagerImpl = new OperatorManager();
+        IVaultManager vaultManagerImpl = new VaultManager();
+        ILedger ledgerImpl = new Ledger();
+        IFeeManager feeImpl = new FeeManagerMock();
+        IMarketManager marketImpl = new MarketManager();
+
+        operatorProxy = new TransparentUpgradeableProxy(address(operatorManagerImpl), address(admin), "");
+        vaultProxy = new TransparentUpgradeableProxy(address(vaultManagerImpl), address(admin), "");
+        ledgerProxy = new TransparentUpgradeableProxy(address(ledgerImpl), address(admin), "");
+        feeProxy = new TransparentUpgradeableProxy(address(feeImpl), address(admin), "");
+        marketProxy = new TransparentUpgradeableProxy(address(marketImpl), address(admin), "");
+
+        operatorManager = IOperatorManager(address(operatorProxy));
+        vaultManager = IVaultManager(address(vaultProxy));
+        ledger = ILedger(address(ledgerProxy));
+        feeManager = IFeeManager(address(feeProxy));
+        marketManager = IMarketManager(address(marketProxy));
+
+        operatorManager.initialize();
+        vaultManager.initialize();
+        ledger.initialize();
+        feeManager.initialize();
+        marketManager.initialize();
 
         ledger.setOperatorManagerAddress(address(operatorManager));
         ledger.setCrossChainManager(address(ledgerCrossChainManager));
         ledger.setVaultManager(address(vaultManager));
         ledger.setFeeManager(address(feeManager));
+        ledger.setMarketManager(address(marketManager));
 
         operatorManager.setOperator(operatorAddress);
         operatorManager.setLedger(address(ledger));
-
-        ledgerCrossChainManager.setLedger(address(ledger));
-        ledgerCrossChainManager.setOperatorManager(address(operatorManager));
 
         vaultManager.setLedgerAddress(address(ledger));
         vaultManager.setAllowedBroker(BROKER_HASH, true);
         vaultManager.setAllowedToken(TOKEN_HASH, CHAIN_ID, true);
 
         feeManager.setLedgerAddress(address(ledger));
+
+        marketManager.setLedgerAddress(address(ledger));
+
+        ledgerCrossChainManager.setLedger(address(ledger));
+        ledgerCrossChainManager.setOperatorManager(address(operatorManager));
     }
 
     function test_verify_EIP712() public {

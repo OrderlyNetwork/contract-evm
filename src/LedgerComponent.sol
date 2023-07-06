@@ -2,12 +2,12 @@
 pragma solidity ^0.8.18;
 
 import "./interface/ILedgerComponent.sol";
-import "openzeppelin-contracts/contracts/access/Ownable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 
 /**
  * LedgerComponent is an component which can only be called by ledger (setter)
  */
-abstract contract LedgerComponent is ILedgerComponent, Ownable {
+abstract contract LedgerComponent is ILedgerComponent, OwnableUpgradeable {
     // Ledger address
     address public ledgerAddress;
 

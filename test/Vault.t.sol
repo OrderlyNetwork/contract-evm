@@ -2,19 +2,23 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
+import "openzeppelin-contracts/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
+import "openzeppelin-contracts/contracts/proxy/transparent/ProxyAdmin.sol";
 import "../src/Vault.sol";
 import "../src/testUSDC/tUSDC.sol";
 import "./mock/VaultCrossChainManagerMock.sol";
 
 contract VaultTest is Test {
+    ProxyAdmin admin;
     IVaultCrossChainManager vaultCrossChainManager;
     TestUSDC tUSDC;
     IVault vault;
+    TransparentUpgradeableProxy vaultProxy;
     uint128 constant AMOUNT = 1000000;
     address constant SENDER = 0x4FDDB51ADe1fa66952de254bE7E1a84EEB153331;
     bytes32 constant ACCOUNT_ID = 0x89bf2019fe60f13ec6c3f8de8c10156c2691ba5e743260dbcd81c2c66e87cba0;
-    bytes32 constant BROKER_HASH = 0x083098c593f395bea1de45dda552d9f14e8fcb0be3faaa7a1903c5477d7ba7fd;  // woofi_dex
-    bytes32 constant TOKEN_HASH = 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa;   // USDC
+    bytes32 constant BROKER_HASH = 0x083098c593f395bea1de45dda552d9f14e8fcb0be3faaa7a1903c5477d7ba7fd; // woofi_dex
+    bytes32 constant TOKEN_HASH = 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa; // USDC
     VaultTypes.VaultDepositFE depositData = VaultTypes.VaultDepositFE({
         accountId: ACCOUNT_ID,
         brokerHash: BROKER_HASH,
@@ -33,8 +37,14 @@ contract VaultTest is Test {
     });
 
     function setUp() public {
+        admin = new ProxyAdmin();
+
         tUSDC = new TestUSDC();
-        vault = new Vault();
+        IVault vaultImpl = new Vault();
+        vaultProxy = new TransparentUpgradeableProxy(address(vaultImpl), address(admin), "");
+        vault = IVault(address(vaultProxy));
+        vault.initialize();
+
         vault.setAllowedToken(TOKEN_HASH, address(tUSDC));
         vault.setAllowedBroker(BROKER_HASH, true);
         vaultCrossChainManager = new VaultCrossChainManagerMock();
@@ -55,9 +65,9 @@ contract VaultTest is Test {
 
     function testFail_depositInsufficientApproval() public {
         vm.startPrank(SENDER);
-        tUSDC.mint(SENDER, AMOUNT-1);
+        tUSDC.mint(SENDER, AMOUNT - 1);
         tUSDC.approve(address(vault), AMOUNT);
-        assertEq(tUSDC.balanceOf(address(SENDER)), AMOUNT-1);
+        assertEq(tUSDC.balanceOf(address(SENDER)), AMOUNT - 1);
         vault.deposit(depositData);
     }
 
@@ -102,7 +112,7 @@ contract VaultTest is Test {
         vm.startPrank(SENDER);
         tUSDC.mint(SENDER, AMOUNT);
         tUSDC.approve(address(vault), AMOUNT);
-        depositData.tokenAmount = AMOUNT - 1;   
+        depositData.tokenAmount = AMOUNT - 1;
         vault.deposit(depositData);
         vm.stopPrank();
 

@@ -8,6 +8,8 @@ interface IMarketManager is ILedgerComponent {
     event MarketData(uint64 maxTimestamp);
     event FundingData(uint64 maxTimestamp);
 
+    function initialize() external;
+
     // update functions
     function updatePerpPrices(MarketTypes.PerpPriceInner calldata data) external;
     function updateSumUnitaryFundings(MarketTypes.SumUnitaryFundingsInner calldata data) external;

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
-import "openzeppelin-contracts/contracts/access/Ownable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 import "./interface/ILedger.sol";
 import "./interface/IVaultManager.sol";
 import "./interface/ILedgerCrossChainManager.sol";
@@ -17,7 +17,7 @@ import "./library/typesHelper/AccountTypePositionHelper.sol";
  * and global state (e.g. futuresUploadBatchId)
  * This contract should only have one in main-chain (avalanche)
  */
-contract Ledger is ILedger, Ownable {
+contract Ledger is ILedger, OwnableUpgradeable {
     using AccountTypeHelper for AccountTypes.Account;
     using AccountTypePositionHelper for AccountTypes.PerpPosition;
 
@@ -53,6 +53,14 @@ contract Ledger is ILedger, Ownable {
     modifier onlyCrossChainManager() {
         if (msg.sender != crossChainManagerAddress) revert OnlyCrossChainManagerCanCall();
         _;
+    }
+
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize() public override initializer {
+        __Ownable_init();
     }
 
     // set operatorManagerAddress
