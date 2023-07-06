@@ -17,7 +17,7 @@ contract DeployLedger is Script {
 
     function run() external {
         uint256 orderlyPrivateKey = vm.envUint("ORDERLY_PRIVATE_KEY");
-        // address operatorAddress = vm.envAddress("OPERATOR_ADDRESS");
+        address operatorAdminAddress = vm.envAddress("OPERATOR_ADMIN_ADDRESS");
         address ledgerCrossChainManagerAddress = vm.envAddress("LEDGER_CROSS_CHAIN_MANAGER_ADDRESS");
         ILedgerCrossChainManager ledgerCrossChainManager = ILedgerCrossChainManager(ledgerCrossChainManagerAddress);
 
@@ -59,7 +59,7 @@ contract DeployLedger is Script {
         ledger.setFeeManager(address(feeManager));
         ledger.setMarketManager(address(marketManager));
 
-        // operatorManager.setOperator(operatorAddress);
+        operatorManager.setOperator(operatorAdminAddress);
         operatorManager.setLedger(address(ledger));
 
         vaultManager.setLedgerAddress(address(ledger));
