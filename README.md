@@ -62,24 +62,23 @@ forge test -vvvv
 4. setCrossChainRelay
 5. setLedgerCrossChainManager(chainId, address)
 
-## Ledger deploy
+## Ledger scripts
 
-command:
+### Deploy command:
 
 `forge script myScript/ledger/DeployProxyLedger.s.sol -f $ORDERLY_NETWORK --json --via-ir --broadcast`
 
-make sure all the ENV is set:
+### Upgrade command:
 
-1. ORDERLY_PRIVATE_KEY
-2. OPERATOR_ADDRESS
-3. LEDGER_CROSS_CHAIN_MANAGER_ADDRESS
-4. LEDGER_NETWORK
+`forge script myScript/ledger/UpgradeLedger.s.sol -f $ORDERLY_NETWORK --json --broadcast`
 
 ## Vault deploy
 
-command:
+### Deploy command:
 
 `forge script myScript/vault/DeployProxyVault.s.sol -f $VAULT_NETWORK --json --broadcast`
+
+### Deposit commond:
 
 `forge script myScript/vault/StartDeposit.s.sol -f $VAULT_NETWORK --json --broadcast`
 
