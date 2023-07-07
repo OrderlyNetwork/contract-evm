@@ -123,7 +123,7 @@ library AccountTypePositionHelper {
     function halfUp16_8_i256(int256 dividend, int128 divisor) internal pure returns (int128) {
         int256 quotient = dividend / divisor;
         int256 remainder = dividend % divisor;
-        if (Utils.abs_256(remainder) * 2 >= Utils.abs(divisor)) {
+        if (Utils.abs_i256(remainder) * 2 >= Utils.abs(divisor)) {
             if (quotient > 0) {
                 quotient += 1;
             } else {

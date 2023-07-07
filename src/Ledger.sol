@@ -349,26 +349,44 @@ contract Ledger is ILedger, OwnableUpgradeable {
         public
         override
         onlyOperatorManager
-    {
-        AccountTypes.Account storage liquidated_user = userLedger[liquidation.liquidatedAccountId];
-        // for-loop liquidation execution
-        uint256 length = liquidation.liquidationTransfers.length;
-        EventTypes.LiquidationTransfer[] calldata liquidationTransfers = liquidation.liquidationTransfers;
-        // chargeFundingFee for liquidated_user.perpPosition
-        for (uint256 i = 0; i < length; ++i) {
-            liquidated_user.perpPositions[liquidation.liquidatedAssetHash].chargeFundingFee(
-                liquidationTransfers[i].sumUnitaryFundings
-            );
+    {}
+
+    function executeAdl(EventTypes.Adl calldata adl, uint64 eventId) public override onlyOperatorManager {
+        AccountTypes.Account storage account = userLedger[adl.accountId];
+        AccountTypes.PerpPosition storage userPosition = account.perpPositions[adl.symbolHash];
+        userPosition.chargeFundingFee(adl.sumUnitaryFundings);
+        AccountTypes.Account storage insuranceFund = userLedger[adl.insuranceAccountId];
+        AccountTypes.PerpPosition storage insurancePosition = insuranceFund.perpPositions[adl.symbolHash];
+        if (userPosition.positionQty == 0) revert UserPerpPositionQtyZero(adl.accountId, adl.symbolHash);
+        if (Utils.abs(adl.positionQtyTransfer) > Utils.abs(userPosition.positionQty)) {
+            revert InsurancePositionQtyInvalid(adl.positionQtyTransfer, userPosition.positionQty);
         }
-        // TODO get_liquidation_info
-        // TODO transfer_liquidatedAsset_to_insurance if insuranceTransferAmount != 0
-        for (uint256 i = 0; i < length; ++i) {
-            // TODO liquidator_liquidate_and_update_eventId
-            // TODO liquidated_user_liquidate
-            // TODO insurance_liquidate
-        }
-        liquidated_user.lastCefiEventId = eventId;
-        // TODO emit event
+
+        insurancePosition.chargeFundingFee(adl.sumUnitaryFundings);
+        insurancePosition.positionQty -= adl.positionQtyTransfer;
+        userPosition.calAverageEntryPrice(adl.positionQtyTransfer, int128(adl.adlPrice), -adl.costPositionTransfer);
+        userPosition.positionQty += adl.positionQtyTransfer;
+        insurancePosition.costPosition -= adl.costPositionTransfer;
+        userPosition.costPosition += adl.costPositionTransfer;
+
+        userPosition.lastExecutedPrice = adl.adlPrice;
+        userPosition.lastAdlPrice = adl.adlPrice;
+
+        insurancePosition.lastExecutedPrice = adl.adlPrice;
+        insurancePosition.lastAdlPrice = adl.adlPrice;
+
+        account.lastCefiEventId = eventId;
+        insuranceFund.lastCefiEventId = eventId;
+        emit AdlResult(
+            adl.accountId,
+            adl.insuranceAccountId,
+            adl.symbolHash,
+            adl.positionQtyTransfer,
+            adl.costPositionTransfer,
+            adl.adlPrice,
+            adl.sumUnitaryFundings,
+            eventId
+        );
     }
 
     function executePerpMarketInfo(MarketTypes.PerpMarketUpload calldata data) public override onlyOperatorManager {
