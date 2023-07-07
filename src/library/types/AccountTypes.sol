@@ -36,8 +36,6 @@ library AccountTypes {
         uint64 lastDepositEventId;
         // perp position
         mapping(bytes32 => PerpPosition) perpPositions;
-        // reentrancy lock
-        bool hasPendingLedgerRequest;
     }
 
     struct AccountDeposit {
