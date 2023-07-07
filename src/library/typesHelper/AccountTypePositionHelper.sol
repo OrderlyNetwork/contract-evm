@@ -2,6 +2,7 @@
 pragma solidity ^0.8.18;
 
 import "../types/AccountTypes.sol";
+import "../Utils.sol";
 
 library AccountTypePositionHelper {
     int128 constant FUNDING_MOVE_RIGHT_PRECISIONS = 1e17; // 1e17
@@ -31,7 +32,7 @@ library AccountTypePositionHelper {
         int128 markPrice,
         int128 baseMaintenanceMargin
     ) internal view returns (int128) {
-        return abs(position.positionQty) * markPrice / PRICE_QTY_MOVE_RIGHT_PRECISIONS * baseMaintenanceMargin
+        return Utils.abs(position.positionQty) * markPrice / PRICE_QTY_MOVE_RIGHT_PRECISIONS * baseMaintenanceMargin
             / int128(MARGIN_100PERCENT);
     }
 
@@ -109,7 +110,7 @@ library AccountTypePositionHelper {
     function halfUp16_8(int128 dividend, int128 divisor) internal pure returns (int128) {
         int128 quotient = dividend / divisor;
         int128 remainder = dividend % divisor;
-        if (abs(remainder) * 2 >= abs(divisor)) {
+        if (Utils.abs(remainder) * 2 >= Utils.abs(divisor)) {
             if (quotient > 0) {
                 quotient += 1;
             } else {
@@ -122,7 +123,7 @@ library AccountTypePositionHelper {
     function halfUp16_8_i256(int256 dividend, int128 divisor) internal pure returns (int128) {
         int256 quotient = dividend / divisor;
         int256 remainder = dividend % divisor;
-        if (abs_i256(remainder) * 2 >= abs(divisor)) {
+        if (Utils.abs_256(remainder) * 2 >= Utils.abs(divisor)) {
             if (quotient > 0) {
                 quotient += 1;
             } else {
@@ -151,7 +152,7 @@ library AccountTypePositionHelper {
     function halfDown16_8(int128 dividend, int128 divisor) internal pure returns (int128) {
         int128 quotient = dividend / divisor;
         int128 remainder = dividend % divisor;
-        if (abs(remainder) * 2 > abs(divisor)) {
+        if (Utils.abs(remainder) * 2 > Utils.abs(divisor)) {
             if (quotient > 0) {
                 quotient += 1;
             } else {
@@ -159,13 +160,5 @@ library AccountTypePositionHelper {
             }
         }
         return quotient;
-    }
-
-    function abs(int128 value) internal pure returns (int128) {
-        return value > 0 ? value : -value;
-    }
-
-    function abs_i256(int256 value) internal pure returns (int256) {
-        return value > 0 ? value : -value;
     }
 }

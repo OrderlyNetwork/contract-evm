@@ -32,7 +32,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
     // globalDepositId
     uint64 public globalDepositId;
     // userLedger accountId -> Account
-    mapping(bytes32 => AccountTypes.Account) private userLedger;
+    mapping(bytes32 => AccountTypes.Account) internal userLedger;
 
     // VaultManager contract
     IVaultManager public vaultManager;
@@ -117,6 +117,16 @@ contract Ledger is ILedger, OwnableUpgradeable {
         returns (uint128)
     {
         return userLedger[accountId].getFrozenWithdrawNonceBalance(withdrawNonce, tokenHash);
+    }
+
+    // get perp position
+    function getPerpPosition(bytes32 accountId, bytes32 symbolHash)
+        public
+        view
+        override
+        returns (AccountTypes.PerpPosition memory perpPosition)
+    {
+        perpPosition = userLedger[accountId].perpPositions[symbolHash];
     }
 
     // Interface implementation
@@ -285,14 +295,17 @@ contract Ledger is ILedger, OwnableUpgradeable {
         for (uint256 i = 0; i < length; ++i) {
             totalSettleAmount += settlementExecutions[i].settledAmount;
         }
-        if (totalSettleAmount != 0) revert TotalSettleAmountNotZero(totalSettleAmount);
+        if (totalSettleAmount != settlement.settledAmount) revert TotalSettleAmountNotMatch(totalSettleAmount);
 
         AccountTypes.Account storage account = userLedger[settlement.accountId];
-        uint128 balance = account.balances[settlement.settledAssetHash];
-        account.hasPendingLedgerRequest = false;
         if (settlement.insuranceTransferAmount != 0) {
+            if (settlement.accountId == settlement.insuranceAccountId) revert InsuranceTransferToSelf();
+            uint128 balance = account.balances[settlement.settledAssetHash];
             // transfer insurance fund
-            if (int128(balance) + int128(settlement.insuranceTransferAmount) + settlement.settledAmount < 0) {
+            if (
+                int128(balance) + int128(settlement.insuranceTransferAmount) + settlement.settledAmount < 0
+                    || settlement.insuranceTransferAmount > uint128(Utils.abs(settlement.settledAmount))
+            ) {
                 // overflow
                 revert InsuranceTransferAmountInvalid(
                     balance, settlement.insuranceTransferAmount, settlement.settledAmount
@@ -300,6 +313,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
             }
             AccountTypes.Account storage insuranceFund = userLedger[settlement.insuranceAccountId];
             insuranceFund.balances[settlement.settledAssetHash] += settlement.insuranceTransferAmount;
+            account.balances[settlement.settledAssetHash] += settlement.insuranceTransferAmount;
         }
         // for-loop ledger execution
         for (uint256 i = 0; i < length; ++i) {
@@ -311,10 +325,12 @@ contract Ledger is ILedger, OwnableUpgradeable {
                 position.lastExecutedPrice = ledgerExecution.markPrice;
             }
             // check balance + settledAmount >= 0, where balance should cast to int128 first
-            if (int128(balance) + ledgerExecution.settledAmount < 0) {
+            uint128 balance = account.balances[settlement.settledAssetHash];
+            if (int128(account.balances[settlement.settledAssetHash]) + ledgerExecution.settledAmount < 0) {
                 revert BalanceNotEnough(balance, ledgerExecution.settledAmount);
             }
-            balance = uint128(int128(balance) + ledgerExecution.settledAmount);
+            account.balances[settlement.settledAssetHash] =
+                uint128(int128(account.balances[settlement.settledAssetHash]) + ledgerExecution.settledAmount);
         }
         account.lastCefiEventId = eventId;
         // emit event
