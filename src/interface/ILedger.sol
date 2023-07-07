@@ -9,8 +9,9 @@ import "../library/types/MarketTypes.sol";
 interface ILedger {
     error OnlyOperatorCanCall();
     error OnlyCrossChainManagerCanCall();
-    error TotalSettleAmountNotZero(int128 amount);
+    error TotalSettleAmountNotMatch(int128 amount);
     error BalanceNotEnough(uint128 balance, int128 amount);
+    error InsuranceTransferToSelf();
     error InsuranceTransferAmountInvalid(uint128 balance, uint128 insuranceTransferAmount, int128 settledAmount);
     error AccountIdInvalid();
     error TokenNotAllowed(bytes32 tokenHash, uint256 chainId);
@@ -104,6 +105,10 @@ interface ILedger {
         external
         view
         returns (uint128);
+    function getPerpPosition(bytes32 accountId, bytes32 symbolHash)
+        external
+        view
+        returns (AccountTypes.PerpPosition memory);
 
     // admin call
     function setOperatorManagerAddress(address _operatorManagerAddress) external;
