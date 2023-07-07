@@ -30,7 +30,7 @@ library Utils {
         return value >= 0 ? value : -value;
     }
 
-    function abs_256(int256 value) internal pure returns (int256) {
+    function abs_i256(int256 value) internal pure returns (int256) {
         return value >= 0 ? value : -value;
     }
 }

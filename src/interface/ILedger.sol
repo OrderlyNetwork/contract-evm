@@ -13,6 +13,8 @@ interface ILedger {
     error BalanceNotEnough(uint128 balance, int128 amount);
     error InsuranceTransferToSelf();
     error InsuranceTransferAmountInvalid(uint128 balance, uint128 insuranceTransferAmount, int128 settledAmount);
+    error UserPerpPositionQtyZero(bytes32 accountId, bytes32 symbolHash);
+    error InsurancePositionQtyInvalid(int128 adlPositionQtyTransfer, int128 userPositionQty);
     error AccountIdInvalid();
     error TokenNotAllowed(bytes32 tokenHash, uint256 chainId);
     error BrokerNotAllowed();
@@ -83,6 +85,17 @@ interface ILedger {
         uint64 eventId
     );
 
+    event AdlResult(
+        bytes32 indexed accountId,
+        bytes32 insuranceAccountId,
+        bytes32 symbolHash,
+        int128 positionQtyTransfer,
+        int128 costPositionTransfer,
+        uint128 adlPrice,
+        int128 sumUnitaryFundings,
+        uint64 eventId
+    );
+
     function initialize() external;
 
     // called by cross chain manager
@@ -94,6 +107,7 @@ interface ILedger {
     function executeWithdrawAction(EventTypes.WithdrawData calldata withdraw, uint64 eventId) external;
     function executeSettlement(EventTypes.Settlement calldata ledger, uint64 eventId) external;
     function executeLiquidation(EventTypes.Liquidation calldata liquidation, uint64 eventId) external;
+    function executeAdl(EventTypes.Adl calldata adl, uint64 eventId) external;
     function executePerpMarketInfo(MarketTypes.PerpMarketUpload calldata data) external;
 
     // view call
