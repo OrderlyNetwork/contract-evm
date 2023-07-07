@@ -1,6 +1,6 @@
 {
   "solidity.packageDefaultDependenciesContractsDirectory": "src",
   "solidity.packageDefaultDependenciesDirectory": "lib",
-  "editor.formatOnSave": false,
+  "editor.formatOnSave": true,
   "solidity.formatter": "forge"
 }
