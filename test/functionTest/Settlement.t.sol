@@ -250,7 +250,7 @@ contract SettlementTest is Test {
         assertEq(ledger.getUserLedgerLastCefiEventId(BOB), 1);
     }
 
-    function testFail_settled_amount_not_eq_sum() public {
+    function testRevert_settled_amount_not_eq_sum() public {
         EventTypes.SettlementExecution[] memory executions = new EventTypes.SettlementExecution[](1);
         executions[0] = EventTypes.SettlementExecution({
             symbolHash: SYMBOL_HASH_ETH_USDC,
@@ -259,6 +259,7 @@ contract SettlementTest is Test {
             settledAmount: 2_000_000_000
         });
         vm.prank(address(operatorManager));
+        vm.expectRevert(abi.encodeWithSelector(ILedger.TotalSettleAmountNotMatch.selector, 2_000_000_000));
         ledger.executeSettlement({
             settlement: EventTypes.Settlement({
                 accountId: BOB,
@@ -271,10 +272,9 @@ contract SettlementTest is Test {
             }),
             eventId: 1
         });
-        vm.expectRevert(ILedger.TotalSettleAmountNotMatch.selector);
     }
 
-    function testFail_insurance_transfer_too_much() public {
+    function testRevert_insurance_transfer_too_much() public {
         EventTypes.SettlementExecution[] memory executions = new EventTypes.SettlementExecution[](1);
         executions[0] = EventTypes.SettlementExecution({
             symbolHash: SYMBOL_HASH_ETH_USDC,
@@ -283,6 +283,11 @@ contract SettlementTest is Test {
             settledAmount: -2_000_000_000
         });
         vm.prank(address(operatorManager));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                ILedger.InsuranceTransferAmountInvalid.selector, 1_000_000_000, 3_000_000_000, -2_000_000_000
+            )
+        );
         ledger.executeSettlement({
             settlement: EventTypes.Settlement({
                 accountId: BOB,
@@ -295,10 +300,9 @@ contract SettlementTest is Test {
             }),
             eventId: 1
         });
-        vm.expectRevert(ILedger.InsuranceTransferAmountInvalid.selector);
     }
 
-    function testFail_insurance_transfer_to_self() public {
+    function testRevert_insurance_transfer_to_self() public {
         EventTypes.SettlementExecution[] memory executions = new EventTypes.SettlementExecution[](1);
         executions[0] = EventTypes.SettlementExecution({
             symbolHash: SYMBOL_HASH_ETH_USDC,
@@ -307,6 +311,7 @@ contract SettlementTest is Test {
             settledAmount: -2_000_000_000
         });
         vm.prank(address(operatorManager));
+        vm.expectRevert(ILedger.InsuranceTransferToSelf.selector);
         ledger.executeSettlement({
             settlement: EventTypes.Settlement({
                 accountId: INSURANCE_FUND,
@@ -319,6 +324,5 @@ contract SettlementTest is Test {
             }),
             eventId: 1
         });
-        vm.expectRevert(ILedger.InsuranceTransferToSelf.selector);
     }
 }

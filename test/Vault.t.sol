@@ -63,34 +63,50 @@ contract VaultTest is Test {
         assertEq(tUSDC.balanceOf(address(vault)), AMOUNT);
     }
 
-    function testFail_depositInsufficientApproval() public {
+    function testRevert_depositInsufficientAmount() public {
         vm.startPrank(SENDER);
         tUSDC.mint(SENDER, AMOUNT - 1);
         tUSDC.approve(address(vault), AMOUNT);
         assertEq(tUSDC.balanceOf(address(SENDER)), AMOUNT - 1);
+
+        vm.expectRevert("ERC20: transfer amount exceeds balance");
         vault.deposit(depositData);
     }
 
-    function testFail_depositNotAllowedToken() public {
+    function testRevert_depositInsufficientApproval() public {
+        vm.startPrank(SENDER);
+        tUSDC.mint(SENDER, AMOUNT);
+        tUSDC.approve(address(vault), AMOUNT - 1);
+        assertEq(tUSDC.balanceOf(address(SENDER)), AMOUNT);
+
+        vm.expectRevert("ERC20: insufficient allowance");
+        vault.deposit(depositData);
+    }
+
+    function testRevert_depositNotAllowedToken() public {
         vm.startPrank(SENDER);
         depositData.tokenHash = 0x96706879d29c248edfb2a2563a8a9d571c49634c0f82013e6f5a7cde739d35d4; // "TOKEN"
+
+        vm.expectRevert(IVault.TokenNotAllowed.selector);
         vault.deposit(depositData);
         vm.stopPrank();
     }
 
-    function testFail_depositNotAllowedBroker() public {
+    function testRevert_depositNotAllowedBroker() public {
         vm.startPrank(SENDER);
         depositData.brokerHash = 0x2804e22f743595918807e939e50f80985ef77d3aa68cd82cff712cc69eee98ec; // "brokerId"
+        vm.expectRevert(IVault.BrokerNotAllowed.selector);
         vault.deposit(depositData);
         vm.stopPrank();
     }
 
-    function testFail_depositIncorrectAccountId() public {
+    function testRevert_depositIncorrectAccountId() public {
         vm.startPrank(SENDER);
         tUSDC.mint(SENDER, AMOUNT);
         tUSDC.approve(address(vault), AMOUNT);
         assertEq(tUSDC.balanceOf(address(SENDER)), AMOUNT);
         depositData.accountId = 0x44a4d91d025846561e99ca284b96d282bc1f183c12c36471c58dee3747487d99; // keccak(SENDER, keccak("brokerId"))
+        vm.expectRevert(IVault.AccountIdInvalid.selector);
         vault.deposit(depositData);
         vm.stopPrank();
     }
@@ -108,7 +124,7 @@ contract VaultTest is Test {
         assertEq(tUSDC.balanceOf(address(vault)), 0);
     }
 
-    function testFail_withdrawInsufficientBalance() public {
+    function testRevert_withdrawInsufficientBalance() public {
         vm.startPrank(SENDER);
         tUSDC.mint(SENDER, AMOUNT);
         tUSDC.approve(address(vault), AMOUNT);
@@ -117,6 +133,7 @@ contract VaultTest is Test {
         vm.stopPrank();
 
         vm.prank(address(vaultCrossChainManager));
+        vm.expectRevert(abi.encodeWithSelector(IVault.BalanceNotEnough.selector, AMOUNT - 1, AMOUNT));
         vault.withdraw(withdrawData);
     }
 }

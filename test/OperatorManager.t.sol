@@ -58,8 +58,9 @@ contract OperatorManagerTest is Test {
         operatorManager.operatorPing();
     }
 
-    function testFail_pingNotOperator() public {
+    function testRevert_pingNotOperator() public {
         vm.prank(address(0x1));
+        vm.expectRevert(IOperatorManager.OnlyOperatorCanCall.selector);
         operatorManager.operatorPing();
     }
 
