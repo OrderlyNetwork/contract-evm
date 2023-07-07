@@ -33,6 +33,4 @@ library Utils {
     function abs_256(int256 value) internal pure returns (int256) {
         return value >= 0 ? value : -value;
     }
-
-    
 }
