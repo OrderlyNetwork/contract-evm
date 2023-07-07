@@ -162,9 +162,10 @@ contract LedgerTest is Test {
         require(succ, "verify failed");
     }
 
-    function testFail_verify_EIP712() public {
+    function testRevert_verify_EIP712() public {
         withdrawData.chainId = 0xdead;
         bool succ = Signature.verifyWithdraw(withdrawData.sender, withdrawData);
+        vm.expectRevert("verify failed");
         require(succ, "verify failed");
     }
 
@@ -186,33 +187,25 @@ contract LedgerTest is Test {
         assertEq(ledger.getFrozenWithdrawNonce(ACCOUNT_ID, WITHDRAW_NONCE, TOKEN_HASH), AMOUNT);
     }
 
-    function testFail_withdrawNotAllowedBroker() public {
-        vm.prank(address(ledger));
+    function testRevert_depositNotAllowedBroker() public {
         vaultManager.setAllowedBroker(BROKER_HASH, false);
         vm.prank(address(ledgerCrossChainManager));
+        vm.expectRevert(ILedger.BrokerNotAllowed.selector);
         ledger.accountDeposit(depositData);
-        vm.prank(address(operatorManager));
-        vm.chainId(CHAIN_ID);
-        ledger.executeWithdrawAction(withdrawData2, 1);
     }
 
-    function testFail_withdrawNotAllowedToken() public {
-        vm.prank(address(ledger));
+    function testRevert_depositNotAllowedToken() public {
         vaultManager.setAllowedToken(TOKEN_HASH, CHAIN_ID, false);
         vm.prank(address(ledgerCrossChainManager));
+        vm.expectRevert(abi.encodeWithSelector(ILedger.TokenNotAllowed.selector, TOKEN_HASH, CHAIN_ID));
         ledger.accountDeposit(depositData);
-        vm.prank(address(operatorManager));
-        vm.chainId(CHAIN_ID);
-        ledger.executeWithdrawAction(withdrawData2, 1);
     }
 
-    function testFail_withdrawInvalidAccountId() public {
+    function testRevert_depositInvalidAccountId() public {
         vm.prank(address(ledgerCrossChainManager));
+        vm.expectRevert(ILedger.AccountIdInvalid.selector);
+        depositData.accountId = 0x44a4d91d025846561e99ca284b96d282bc1f183c12c36471c58dee3747487d99;
         ledger.accountDeposit(depositData);
-        vm.prank(address(operatorManager));
-        vm.chainId(CHAIN_ID);
-        withdrawData2.accountId = 0x44a4d91d025846561e99ca284b96d282bc1f183c12c36471c58dee3747487d99; // keccak(SENDER, keccak("brokerId"))
-        ledger.executeWithdrawAction(withdrawData2, 1);
     }
 
     function test_withdraw_finish() public {
