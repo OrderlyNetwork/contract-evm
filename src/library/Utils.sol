@@ -25,4 +25,14 @@ library Utils {
     {
         return keccak256(abi.encode(_userAddress, _brokerHash)) == _accountId;
     }
+
+    function abs(int128 value) internal pure returns (int128) {
+        return value >= 0 ? value : -value;
+    }
+
+    function abs_256(int256 value) internal pure returns (int256) {
+        return value >= 0 ? value : -value;
+    }
+
+    
 }
