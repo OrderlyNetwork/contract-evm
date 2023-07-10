@@ -10,7 +10,7 @@ contract UpgradeOperatorManager is Script {
     function run() external {
         uint256 orderlyPrivateKey = vm.envUint("ORDERLY_PRIVATE_KEY");
         address adminAddress = vm.envAddress("LEDGER_PROXY_ADMIN");
-        address operatorManagerAddress = vm.envAddress("LEDGER_ADDRESS");
+        address operatorManagerAddress = vm.envAddress("OPERATOR_MANAGER_ADDRESS");
 
         ProxyAdmin admin = ProxyAdmin(adminAddress);
         ITransparentUpgradeableProxy operatorManagerProxy = ITransparentUpgradeableProxy(operatorManagerAddress);
