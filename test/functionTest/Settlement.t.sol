@@ -86,7 +86,7 @@ contract SettlementTest is Test {
 
         ledger.cheatDeposit(ALICE, TOKEN_HASH, 1_000_000_000, CHAIN_ID);
         ledger.cheatDeposit(BOB, TOKEN_HASH, 1_000_000_000, CHAIN_ID);
-        ledger.cheatDeposit(INSURANCE_FUND, TOKEN_HASH, 1_000_000_000, CHAIN_ID);
+        ledger.cheatDeposit(INSURANCE_FUND, TOKEN_HASH, 10_000_000_000, CHAIN_ID);
 
         ledger.cheatSetUserPosition(
             BOB,
