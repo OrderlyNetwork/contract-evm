@@ -131,17 +131,17 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable {
     // process each event upload
     function _processEventUpload(EventTypes.EventUploadData calldata data) internal {
         uint8 bizType = data.bizType;
-        if (bizType == 0) {
+        if (bizType == 1) {
             // withdraw
             ledger.executeWithdrawAction(abi.decode(data.data, (EventTypes.WithdrawData)), data.eventId);
-        } else if (bizType == 1) {
+        } else if (bizType == 2) {
             // settlement
             ledger.executeSettlement(abi.decode(data.data, (EventTypes.Settlement)), data.eventId);
-        } else if (bizType == 2) {
+        } else if (bizType == 3) {
             // adl
             // WIP
             ledger.executeAdl(abi.decode(data.data, (EventTypes.Adl)), data.eventId);
-        } else if (bizType == 3) {
+        } else if (bizType == 4) {
             // liquidation
             ledger.executeLiquidation(abi.decode(data.data, (EventTypes.Liquidation)), data.eventId);
         } else {
