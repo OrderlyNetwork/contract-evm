@@ -103,7 +103,7 @@ interface ILedger {
     function accountWithDrawFinish(AccountTypes.AccountWithdraw calldata withdraw) external;
 
     // called by operator manager
-    function updateUserLedgerByTradeUpload(PerpTypes.FuturesTradeUpload calldata trade) external;
+    function executeProcessValidatedFutures(PerpTypes.FuturesTradeUpload calldata trade) external;
     function executeWithdrawAction(EventTypes.WithdrawData calldata withdraw, uint64 eventId) external;
     function executeSettlement(EventTypes.Settlement calldata ledger, uint64 eventId) external;
     function executeLiquidation(EventTypes.Liquidation calldata liquidation, uint64 eventId) external;
