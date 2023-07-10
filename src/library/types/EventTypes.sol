@@ -13,7 +13,7 @@ library EventTypes {
     }
 
     struct EventUploadData {
-        uint8 bizType; // 0 - withdraw, 1 - settlement, 2 - adl, 3 - liquidation
+        uint8 bizType; // 1 - withdraw, 2 - settlement, 3 - adl, 4 - liquidation
         uint64 eventId;
         bytes data;
     }
