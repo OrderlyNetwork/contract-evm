@@ -110,7 +110,7 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable {
 
     // process each validated perp trades
     function _processValidatedFutures(PerpTypes.FuturesTradeUpload calldata trade) internal {
-        ledger.updateUserLedgerByTradeUpload(trade);
+        ledger.executeProcessValidatedFutures(trade);
     }
 
     // event upload data

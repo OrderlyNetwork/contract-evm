@@ -166,7 +166,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
         );
     }
 
-    function updateUserLedgerByTradeUpload(PerpTypes.FuturesTradeUpload calldata trade)
+    function executeProcessValidatedFutures(PerpTypes.FuturesTradeUpload calldata trade)
         public
         override
         onlyOperatorManager
