@@ -32,6 +32,10 @@ library AccountTypeHelper {
         account.balances[tokenHash] += amount;
     }
 
+    function subBalance(AccountTypes.Account storage account, bytes32 tokenHash, uint128 amount) internal {
+        account.balances[tokenHash] -= amount;
+    }
+
     // frozen balance with a given withdrawNonce & amount
     function frozenBalance(
         AccountTypes.Account storage account,

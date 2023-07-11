@@ -349,7 +349,21 @@ contract Ledger is ILedger, OwnableUpgradeable {
         public
         override
         onlyOperatorManager
-    {}
+    {
+        AccountTypes.Account storage liquidatedAccount = userLedger[liquidation.liquidatedAccountId];
+
+        uint256 length = liquidation.liquidationTransfers.length;
+        for (uint256 i = 0; i < length; i++) {}
+
+        if (liquidation.insuranceTransferAmount != 0) {
+            _transferLiquidatedAssetToInsurance(
+                liquidatedAccount,
+                liquidation.liquidatedAssetHash,
+                liquidation.insuranceTransferAmount,
+                liquidation.insuranceAccountId
+            );
+        }
+    }
 
     function executeAdl(EventTypes.Adl calldata adl, uint64 eventId) public override onlyOperatorManager {
         AccountTypes.Account storage account = userLedger[adl.accountId];
@@ -436,5 +450,37 @@ contract Ledger is ILedger, OwnableUpgradeable {
         if (tradeId > feeCollectorAccount.lastPerpTradeId) {
             feeCollectorAccount.lastPerpTradeId = tradeId;
         }
+    }
+
+    // =================== liquidation functions =================== //
+
+    function _transferLiquidatedAssetToInsurance(
+        AccountTypes.Account storage liquidatedAccount,
+        bytes32 liquidatedAssetHash,
+        uint128 insuranceTransferAmount,
+        bytes32 insuranceAccountId
+    ) internal {
+        liquidatedAccount.subBalance(liquidatedAssetHash, insuranceTransferAmount);
+        AccountTypes.Account storage insuranceFund = userLedger[insuranceAccountId];
+        insuranceFund.addBalance(liquidatedAssetHash, insuranceTransferAmount);
+    }
+
+    function _liquidatorLiquidateAndUpdateEventId(
+        EventTypes.LiquidationTransfer calldata liquidationTransfer,
+        uint64 eventId
+    ) internal {
+        AccountTypes.Account storage liquidatorAccount = userLedger[liquidationTransfer.liquidatorAccountId];
+        AccountTypes.PerpPosition storage liquidatorPosition =
+            liquidatorAccount.perpPositions[liquidationTransfer.symbolHash];
+        liquidatorPosition.chargeFundingFee(liquidationTransfer.sumUnitaryFundings);
+        liquidatorPosition.calAverageEntryPrice(
+            liquidationTransfer.positionQtyTransfer,
+            int128(liquidationTransfer.markPrice),
+            -(liquidationTransfer.costPositionTransfer - liquidationTransfer.liquidatorFee)
+        );
+        liquidatorPosition.positionQty += liquidationTransfer.positionQtyTransfer;
+        liquidatorPosition.costPosition += liquidationTransfer.costPositionTransfer - liquidationTransfer.liquidatorFee;
+        liquidatorPosition.lastExecutedPrice = liquidationTransfer.markPrice;
+        liquidatorAccount.lastCefiEventId = eventId;
     }
 }
