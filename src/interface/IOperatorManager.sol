@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
-import "../library/types/OperatorTypes.sol";
 import "../library/types/AccountTypes.sol";
 import "../library/types/PerpTypes.sol";
 import "../library/types/EventTypes.sol";
@@ -32,6 +31,7 @@ interface IOperatorManager {
     function checkCefiDown() external returns (bool);
 
     // admin call
-    function setOperator(address _operator) external;
+    function setOperator(address _operatorAddress) external;
+    function setCefiSignatureAddress(address _cefiSignatureAddress) external;
     function setLedger(address _ledger) external;
 }
