@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
-import "../library/types/OperatorTypes.sol";
 import "../library/types/EventTypes.sol";
-
 import "../library/types/AccountTypes.sol";
 
 interface ILedgerCrossChainManager {
