@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
-import "../src/library/Signature.sol";
+import "../../src/library/Signature.sol";
 
 contract SignatureTest is Test {
     address constant addr = 0x6a9961Ace9bF0C1B8B98ba11558A4125B1f5EA3f;
