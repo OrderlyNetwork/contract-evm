@@ -263,9 +263,12 @@ contract Ledger is ILedger, OwnableUpgradeable {
         // finish frozen balance
         account.finishFrozenBalance(withdraw.withdrawNonce, withdraw.tokenHash, withdraw.tokenAmount);
         // withdraw fee
-        feeManager.setOperatorGasFeeBalance(
-            withdraw.tokenHash, feeManager.getOperatorGasFeeBalance(withdraw.tokenHash) + withdraw.fee
-        );
+        if (withdraw.fee > 0) {
+            // gas saving if no fee
+            feeManager.setOperatorGasFeeBalance(
+                withdraw.tokenHash, feeManager.getOperatorGasFeeBalance(withdraw.tokenHash) + withdraw.fee
+            );
+        }
         // emit withdraw finish event
         emit AccountWithdrawFinish(
             withdraw.accountId,
