@@ -7,8 +7,8 @@ import "openzeppelin-contracts/contracts/proxy/transparent/ProxyAdmin.sol";
 import "../../src/OperatorManager.sol";
 import "../../src/VaultManager.sol";
 import "../../src/marketManager.sol";
+import "../../src/feeManager.sol";
 import "../mock/LedgerCrossChainManagerMock.sol";
-import "../mock/FeeManagerMock.sol";
 import "../cheater/LedgerCheater.sol";
 
 contract SettlementTest is Test {
@@ -43,7 +43,7 @@ contract SettlementTest is Test {
         IOperatorManager operatorManagerImpl = new OperatorManager();
         IVaultManager vaultManagerImpl = new VaultManager();
         ILedger ledgerImpl = new LedgerCheater();
-        IFeeManager feeImpl = new FeeManagerMock();
+        IFeeManager feeImpl = new FeeManager();
         IMarketManager marketImpl = new MarketManager();
 
         operatorProxy = new TransparentUpgradeableProxy(address(operatorManagerImpl), address(admin), "");
