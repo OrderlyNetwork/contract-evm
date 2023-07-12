@@ -265,9 +265,10 @@ contract Ledger is ILedger, OwnableUpgradeable {
         // withdraw fee
         if (withdraw.fee > 0) {
             // gas saving if no fee
-            feeManager.setOperatorGasFeeBalance(
-                withdraw.tokenHash, feeManager.getOperatorGasFeeBalance(withdraw.tokenHash) + withdraw.fee
-            );
+            bytes32 feeCollectorAccountId =
+                feeManager.getFeeCollector(IFeeManager.FeeCollectorType.OperatorGasFeeCollector);
+            AccountTypes.Account storage feeCollectorAccount = userLedger[feeCollectorAccountId];
+            feeCollectorAccount.addBalance(withdraw.tokenHash, withdraw.fee);
         }
         // emit withdraw finish event
         emit AccountWithdrawFinish(
