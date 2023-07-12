@@ -7,6 +7,7 @@ interface IFeeManager is ILedgerComponent {
     error InvalidFeeCollectorType();
 
     enum FeeCollectorType {
+        None,
         TradingFeeCollector,
         OperatorGasFeeCollector,
         FuturesFeeCollector
@@ -14,10 +15,6 @@ interface IFeeManager is ILedgerComponent {
 
     function initialize() external;
 
-    function getOperatorGasFeeBalance(bytes32 tokenHash) external returns (uint128);
-    function setOperatorGasFeeBalance(bytes32 tokenHash, uint128 amount) external;
-    function getFeeAmount() external returns (uint128);
-    function changeFeeAmount(uint128 amount) external;
     function getFeeCollector(FeeCollectorType feeCollectorType) external returns (bytes32);
     function changeFeeCollector(FeeCollectorType feeCollectorType, bytes32 _newCollector) external;
 }
