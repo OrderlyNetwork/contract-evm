@@ -115,7 +115,7 @@ library Signature {
         uint8[] memory countArray2 = new uint8[](4);
         uint256 len = data.events.length;
         for (uint256 i = 0; i < len; i++) {
-            countArray[data.events[i].bizType]++;
+            countArray[data.events[i].bizType - 1]++;
         }
         EventUploadSignature memory eventUploadSignature = EventUploadSignature({
             batchId: data.batchId,
@@ -126,7 +126,7 @@ library Signature {
         });
         for (uint256 i = 0; i < len; i++) {
             EventTypes.EventUploadData memory eventUploadData = data.events[i];
-            if (eventUploadData.bizType == 0) {
+            if (eventUploadData.bizType == 1) {
                 EventTypes.WithdrawData memory withdrawData =
                     abi.decode(eventUploadData.data, (EventTypes.WithdrawData));
                 WithdrawDataSignature memory withdrawDataSignature = WithdrawDataSignature({
@@ -144,7 +144,7 @@ library Signature {
                 });
                 eventUploadSignature.withdraws[countArray2[0]] = withdrawDataSignature;
                 countArray2[0]++;
-            } else if (eventUploadData.bizType == 1) {
+            } else if (eventUploadData.bizType == 2) {
                 EventTypes.Settlement memory settlement = abi.decode(eventUploadData.data, (EventTypes.Settlement));
                 SettlementSignature memory settlementSignature = SettlementSignature({
                     eventId: eventUploadData.eventId,
@@ -158,7 +158,7 @@ library Signature {
                 });
                 eventUploadSignature.settlements[countArray2[1]] = settlementSignature;
                 countArray2[1]++;
-            } else if (eventUploadData.bizType == 2) {
+            } else if (eventUploadData.bizType == 3) {
                 EventTypes.Adl memory adl = abi.decode(eventUploadData.data, (EventTypes.Adl));
                 AdlSignature memory adlSignature = AdlSignature({
                     eventId: eventUploadData.eventId,
@@ -173,7 +173,7 @@ library Signature {
                 });
                 eventUploadSignature.adls[countArray2[2]] = adlSignature;
                 countArray2[2]++;
-            } else if (eventUploadData.bizType == 3) {
+            } else if (eventUploadData.bizType == 4) {
                 EventTypes.Liquidation memory liquidation = abi.decode(eventUploadData.data, (EventTypes.Liquidation));
                 LiquidationSignature memory liquidationSignature = LiquidationSignature({
                     eventId: eventUploadData.eventId,
