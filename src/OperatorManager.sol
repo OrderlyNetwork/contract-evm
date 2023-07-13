@@ -147,7 +147,6 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable {
             ledger.executeSettlement(abi.decode(data.data, (EventTypes.Settlement)), data.eventId);
         } else if (bizType == 3) {
             // adl
-            // WIP
             ledger.executeAdl(abi.decode(data.data, (EventTypes.Adl)), data.eventId);
         } else if (bizType == 4) {
             // liquidation
