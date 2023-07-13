@@ -17,7 +17,7 @@ import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.s
 contract Vault is IVault, ReentrancyGuardUpgradeable, OwnableUpgradeable {
     // equal to `Utils.string2HashedBytes32('USDC')`
     // equal to `Utils.getTokenHash('USDC')`
-    bytes32 constant USDC = bytes32(uint256(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa));
+    bytes32 constant USDC = 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa;
     // cross-chain operator address
     address public crossChainManagerAddress;
     // list to record the hash value of allowed brokerIds
