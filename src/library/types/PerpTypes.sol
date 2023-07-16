@@ -26,4 +26,10 @@ library PerpTypes {
         int128 sumUnitaryFundings;
         uint64 timestamp;
     }
+
+    struct LiquidationInfo {
+        bool isUnderLiquidation;
+        int128 totalCollateral;
+        int128 totalMaintenanceMargin;
+    }
 }

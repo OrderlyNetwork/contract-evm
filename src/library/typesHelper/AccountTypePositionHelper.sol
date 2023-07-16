@@ -38,7 +38,7 @@ library AccountTypePositionHelper {
 
     // is full settled
     function isFullSettled(AccountTypes.PerpPosition storage position) internal view returns (bool) {
-        return position.positionQty == 0 || position.costPosition == 0;
+        return position.positionQty == 0 && position.costPosition == 0;
     }
 
     /// only change averageEntryPrice, openingCost

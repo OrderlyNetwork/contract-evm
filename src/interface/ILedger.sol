@@ -96,6 +96,13 @@ interface ILedger {
         uint64 eventId
     );
 
+    event LiquidationResult(
+        bytes32 indexed liquidatedAccountId,
+        bytes32 insuranceAccountId,
+        bytes32 indexed liquidatedAssetHash,
+        uint128 insuranceTransferAmount
+    );
+
     function initialize() external;
 
     // called by cross chain manager
