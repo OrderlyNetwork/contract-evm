@@ -78,9 +78,9 @@ library EventTypes {
         bytes32 symbolHash;
         int128 positionQtyTransfer;
         int128 costPositionTransfer;
-        uint128 liquidatorFee;
-        uint128 insuranceFee;
-        uint128 liquidationFee;
+        int128 liquidatorFee;
+        int128 insuranceFee;
+        int128 liquidationFee;
         uint128 markPrice;
         int128 sumUnitaryFundings;
     }
