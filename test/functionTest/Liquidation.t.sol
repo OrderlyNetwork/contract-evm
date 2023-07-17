@@ -43,7 +43,7 @@ contract LiquidationTest is Test {
         IOperatorManager operatorManagerImpl = new OperatorManager();
         IVaultManager vaultManagerImpl = new VaultManager();
         ILedger ledgerImpl = new LedgerCheater();
-        IFeeManager feeImpl = new FeeManagerMock();
+        IFeeManager feeImpl = new FeeManager();
         IMarketManager marketImpl = new MarketManager();
 
         operatorProxy = new TransparentUpgradeableProxy(address(operatorManagerImpl), address(admin), "");
