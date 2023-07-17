@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
-import "../src/library/Signature.sol";
+import "../../src/library/Signature.sol";
 
 contract SignatureTest is Test {
     address constant addr = 0x6a9961Ace9bF0C1B8B98ba11558A4125B1f5EA3f;
@@ -119,8 +119,8 @@ contract SignatureTest is Test {
             timestamp: 1683270380531
         });
         EventTypes.EventUploadData[] memory events = new EventTypes.EventUploadData[](2);
-        events[0] = EventTypes.EventUploadData({bizType: 0, eventId: 1, data: abi.encode(w1)});
-        events[1] = EventTypes.EventUploadData({bizType: 2, eventId: 3, data: abi.encode(a1)});
+        events[0] = EventTypes.EventUploadData({bizType: 1, eventId: 1, data: abi.encode(w1)});
+        events[1] = EventTypes.EventUploadData({bizType: 3, eventId: 3, data: abi.encode(a1)});
         EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
             events: events,
             r: 0x0a29a4bd74c2f0d6e20f68ae5361483015b9ff35b650aeb2da3aa9229e19999b,
@@ -179,9 +179,9 @@ contract SignatureTest is Test {
             tokenSymbol: "USDC"
         });
         EventTypes.EventUploadData[] memory events = new EventTypes.EventUploadData[](3);
-        events[0] = EventTypes.EventUploadData({bizType: 0, eventId: 1, data: abi.encode(w1)});
-        events[1] = EventTypes.EventUploadData({bizType: 2, eventId: 3, data: abi.encode(a1)});
-        events[2] = EventTypes.EventUploadData({bizType: 0, eventId: 4, data: abi.encode(w2)});
+        events[0] = EventTypes.EventUploadData({bizType: 1, eventId: 1, data: abi.encode(w1)});
+        events[1] = EventTypes.EventUploadData({bizType: 3, eventId: 3, data: abi.encode(a1)});
+        events[2] = EventTypes.EventUploadData({bizType: 1, eventId: 4, data: abi.encode(w2)});
         EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
             events: events,
             r: 0xfd3ee24f871ae1c8a16aa336b81558f9cc42d2b7891eea8ba1403b1224286419,
@@ -215,7 +215,7 @@ contract SignatureTest is Test {
         });
 
         EventTypes.EventUploadData[] memory events = new EventTypes.EventUploadData[](1);
-        events[0] = EventTypes.EventUploadData({bizType: 1, eventId: 7, data: abi.encode(s1)});
+        events[0] = EventTypes.EventUploadData({bizType: 2, eventId: 7, data: abi.encode(s1)});
         EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
             events: events,
             r: 0x63ac7591ee23fbdd865a010cd58c8e4fc76e8b25f1efb9afcd5936366898df38,
@@ -330,12 +330,12 @@ contract SignatureTest is Test {
         });
 
         EventTypes.EventUploadData[] memory events = new EventTypes.EventUploadData[](6);
-        events[0] = EventTypes.EventUploadData({bizType: 0, eventId: 1, data: abi.encode(w1)});
-        events[1] = EventTypes.EventUploadData({bizType: 2, eventId: 3, data: abi.encode(a1)});
-        events[2] = EventTypes.EventUploadData({bizType: 0, eventId: 4, data: abi.encode(w2)});
-        events[3] = EventTypes.EventUploadData({bizType: 1, eventId: 7, data: abi.encode(s1)});
-        events[4] = EventTypes.EventUploadData({bizType: 3, eventId: 9, data: abi.encode(l1)});
-        events[5] = EventTypes.EventUploadData({bizType: 1, eventId: 11, data: abi.encode(s2)});
+        events[0] = EventTypes.EventUploadData({bizType: 1, eventId: 1, data: abi.encode(w1)});
+        events[1] = EventTypes.EventUploadData({bizType: 3, eventId: 3, data: abi.encode(a1)});
+        events[2] = EventTypes.EventUploadData({bizType: 1, eventId: 4, data: abi.encode(w2)});
+        events[3] = EventTypes.EventUploadData({bizType: 2, eventId: 7, data: abi.encode(s1)});
+        events[4] = EventTypes.EventUploadData({bizType: 4, eventId: 9, data: abi.encode(l1)});
+        events[5] = EventTypes.EventUploadData({bizType: 2, eventId: 11, data: abi.encode(s2)});
         EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
             events: events,
             r: 0xad53e90086f612a10d22cc666c1e7428bf2fd094df04a4f95f7f0a9889f6cd3a,
@@ -343,6 +343,38 @@ contract SignatureTest is Test {
             v: 0x1b,
             count: 4,
             batchId: 18
+        });
+
+        bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
+        assertEq(succ, true);
+    }
+
+    // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/288358489/Operator+Test+cases
+    function test_eventUploadEncodeHash_extra_1() public {
+        EventTypes.WithdrawData memory w1 = EventTypes.WithdrawData({
+            tokenAmount: 1000000,
+            fee: 0,
+            chainId: 43113,
+            accountId: 0xb336b4dc9f87302da656862ca142a8d454268ae61759bf25d986f863d8374cf1,
+            r: 0x4a88398c91b3eb572e2f889882bf060764853e71f81b7edb1e7155c39e734b21,
+            s: 0x03f06b07855e5824bf2bea53d960469d40477a2d5fa007c4d70d8f2426270d0d,
+            v: 0x1b,
+            sender: 0xb2EEefB3D6922C4270d174A4020d71D8Bd23C229,
+            withdrawNonce: 9,
+            receiver: 0xb2EEefB3D6922C4270d174A4020d71D8Bd23C229,
+            timestamp: 1689044649193,
+            brokerId: "woofi_dex",
+            tokenSymbol: "USDC"
+        });
+        EventTypes.EventUploadData[] memory events = new EventTypes.EventUploadData[](1);
+        events[0] = EventTypes.EventUploadData({bizType: 1, eventId: 230711030400003, data: abi.encode(w1)});
+        EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
+            events: events,
+            r: 0x651929c1b2bfae1904e3a5398fd6ae9f0cd148d51d179ebbe88fab2249522648,
+            s: 0x38d8776b1a0d21a897fe5a5dab317bb76f90d4fb6429cf3d6387b5725850c0ab,
+            v: 0x1c,
+            count: 1,
+            batchId: 1
         });
 
         bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
