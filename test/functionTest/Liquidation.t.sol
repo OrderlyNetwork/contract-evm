@@ -8,7 +8,7 @@ import "../../src/OperatorManager.sol";
 import "../../src/VaultManager.sol";
 import "../../src/marketManager.sol";
 import "../mock/LedgerCrossChainManagerMock.sol";
-import "../mock/FeeManagerMock.sol";
+import "../../src/feeManager.sol";
 import "../cheater/LedgerCheater.sol";
 
 contract LiquidationTest is Test {
