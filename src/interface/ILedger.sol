@@ -98,7 +98,7 @@ interface ILedger {
 
     event LiquidationResult(
         bytes32 indexed liquidatedAccountId,
-        bytes32 insuranceAccountId,
+        bytes32 indexed insuranceAccountId,
         bytes32 indexed liquidatedAssetHash,
         uint128 insuranceTransferAmount
     );

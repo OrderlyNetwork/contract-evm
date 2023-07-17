@@ -12,7 +12,7 @@ import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.s
  */
 contract OperatorManager is IOperatorManager, OwnableUpgradeable {
     // operator address
-    address public operator;
+    address public operatorAddress;
     // ledger Interface
     ILedger public ledger;
 
@@ -23,20 +23,28 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable {
     uint64 public eventUploadBatchId;
     // last operator interaction timestamp
     uint256 public lastOperatorInteraction;
+    // cefi sign address
+    // @Rubick move this with operatorAddress when next deployment
+    address public cefiSignatureAddress;
 
     // only operator
     modifier onlyOperator() {
-        if (msg.sender != operator) revert OnlyOperatorCanCall();
+        if (msg.sender != operatorAddress) revert OnlyOperatorCanCall();
         _;
     }
 
     // set operator
-    function setOperator(address _operator) public onlyOwner {
-        operator = _operator;
+    function setOperator(address _operatorAddress) public override onlyOwner {
+        operatorAddress = _operatorAddress;
+    }
+
+    // set cefiSignatureAddress
+    function setCefiSignatureAddress(address _cefiSignatureAddress) public override onlyOwner {
+        cefiSignatureAddress = _cefiSignatureAddress;
     }
 
     // set ledger
-    function setLedger(address _ledger) public onlyOwner {
+    function setLedger(address _ledger) public override onlyOwner {
         ledger = ILedger(_ledger);
     }
 
@@ -90,7 +98,7 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable {
         if (trades.length != data.count) revert CountNotMatch(trades.length, data.count);
 
         // check cefi signature
-        bool succ = Signature.perpUploadEncodeHashVerify(data, operator);
+        bool succ = Signature.perpUploadEncodeHashVerify(data, cefiSignatureAddress);
         if (!succ) revert SignatureNotMatch();
 
         _validatePerp(trades);
@@ -119,7 +127,7 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable {
         if (events.length != data.count) revert CountNotMatch(events.length, data.count);
 
         // check cefi signature
-        bool succ = Signature.eventsUploadEncodeHashVerify(data, operator);
+        bool succ = Signature.eventsUploadEncodeHashVerify(data, cefiSignatureAddress);
         if (!succ) revert SignatureNotMatch();
 
         // process each event upload
@@ -139,7 +147,6 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable {
             ledger.executeSettlement(abi.decode(data.data, (EventTypes.Settlement)), data.eventId);
         } else if (bizType == 3) {
             // adl
-            // WIP
             ledger.executeAdl(abi.decode(data.data, (EventTypes.Adl)), data.eventId);
         } else if (bizType == 4) {
             // liquidation

@@ -8,8 +8,8 @@ import "../src/OperatorManager.sol";
 import "../src/Ledger.sol";
 import "../src/VaultManager.sol";
 import "../src/marketManager.sol";
+import "../src/feeManager.sol";
 import "./mock/LedgerCrossChainManagerMock.sol";
-import "./mock/FeeManagerMock.sol";
 
 contract LedgerTest is Test {
     ProxyAdmin admin;
@@ -114,7 +114,7 @@ contract LedgerTest is Test {
         IOperatorManager operatorManagerImpl = new OperatorManager();
         IVaultManager vaultManagerImpl = new VaultManager();
         ILedger ledgerImpl = new Ledger();
-        IFeeManager feeImpl = new FeeManagerMock();
+        IFeeManager feeImpl = new FeeManager();
         IMarketManager marketImpl = new MarketManager();
 
         operatorProxy = new TransparentUpgradeableProxy(address(operatorManagerImpl), address(admin), "");

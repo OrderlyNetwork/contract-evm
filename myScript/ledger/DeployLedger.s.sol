@@ -16,6 +16,7 @@ contract DeployLedger is Script {
     function run() external {
         uint256 orderlyPrivateKey = vm.envUint("ORDERLY_PRIVATE_KEY");
         address operatorAddress = vm.envAddress("OPERATOR_ADDRESS");
+        address cefiSignatureAddress = vm.envAddress("CEFI_SIGNATURE_ADDRESS");
         address ledgerCrossChainManagerAddress = vm.envAddress("LEDGER_CROSS_CHAIN_MANAGER_ADDRESS");
         vm.startBroadcast(orderlyPrivateKey);
 
@@ -33,6 +34,7 @@ contract DeployLedger is Script {
         ledger.setMarketManager(address(marketManager));
 
         operatorManager.setOperator(operatorAddress);
+        operatorManager.setCefiSignatureAddress(cefiSignatureAddress);
         operatorManager.setLedger(address(ledger));
 
         vaultManager.setLedgerAddress(address(ledger));

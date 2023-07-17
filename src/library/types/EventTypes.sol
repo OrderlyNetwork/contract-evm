@@ -37,12 +37,12 @@ library EventTypes {
 
     struct Settlement {
         bytes32 accountId;
-        int128 settledAmount;
         bytes32 settledAssetHash;
         bytes32 insuranceAccountId;
+        int128 settledAmount;
         uint128 insuranceTransferAmount;
-        SettlementExecution[] settlementExecutions;
         uint64 timestamp;
+        SettlementExecution[] settlementExecutions;
     }
 
     struct SettlementExecution {
@@ -66,10 +66,10 @@ library EventTypes {
     struct Liquidation {
         bytes32 liquidatedAccountId;
         bytes32 insuranceAccountId;
-        uint128 insuranceTransferAmount;
         bytes32 liquidatedAssetHash;
-        LiquidationTransfer[] liquidationTransfers;
+        uint128 insuranceTransferAmount;
         uint64 timestamp;
+        LiquidationTransfer[] liquidationTransfers;
     }
 
     struct LiquidationTransfer {
