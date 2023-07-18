@@ -50,7 +50,7 @@ contract MarketManager is IMarketManager, LedgerComponent {
         perpMarketCfg[_symbolHash] = _perpMarketCfg;
     }
 
-    function getPerpMarketCfg(bytes32 _pairSymbol) external view override returns (MarketTypes.PerpMarketCfg memory) {
+    function getPerpMarketCfg(bytes32 _pairSymbol) public view override returns (MarketTypes.PerpMarketCfg memory) {
         return perpMarketCfg[_pairSymbol];
     }
 
