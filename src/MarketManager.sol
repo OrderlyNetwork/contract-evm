@@ -42,8 +42,10 @@ contract MarketManager is IMarketManager, LedgerComponent {
         emit FundingData(data.maxTimestamp);
     }
 
-    function setPerpMarketCfg(bytes32 _symbolHash, MarketTypes.PerpMarketCfg memory _perpMarketCfg) external override 
-    //onlyLedger
+    function setPerpMarketCfg(bytes32 _symbolHash, MarketTypes.PerpMarketCfg memory _perpMarketCfg)
+        external
+        override
+        onlyLedger
     {
         perpMarketCfg[_symbolHash] = _perpMarketCfg;
     }

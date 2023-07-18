@@ -29,12 +29,12 @@ contract VaultManager is IVaultManager, LedgerComponent {
     }
 
     // add balance
-    function addBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) public override onlyLedger {
+    function addBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) external override onlyLedger {
         tokenBalanceOnchain[_tokenHash][_chainId] += _deltaBalance;
     }
 
     // sub balance
-    function subBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) public override onlyLedger {
+    function subBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) external override onlyLedger {
         tokenBalanceOnchain[_tokenHash][_chainId] -= _deltaBalance;
     }
 
