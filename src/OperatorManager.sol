@@ -101,18 +101,9 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable {
         bool succ = Signature.perpUploadEncodeHashVerify(data, cefiSignatureAddress);
         if (!succ) revert SignatureNotMatch();
 
-        _validatePerp(trades);
         // process each validated perp trades
         for (uint256 i = 0; i < data.count; i++) {
             _processValidatedFutures(trades[i]);
-        }
-    }
-
-    // validate futres trade upload data
-    function _validatePerp(PerpTypes.FuturesTradeUpload[] calldata trades) internal pure {
-        for (uint256 i = 0; i < trades.length; i++) {
-            // check symbol (and maybe other value) is valid
-            // TODO
         }
     }
 
