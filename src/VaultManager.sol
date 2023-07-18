@@ -14,6 +14,7 @@ contract VaultManager is IVaultManager, LedgerComponent {
     mapping(bytes32 => mapping(uint256 => uint128)) private tokenBalanceOnchain;
     mapping(bytes32 => mapping(uint256 => bool)) private allowedToken; // supported token on each chain
     mapping(bytes32 => bool) private allowedBroker; // supported broker
+    mapping(bytes32 => bool) private allowedSymbol; // supported symbol
 
     constructor() {
         _disableInitializers();
@@ -52,5 +53,13 @@ contract VaultManager is IVaultManager, LedgerComponent {
 
     function getAllowedToken(bytes32 _tokenHash, uint256 _chainId) public view override returns (bool) {
         return allowedToken[_tokenHash][_chainId];
+    }
+
+    function setAllowedSymbol(bytes32 _symbolHash, bool _allowed) public override onlyOwner {
+        allowedSymbol[_symbolHash] = _allowed;
+    }
+
+    function getAllowedSymbol(bytes32 _symbolHash) public view override returns (bool) {
+        return allowedSymbol[_symbolHash];
     }
 }
