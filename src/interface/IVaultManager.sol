@@ -18,4 +18,7 @@ interface IVaultManager is ILedgerComponent {
 
     function setAllowedToken(bytes32 _tokenHash, uint256 _chainId, bool _allowed) external;
     function getAllowedToken(bytes32 _tokenHash, uint256 _chainId) external view returns (bool);
+
+    function setAllowedSymbol(bytes32 _symbolHash, bool _allowed) external;
+    function getAllowedSymbol(bytes32 _symbolHash) external view returns (bool);
 }

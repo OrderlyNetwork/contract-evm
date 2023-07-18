@@ -18,6 +18,7 @@ interface ILedger {
     error AccountIdInvalid();
     error TokenNotAllowed(bytes32 tokenHash, uint256 chainId);
     error BrokerNotAllowed();
+    error SymbolNotAllowed();
 
     event AccountRegister(
         bytes32 indexed accountId, bytes32 indexed brokerId, address indexed userAddress, uint256 blocktime
