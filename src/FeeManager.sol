@@ -35,10 +35,13 @@ contract FeeManager is IFeeManager, LedgerComponent {
     // change_fee_collector
     function changeFeeCollector(FeeCollectorType feeCollectorType, bytes32 _newCollector) public override onlyOwner {
         if (feeCollectorType == FeeCollectorType.TradingFeeCollector) {
+            emit ChangeFeeCollector(feeCollectorType, tradingFeeCollector, _newCollector);
             tradingFeeCollector = _newCollector;
         } else if (feeCollectorType == FeeCollectorType.OperatorGasFeeCollector) {
+            emit ChangeFeeCollector(feeCollectorType, operatorGasFeeCollector, _newCollector);
             operatorGasFeeCollector = _newCollector;
         } else if (feeCollectorType == FeeCollectorType.FuturesFeeCollector) {
+            emit ChangeFeeCollector(feeCollectorType, futuresFeeCollector, _newCollector);
             futuresFeeCollector = _newCollector;
         }
     }
