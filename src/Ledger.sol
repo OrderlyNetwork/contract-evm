@@ -131,7 +131,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
 
     // Interface implementation
 
-    function accountDeposit(AccountTypes.AccountDeposit calldata data) public override onlyCrossChainManager {
+    function accountDeposit(AccountTypes.AccountDeposit calldata data) external override onlyCrossChainManager {
         // validate data first
         if (!vaultManager.getAllowedBroker(data.brokerHash)) revert BrokerNotAllowed();
         if (!vaultManager.getAllowedToken(data.tokenHash, data.srcChainId)) {
@@ -167,7 +167,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
     }
 
     function executeProcessValidatedFutures(PerpTypes.FuturesTradeUpload calldata trade)
-        public
+        external
         override
         onlyOperatorManager
     {
@@ -186,7 +186,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
     }
 
     function executeWithdrawAction(EventTypes.WithdrawData calldata withdraw, uint64 eventId)
-        public
+        external
         override
         onlyOperatorManager
     {
@@ -255,7 +255,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
     }
 
     function accountWithDrawFinish(AccountTypes.AccountWithdraw calldata withdraw)
-        public
+        external
         override
         onlyCrossChainManager
     {
@@ -287,7 +287,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
     }
 
     function executeSettlement(EventTypes.Settlement calldata settlement, uint64 eventId)
-        public
+        external
         override
         onlyOperatorManager
     {
@@ -350,7 +350,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
     }
 
     function executeLiquidation(EventTypes.Liquidation calldata liquidation, uint64 eventId)
-        public
+        external
         override
         onlyOperatorManager
     {
@@ -381,7 +381,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
         );
     }
 
-    function executeAdl(EventTypes.Adl calldata adl, uint64 eventId) public override onlyOperatorManager {
+    function executeAdl(EventTypes.Adl calldata adl, uint64 eventId) external override onlyOperatorManager {
         AccountTypes.Account storage account = userLedger[adl.accountId];
         AccountTypes.PerpPosition storage userPosition = account.perpPositions[adl.symbolHash];
         userPosition.chargeFundingFee(adl.sumUnitaryFundings);
@@ -419,7 +419,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
         );
     }
 
-    function executePerpMarketInfo(MarketTypes.PerpMarketUpload calldata data) public override onlyOperatorManager {
+    function executePerpMarketInfo(MarketTypes.PerpMarketUpload calldata data) external override onlyOperatorManager {
         // TODO change me
         if (data.bizType == 0) {
             MarketTypes.PerpPriceInner memory innerData = abi.decode(data.data, (MarketTypes.PerpPriceInner));
