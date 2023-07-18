@@ -27,7 +27,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
     address public crossChainManagerAddress;
     // operatorTradesBatchId
     uint64 public operatorTradesBatchId;
-    // globalEventId, for deposit and withdraw
+    // globalEventId, for event trade upload
     uint64 public globalEventId;
     // globalDepositId
     uint64 public globalDepositId;
@@ -342,6 +342,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
         account.lastCefiEventId = eventId;
         // emit event
         emit SettlementResult(
+            _newGlobalEventId(),
             settlement.accountId,
             settlement.settledAmount,
             settlement.settledAssetHash,
@@ -377,10 +378,12 @@ contract Ledger is ILedger, OwnableUpgradeable {
         }
         liquidatedAccount.lastCefiEventId = eventId;
         emit LiquidationResult(
+            _newGlobalEventId(),
             liquidation.liquidatedAccountId,
             liquidation.insuranceAccountId,
             liquidation.liquidatedAssetHash,
-            liquidation.insuranceTransferAmount
+            liquidation.insuranceTransferAmount,
+            eventId
         );
     }
 
@@ -411,6 +414,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
         account.lastCefiEventId = eventId;
         insuranceFund.lastCefiEventId = eventId;
         emit AdlResult(
+            _newGlobalEventId(),
             adl.accountId,
             adl.insuranceAccountId,
             adl.symbolHash,
