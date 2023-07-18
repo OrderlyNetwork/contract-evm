@@ -77,16 +77,18 @@ interface ILedger {
     );
 
     event SettlementResult(
+        uint64 indexed eventId,
         bytes32 indexed accountId,
         int128 settledAmount,
         bytes32 settledAssetHash,
         bytes32 insuranceAccountId,
         uint128 insuranceTransferAmount,
         uint64 settlementExecutionsCount,
-        uint64 eventId
+        uint64 lastCefiEventId
     );
 
     event AdlResult(
+        uint64 indexed eventId,
         bytes32 indexed accountId,
         bytes32 insuranceAccountId,
         bytes32 symbolHash,
@@ -94,14 +96,16 @@ interface ILedger {
         int128 costPositionTransfer,
         uint128 adlPrice,
         int128 sumUnitaryFundings,
-        uint64 eventId
+        uint64 lastCefiEventId
     );
 
     event LiquidationResult(
+        uint64 indexed eventId,
         bytes32 indexed liquidatedAccountId,
         bytes32 indexed insuranceAccountId,
-        bytes32 indexed liquidatedAssetHash,
-        uint128 insuranceTransferAmount
+        bytes32 liquidatedAssetHash,
+        uint128 insuranceTransferAmount,
+        uint64 lastCefiEventId
     );
 
     function initialize() external;
