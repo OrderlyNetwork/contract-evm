@@ -171,6 +171,9 @@ contract Ledger is ILedger, OwnableUpgradeable {
         override
         onlyOperatorManager
     {
+        // validate data first
+        if (!vaultManager.getAllowedSymbol(trade.symbolHash)) revert SymbolNotAllowed();
+        // do the logic part
         AccountTypes.Account storage account = userLedger[trade.accountId];
         AccountTypes.PerpPosition storage perpPosition = account.perpPositions[trade.symbolHash];
         perpPosition.chargeFundingFee(trade.sumUnitaryFundings);
