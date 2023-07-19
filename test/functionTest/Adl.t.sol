@@ -76,7 +76,8 @@ contract AdlTest is Test {
 
         vaultManager.setLedgerAddress(address(ledger));
         vaultManager.setAllowedBroker(BROKER_HASH, true);
-        vaultManager.setAllowedToken(TOKEN_HASH, CHAIN_ID, true);
+        vaultManager.setAllowedToken(TOKEN_HASH, true);
+        vaultManager.setAllowedChainToken(TOKEN_HASH, CHAIN_ID, true);
 
         feeManager.setLedgerAddress(address(ledger));
 
