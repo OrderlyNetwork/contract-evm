@@ -134,7 +134,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
     function accountDeposit(AccountTypes.AccountDeposit calldata data) external override onlyCrossChainManager {
         // validate data first
         if (!vaultManager.getAllowedBroker(data.brokerHash)) revert BrokerNotAllowed();
-        if (!vaultManager.getAllowedToken(data.tokenHash, data.srcChainId)) {
+        if (!vaultManager.getAllowedChainToken(data.tokenHash, data.srcChainId)) {
             revert TokenNotAllowed(data.tokenHash, data.srcChainId);
         }
         if (!Utils.validateAccountId(data.accountId, data.brokerHash, data.userAddress)) revert AccountIdInvalid();
@@ -196,7 +196,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
         bytes32 brokerHash = Utils.getBrokerHash(withdraw.brokerId);
         bytes32 tokenHash = Utils.getTokenHash(withdraw.tokenSymbol);
         if (!vaultManager.getAllowedBroker(brokerHash)) revert BrokerNotAllowed();
-        if (!vaultManager.getAllowedToken(tokenHash, withdraw.chainId)) {
+        if (!vaultManager.getAllowedChainToken(tokenHash, withdraw.chainId)) {
             revert TokenNotAllowed(tokenHash, withdraw.chainId);
         }
         if (!Utils.validateAccountId(withdraw.accountId, brokerHash, withdraw.sender)) revert AccountIdInvalid();
