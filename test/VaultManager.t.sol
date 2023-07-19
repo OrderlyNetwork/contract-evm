@@ -15,6 +15,8 @@ contract VaultManagerTest is Test {
     TransparentUpgradeableProxy ledgerManagerProxy;
     uint256 constant CHAIN_ID = 0xabcd;
     bytes32 constant TOKEN_HASH = 0x61fc29e9a6b4b52b423e75ca44734454f94ea60ddff3dc47af01a2a646fe9572;
+    bytes32 constant BROKER_HASH = 0x083098c593f395bea1de45dda552d9f14e8fcb0be3faaa7a1903c5477d7ba7fd;
+    bytes32 constant SYMBOL_HASH = 0xa2adc016e890b4fbbf161c7eaeb615b893e4fbeceae918fa7bf16cc40d46610b;
 
     function setUp() public {
         admin = new ProxyAdmin();
@@ -52,5 +54,47 @@ contract VaultManagerTest is Test {
         assertEq(vaultManager.getBalance(TOKEN_HASH, CHAIN_ID), 100);
         vaultManager.subBalance(TOKEN_HASH, CHAIN_ID, 150);
         vm.stopPrank();
+    }
+
+    function test_getAllWhitelistSet() public {
+        vaultManager.setAllowedChainToken(TOKEN_HASH, CHAIN_ID, true);
+        vaultManager.setAllowedToken(TOKEN_HASH, true);
+        vaultManager.setAllowedBroker(BROKER_HASH, true);
+        vaultManager.setAllowedSymbol(SYMBOL_HASH, true);
+        assertEq(vaultManager.getAllAllowedBroker().length, 1);
+        assertEq(vaultManager.getAllAllowedToken().length, 1);
+        assertEq(vaultManager.getAllAllowedSymbol().length, 1);
+    }
+
+    function test_setThenUnsetWhitelist() public {
+        vaultManager.setAllowedChainToken(TOKEN_HASH, CHAIN_ID, true);
+        vaultManager.setAllowedToken(TOKEN_HASH, true);
+        vaultManager.setAllowedBroker(BROKER_HASH, true);
+        vaultManager.setAllowedSymbol(SYMBOL_HASH, true);
+        assertTrue(vaultManager.getAllowedBroker(BROKER_HASH));
+        assertTrue(vaultManager.getAllowedToken(TOKEN_HASH));
+        assertTrue(vaultManager.getAllowedSymbol(SYMBOL_HASH));
+        vaultManager.setAllowedChainToken(TOKEN_HASH, CHAIN_ID, false);
+        vaultManager.setAllowedToken(TOKEN_HASH, false);
+        vaultManager.setAllowedBroker(BROKER_HASH, false);
+        vaultManager.setAllowedSymbol(SYMBOL_HASH, false);
+        assertFalse(vaultManager.getAllowedBroker(BROKER_HASH));
+        assertFalse(vaultManager.getAllowedToken(TOKEN_HASH));
+        assertFalse(vaultManager.getAllowedSymbol(SYMBOL_HASH));
+    }
+
+    function test_chainTokenAllowance() public {
+        vaultManager.setAllowedChainToken(TOKEN_HASH, CHAIN_ID, true);
+        vaultManager.setAllowedToken(TOKEN_HASH, true);
+        assertTrue(vaultManager.getAllowedChainToken(TOKEN_HASH, CHAIN_ID));
+        assertTrue(vaultManager.getAllowedToken(TOKEN_HASH));
+        vaultManager.setAllowedChainToken(TOKEN_HASH, CHAIN_ID, false);
+        vaultManager.setAllowedToken(TOKEN_HASH, true);
+        assertFalse(vaultManager.getAllowedChainToken(TOKEN_HASH, CHAIN_ID));
+        assertTrue(vaultManager.getAllowedToken(TOKEN_HASH));
+        vaultManager.setAllowedChainToken(TOKEN_HASH, CHAIN_ID, true);
+        vaultManager.setAllowedToken(TOKEN_HASH, false);
+        assertFalse(vaultManager.getAllowedChainToken(TOKEN_HASH, CHAIN_ID));
+        assertFalse(vaultManager.getAllowedToken(TOKEN_HASH));
     }
 }

@@ -39,6 +39,11 @@ interface IVault {
 
     // admin call
     function setCrossChainManager(address _crossChainManagerAddress) external;
-    function setAllowedToken(bytes32 _tokenHash, address _tokenAddress) external;
+    function setAllowedToken(bytes32 _tokenHash, bool _allowed) external;
     function setAllowedBroker(bytes32 _brokerHash, bool _allowed) external;
+    function changeTokenAddressAndAllow(bytes32 _tokenHash, address _tokenAddress) external;
+    function getAllowedToken(bytes32 _tokenHash) external view returns (address);
+    function getAllowedBroker(bytes32 _brokerHash) external view returns (bool);
+    function getAllAllowedToken() external view returns (bytes32[] memory);
+    function getAllAllowedBroker() external view returns (bytes32[] memory);
 }
