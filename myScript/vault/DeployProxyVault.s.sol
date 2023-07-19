@@ -26,7 +26,7 @@ contract DeployVault is Script {
         IVault vault = IVault(address(vaultProxy));
         vault.initialize();
 
-        vault.setAllowedToken(USDC, address(tUSDC));
+        vault.changeTokenAddressAndAllow(USDC, address(tUSDC));
         vault.setAllowedBroker(BROKER_HASH, true);
         vault.setCrossChainManager(address(vaultCrossChainManager));
 

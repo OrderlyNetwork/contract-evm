@@ -7,6 +7,7 @@ import "./library/Utils.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
 import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
+import "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 
 /**
  * Vault is responsible for saving user's USDC (where USDC which is a IERC20 token).
@@ -15,20 +16,23 @@ import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.s
  * Only crossChainManager can approve withdraw request.
  */
 contract Vault is IVault, ReentrancyGuardUpgradeable, OwnableUpgradeable {
-    // equal to `Utils.string2HashedBytes32('USDC')`
-    // equal to `Utils.getTokenHash('USDC')`
-    bytes32 constant USDC = 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa;
+    using EnumerableSet for EnumerableSet.Bytes32Set;
+
     // cross-chain operator address
     address public crossChainManagerAddress;
-    // list to record the hash value of allowed brokerIds
-    mapping(bytes32 => bool) public allowedBroker;
-    // tokenHash to token contract address mapping
-    mapping(bytes32 => IERC20) public allowedToken;
+    mapping(bytes32 => bool) public _deprecatedA; // @Rubick depracated
+    mapping(bytes32 => IERC20) public _deprecatedB; // @Rubick depracated
 
     // deposit id / nonce
     uint64 public depositId;
     // CrossChainManager contract
     IVaultCrossChainManager public crossChainManager;
+
+    // list to record the hash value of allowed brokerIds
+    EnumerableSet.Bytes32Set private allowedBrokerSet;
+    // tokenHash to token contract address mapping
+    EnumerableSet.Bytes32Set private allowedTokenSet;
+    mapping(bytes32 => address) public allowedToken;
 
     // only cross-chain manager can call
     modifier onlyCrossChainManager() {
@@ -52,22 +56,60 @@ contract Vault is IVault, ReentrancyGuardUpgradeable, OwnableUpgradeable {
     }
 
     // add contract address for an allowed token
-    function setAllowedToken(bytes32 _tokenHash, address _tokenAddress) public override onlyOwner {
-        allowedToken[_tokenHash] = IERC20(_tokenAddress);
+    function setAllowedToken(bytes32 _tokenHash, bool _allowed) public override onlyOwner {
+        if (_allowed) {
+            allowedTokenSet.add(_tokenHash);
+        } else {
+            allowedTokenSet.remove(_tokenHash);
+        }
     }
 
     // add the hash value for an allowed brokerId
-    function setAllowedBroker(bytes32 _brokerHash, bool _allowed) external override onlyOwner {
-        allowedBroker[_brokerHash] = _allowed;
+    function setAllowedBroker(bytes32 _brokerHash, bool _allowed) public override onlyOwner {
+        if (_allowed) {
+            allowedBrokerSet.add(_brokerHash);
+        } else {
+            allowedBrokerSet.remove(_brokerHash);
+        }
     }
 
-    // user deposit USDC
+    // change the token address for an allowed token
+    function changeTokenAddressAndAllow(bytes32 _tokenHash, address _tokenAddress) public override onlyOwner {
+        allowedToken[_tokenHash] = _tokenAddress;
+        allowedTokenSet.add(_tokenHash);
+    }
+
+    // check if the tokenHash is allowed
+    function getAllowedToken(bytes32 _tokenHash) public view override returns (address) {
+        if (allowedTokenSet.contains(_tokenHash)) {
+            return allowedToken[_tokenHash];
+        } else {
+            return address(0);
+        }
+    }
+
+    // check if the brokerHash is allowed
+    function getAllowedBroker(bytes32 _brokerHash) public view override returns (bool) {
+        return allowedBrokerSet.contains(_brokerHash);
+    }
+
+    // get all allowed tokenHash
+    function getAllAllowedToken() public view override returns (bytes32[] memory) {
+        return allowedTokenSet.values();
+    }
+
+    // get all allowed brokerIds
+    function getAllAllowedBroker() public view override returns (bytes32[] memory) {
+        return allowedBrokerSet.values();
+    }
+
+    // user deposit
     function deposit(VaultTypes.VaultDepositFE calldata data) public override {
-        IERC20 tokenAddress = allowedToken[data.tokenHash];
         // require tokenAddress exist
-        if (address(tokenAddress) == address(0)) revert TokenNotAllowed();
-        if (!allowedBroker[data.brokerHash]) revert BrokerNotAllowed();
+        if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
+        if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
         if (!Utils.validateAccountId(data.accountId, data.brokerHash, msg.sender)) revert AccountIdInvalid();
+        IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
 
         bool succ = tokenAddress.transferFrom(msg.sender, address(this), data.tokenAmount);
         if (!succ) revert TransferFromFailed();
@@ -80,9 +122,9 @@ contract Vault is IVault, ReentrancyGuardUpgradeable, OwnableUpgradeable {
         emit AccountDeposit(data.accountId, msg.sender, depositId, data.tokenHash, data.tokenAmount);
     }
 
-    // user withdraw USDC
+    // user withdraw
     function withdraw(VaultTypes.VaultWithdraw calldata data) public override onlyCrossChainManager nonReentrant {
-        IERC20 tokenAddress = allowedToken[data.tokenHash];
+        IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
         uint128 amount = data.tokenAmount - data.fee;
         // check balane gt amount
         if (tokenAddress.balanceOf(address(this)) < amount) {

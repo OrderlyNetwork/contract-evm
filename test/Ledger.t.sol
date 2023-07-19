@@ -146,7 +146,8 @@ contract LedgerTest is Test {
 
         vaultManager.setLedgerAddress(address(ledger));
         vaultManager.setAllowedBroker(BROKER_HASH, true);
-        vaultManager.setAllowedToken(TOKEN_HASH, CHAIN_ID, true);
+        vaultManager.setAllowedToken(TOKEN_HASH, true);
+        vaultManager.setAllowedChainToken(TOKEN_HASH, CHAIN_ID, true);
 
         feeManager.setLedgerAddress(address(ledger));
 
@@ -194,8 +195,8 @@ contract LedgerTest is Test {
         ledger.accountDeposit(depositData);
     }
 
-    function testRevert_depositNotAllowedToken() public {
-        vaultManager.setAllowedToken(TOKEN_HASH, CHAIN_ID, false);
+    function testRevert_depositNotallowedChainToken() public {
+        vaultManager.setAllowedChainToken(TOKEN_HASH, CHAIN_ID, false);
         vm.prank(address(ledgerCrossChainManager));
         vm.expectRevert(abi.encodeWithSelector(ILedger.TokenNotAllowed.selector, TOKEN_HASH, CHAIN_ID));
         ledger.accountDeposit(depositData);
