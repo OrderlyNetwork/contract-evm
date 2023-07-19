@@ -66,23 +66,27 @@ forge test -vvvv
 
 ### Deploy command:
 
-`forge script myScript/ledger/DeployProxyLedger.s.sol -f $ORDERLY_NETWORK --json --via-ir --broadcast`
+`forge script script/ledger/DeployProxyLedger.s.sol -f $ORDERLY_NETWORK --json --broadcast`
 
 ### Upgrade command:
 
-`forge script myScript/ledger/UpgradeLedger.s.sol -f $ORDERLY_NETWORK --json --broadcast`
+`forge script script/ledger/UpgradeLedger.s.sol -f $ORDERLY_NETWORK --json --broadcast`
 
-`forge script myScript/ledger/UpgradeOperatorManager.s.sol -f $ORDERLY_NETWORK --json --broadcast`
+`forge script script/ledger/UpgradeOperatorManager.s.sol -f $ORDERLY_NETWORK --json --broadcast`
+
+`forge script script/ledger/UpgradeFeeManager.s.sol -f $ORDERLY_NETWORK --json --broadcast`
+
+`forge script script/ledger/UpgradeVaultManager.s.sol -f $ORDERLY_NETWORK --json --broadcast`
 
 ## Vault deploy
 
 ### Deploy command:
 
-`forge script myScript/vault/DeployProxyVault.s.sol -f $VAULT_NETWORK --json --broadcast`
+`forge script script/vault/DeployProxyVault.s.sol -f $VAULT_NETWORK --json --broadcast`
 
 ### Deposit commond:
 
-`forge script myScript/vault/StartDeposit.s.sol -f $VAULT_NETWORK --json --broadcast`
+`forge script script/vault/StartDeposit.s.sol -f $VAULT_NETWORK --json --broadcast`
 
 ## Contract address
 

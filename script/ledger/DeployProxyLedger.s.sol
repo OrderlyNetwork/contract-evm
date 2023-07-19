@@ -17,9 +17,6 @@ contract DeployLedger is Script {
 
     function run() external {
         uint256 orderlyPrivateKey = vm.envUint("ORDERLY_PRIVATE_KEY");
-        address operatorAdminAddress = vm.envAddress("OPERATOR_ADMIN_ADDRESS");
-        address ledgerCrossChainManagerAddress = vm.envAddress("LEDGER_CROSS_CHAIN_MANAGER_ADDRESS");
-        ILedgerCrossChainManager ledgerCrossChainManager = ILedgerCrossChainManager(ledgerCrossChainManagerAddress);
 
         vm.startBroadcast(orderlyPrivateKey);
 
@@ -53,29 +50,36 @@ contract DeployLedger is Script {
         feeManager.initialize();
         marketManager.initialize();
 
-        ledger.setOperatorManagerAddress(address(operatorManager));
-        ledger.setCrossChainManager(address(ledgerCrossChainManager));
-        ledger.setVaultManager(address(vaultManager));
-        ledger.setFeeManager(address(feeManager));
-        ledger.setMarketManager(address(marketManager));
+        // avoid stack too deep error
+        {
+            address operatorAdminAddress = vm.envAddress("OPERATOR_ADMIN_ADDRESS");
+            address ledgerCrossChainManagerAddress = vm.envAddress("LEDGER_CROSS_CHAIN_MANAGER_ADDRESS");
+            ILedgerCrossChainManager ledgerCrossChainManager = ILedgerCrossChainManager(ledgerCrossChainManagerAddress);
 
-        operatorManager.setOperator(operatorAdminAddress);
-        operatorManager.setLedger(address(ledger));
+            ledger.setOperatorManagerAddress(address(operatorManager));
+            ledger.setCrossChainManager(address(ledgerCrossChainManager));
+            ledger.setVaultManager(address(vaultManager));
+            ledger.setFeeManager(address(feeManager));
+            ledger.setMarketManager(address(marketManager));
 
-        vaultManager.setLedgerAddress(address(ledger));
-        vaultManager.setAllowedBroker(BROKER_HASH, true);
-        vaultManager.setAllowedToken(TOKEN_HASH, true);
-        vaultManager.setAllowedChainToken(TOKEN_HASH, CHAIN_ID, true);
-        // vaultManager.setAllowedSymbol(SYMBOL_HASH, true);
+            operatorManager.setOperator(operatorAdminAddress);
+            operatorManager.setLedger(address(ledger));
 
-        feeManager.setLedgerAddress(address(ledger));
-        // feeManager.changeFeeCollector(1, address(0x1));
-        // feeManager.changeFeeCollector(2, address(0x2));
-        // feeManager.changeFeeCollector(3, address(0x3));
+            vaultManager.setLedgerAddress(address(ledger));
+            vaultManager.setAllowedBroker(BROKER_HASH, true);
+            vaultManager.setAllowedToken(TOKEN_HASH, true);
+            vaultManager.setAllowedChainToken(TOKEN_HASH, CHAIN_ID, true);
+            // vaultManager.setAllowedSymbol(SYMBOL_HASH, true);
 
-        marketManager.setLedgerAddress(address(ledger));
+            feeManager.setLedgerAddress(address(ledger));
+            // feeManager.changeFeeCollector(1, address(0x1));
+            // feeManager.changeFeeCollector(2, address(0x2));
+            // feeManager.changeFeeCollector(3, address(0x3));
 
-        ledgerCrossChainManager.setLedger(address(ledger));
+            marketManager.setLedgerAddress(address(ledger));
+
+            ledgerCrossChainManager.setLedger(address(ledger));
+        }
         vm.stopBroadcast();
     }
 }
