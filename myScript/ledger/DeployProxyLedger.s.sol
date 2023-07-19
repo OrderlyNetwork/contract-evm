@@ -65,13 +65,16 @@ contract DeployLedger is Script {
         vaultManager.setLedgerAddress(address(ledger));
         vaultManager.setAllowedBroker(BROKER_HASH, true);
         vaultManager.setAllowedToken(TOKEN_HASH, CHAIN_ID, true);
+        // vaultManager.setAllowedSymbol(SYMBOL_HASH, true);
 
         feeManager.setLedgerAddress(address(ledger));
+        // feeManager.changeFeeCollector(1, address(0x1));
+        // feeManager.changeFeeCollector(2, address(0x2));
+        // feeManager.changeFeeCollector(3, address(0x3));
 
         marketManager.setLedgerAddress(address(ledger));
 
         ledgerCrossChainManager.setLedger(address(ledger));
-        // ledgerCrossChainManager.setOperatorManager(address(operatorManager));
         vm.stopBroadcast();
     }
 }
