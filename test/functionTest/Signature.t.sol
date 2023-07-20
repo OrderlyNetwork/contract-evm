@@ -380,4 +380,56 @@ contract SignatureTest is Test {
         bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
         assertEq(succ, true);
     }
+
+    // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/299009164/Test+vector#%E6%95%B0%E6%8D%AE1.2
+    function test_marketCfgUploadEncodeHash_1() public {
+        MarketTypes.PerpPrice[] memory perpPrices = new MarketTypes.PerpPrice[](2);
+        perpPrices[0] = MarketTypes.PerpPrice({
+            indexPrice: 100000777,
+            markPrice: 100000888,
+            symbolHash: 0x7e83089239db756ee233fa8972addfea16ae653db0f692e4851aed546b21caeb,
+            timestamp: 1580794149123
+        });
+        perpPrices[1] = MarketTypes.PerpPrice({
+            indexPrice: 100000123,
+            markPrice: 100000456,
+            symbolHash: 0x5a8133e52befca724670dbf2cade550c522c2410dd5b1189df675e99388f509d,
+            timestamp: 1580794149789
+        });
+        MarketTypes.PerpPriceInner memory data =
+            MarketTypes.PerpPriceInner({maxTimestamp: 1581794149456, perpPrices: perpPrices});
+        bool succ = Signature.marketCfgUploadEncodeHashVerify(
+            0x1640d3c09193a5e5406a4fccf7ad775498ae010c9d1d051c1e3f4fd6f79ebd60,
+            0x089137f39069b97d2ef0d2ab1bb935046b2c6f6d0a7ed0bc29e72009a56b5172,
+            0x1c,
+            data,
+            addr
+        );
+        assertEq(succ, true);
+    }
+
+    // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/299009164/Test+vector#%E6%95%B0%E6%8D%AE2.2
+    function test_marketCfgUploadEncodeHash_2() public {
+        MarketTypes.SumUnitaryFunding[] memory sumUnitaryFundings = new MarketTypes.SumUnitaryFunding[](2);
+        sumUnitaryFundings[0] = MarketTypes.SumUnitaryFunding({
+            sumUnitaryFunding: 101200888,
+            symbolHash: 0x7e83089239db756ee233fa8972addfea16ae653db0f692e4851aed546b21caeb,
+            timestamp: 1581794149123
+        });
+        sumUnitaryFundings[1] = MarketTypes.SumUnitaryFunding({
+            sumUnitaryFunding: 104400456,
+            symbolHash: 0x5a8133e52befca724670dbf2cade550c522c2410dd5b1189df675e99388f509d,
+            timestamp: 1580794149789
+        });
+        MarketTypes.SumUnitaryFundingsInner memory data =
+            MarketTypes.SumUnitaryFundingsInner({maxTimestamp: 1581797148555, sumUnitaryFundings: sumUnitaryFundings});
+        bool succ = Signature.marketCfgUploadEncodeHashVerify(
+            0x1123ab3cab7bd651dee92ef260f21832b3575c4d512d6a68ba50850f78d0d39a,
+            0x2c49150d9b81101c02afc844e7473240d159354dbf7992ec913a88f5b259ebd5,
+            0x1b,
+            data,
+            addr
+        );
+        assertEq(succ, true);
+    }
 }
