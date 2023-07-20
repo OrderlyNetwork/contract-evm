@@ -208,27 +208,23 @@ library Signature {
         return verify(h, data.r, data.s, data.v, signer);
     }
 
-    function marketCfgUploadEncodeHashVerify(
-        bytes32 r,
-        bytes32 s,
-        uint8 v,
-        MarketTypes.PerpPriceInner memory data,
-        address signer
-    ) internal pure returns (bool) {
+    function marketUploadEncodeHashVerify(MarketTypes.PerpMarketUploadPerpPrice memory data, address signer)
+        internal
+        pure
+        returns (bool)
+    {
         bytes memory encoded = abi.encode(data.maxTimestamp, data.perpPrices);
         bytes32 h = getEthSignedMessageHash(keccak256(encoded));
-        return verify(h, r, s, v, signer);
+        return verify(h, data.r, data.s, data.v, signer);
     }
 
-    function marketCfgUploadEncodeHashVerify(
-        bytes32 r,
-        bytes32 s,
-        uint8 v,
-        MarketTypes.SumUnitaryFundingsInner memory data,
-        address signer
-    ) internal pure returns (bool) {
+    function marketUploadEncodeHashVerify(MarketTypes.PerpMarketUploadSumUnitaryFundings memory data, address signer)
+        internal
+        pure
+        returns (bool)
+    {
         bytes memory encoded = abi.encode(data.maxTimestamp, data.sumUnitaryFundings);
         bytes32 h = getEthSignedMessageHash(keccak256(encoded));
-        return verify(h, r, s, v, signer);
+        return verify(h, data.r, data.s, data.v, signer);
     }
 }
