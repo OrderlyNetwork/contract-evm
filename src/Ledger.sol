@@ -426,15 +426,11 @@ contract Ledger is ILedger, OwnableUpgradeable {
         );
     }
 
-    function executePerpMarketInfo(MarketTypes.PerpMarketUploadPerpPrice calldata data)
-        external
-        override
-        onlyOperatorManager
-    {
+    function executePerpMarketInfo(MarketTypes.UploadPerpPrice calldata data) external override onlyOperatorManager {
         marketManager.updateMarketUpload(data);
     }
 
-    function executePerpMarketInfo(MarketTypes.PerpMarketUploadSumUnitaryFundings calldata data)
+    function executePerpMarketInfo(MarketTypes.UploadSumUnitaryFundings calldata data)
         external
         override
         onlyOperatorManager
