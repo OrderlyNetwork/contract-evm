@@ -78,6 +78,8 @@ forge test -vvvv
 
 `forge script script/ledger/UpgradeVaultManager.s.sol -f $ORDERLY_NETWORK --json --broadcast`
 
+`forge script script/ledger/UpgradeMarketManager.s.sol -f $ORDERLY_NETWORK --json --broadcast`
+
 ## Vault deploy
 
 ### Deploy command:
