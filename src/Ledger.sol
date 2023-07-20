@@ -426,16 +426,20 @@ contract Ledger is ILedger, OwnableUpgradeable {
         );
     }
 
-    function executePerpMarketInfo(MarketTypes.PerpMarketUpload calldata data) external override onlyOperatorManager {
-        // TODO change me
-        if (data.bizType == 0) {
-            MarketTypes.PerpPriceInner memory innerData = abi.decode(data.data, (MarketTypes.PerpPriceInner));
-            marketManager.updatePerpPrices(innerData);
-        } else if (data.bizType == 1) {
-            MarketTypes.SumUnitaryFundingsInner memory innerData =
-                abi.decode(data.data, (MarketTypes.SumUnitaryFundingsInner));
-            marketManager.updateSumUnitaryFundings(innerData);
-        }
+    function executePerpMarketInfo(MarketTypes.PerpMarketUploadPerpPrice calldata data)
+        external
+        override
+        onlyOperatorManager
+    {
+        marketManager.updateMarketUpload(data);
+    }
+
+    function executePerpMarketInfo(MarketTypes.PerpMarketUploadSumUnitaryFundings calldata data)
+        external
+        override
+        onlyOperatorManager
+    {
+        marketManager.updateMarketUpload(data);
     }
 
     function _newGlobalEventId() internal returns (uint64) {

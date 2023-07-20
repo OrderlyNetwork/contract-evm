@@ -396,15 +396,14 @@ contract SignatureTest is Test {
             symbolHash: 0x5a8133e52befca724670dbf2cade550c522c2410dd5b1189df675e99388f509d,
             timestamp: 1580794149789
         });
-        MarketTypes.PerpPriceInner memory data =
-            MarketTypes.PerpPriceInner({maxTimestamp: 1581794149456, perpPrices: perpPrices});
-        bool succ = Signature.marketCfgUploadEncodeHashVerify(
-            0x1640d3c09193a5e5406a4fccf7ad775498ae010c9d1d051c1e3f4fd6f79ebd60,
-            0x089137f39069b97d2ef0d2ab1bb935046b2c6f6d0a7ed0bc29e72009a56b5172,
-            0x1c,
-            data,
-            addr
-        );
+        MarketTypes.PerpMarketUploadPerpPrice memory data = MarketTypes.PerpMarketUploadPerpPrice({
+            r: 0x1640d3c09193a5e5406a4fccf7ad775498ae010c9d1d051c1e3f4fd6f79ebd60,
+            s: 0x089137f39069b97d2ef0d2ab1bb935046b2c6f6d0a7ed0bc29e72009a56b5172,
+            v: 0x1c,
+            maxTimestamp: 1581794149456,
+            perpPrices: perpPrices
+        });
+        bool succ = Signature.marketUploadEncodeHashVerify(data, addr);
         assertEq(succ, true);
     }
 
@@ -421,15 +420,14 @@ contract SignatureTest is Test {
             symbolHash: 0x5a8133e52befca724670dbf2cade550c522c2410dd5b1189df675e99388f509d,
             timestamp: 1580794149789
         });
-        MarketTypes.SumUnitaryFundingsInner memory data =
-            MarketTypes.SumUnitaryFundingsInner({maxTimestamp: 1581797148555, sumUnitaryFundings: sumUnitaryFundings});
-        bool succ = Signature.marketCfgUploadEncodeHashVerify(
-            0x1123ab3cab7bd651dee92ef260f21832b3575c4d512d6a68ba50850f78d0d39a,
-            0x2c49150d9b81101c02afc844e7473240d159354dbf7992ec913a88f5b259ebd5,
-            0x1b,
-            data,
-            addr
-        );
+        MarketTypes.PerpMarketUploadSumUnitaryFundings memory data = MarketTypes.PerpMarketUploadSumUnitaryFundings({
+            r: 0x1123ab3cab7bd651dee92ef260f21832b3575c4d512d6a68ba50850f78d0d39a,
+            s: 0x2c49150d9b81101c02afc844e7473240d159354dbf7992ec913a88f5b259ebd5,
+            v: 0x1b,
+            maxTimestamp: 1581797148555,
+            sumUnitaryFundings: sumUnitaryFundings
+        });
+        bool succ = Signature.marketUploadEncodeHashVerify(data, addr);
         assertEq(succ, true);
     }
 }
