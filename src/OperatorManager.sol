@@ -87,12 +87,12 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable {
     }
 
     // PerpMarketInfo
-    function PerpPriceUpload(MarketTypes.UploadPerpPrice calldata data) public override onlyOperator {
+    function perpPriceUpload(MarketTypes.UploadPerpPrice calldata data) public override onlyOperator {
         _innerPing();
         _perpMarketInfo(data);
     }
 
-    function SumUnitaryFundingsUpload(MarketTypes.UploadSumUnitaryFundings calldata data)
+    function sumUnitaryFundingsUpload(MarketTypes.UploadSumUnitaryFundings calldata data)
         public
         override
         onlyOperator
