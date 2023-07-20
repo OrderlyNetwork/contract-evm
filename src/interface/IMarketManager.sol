@@ -11,8 +11,8 @@ interface IMarketManager is ILedgerComponent {
     function initialize() external;
 
     // update functions
-    function updatePerpPrices(MarketTypes.PerpPriceInner calldata data) external;
-    function updateSumUnitaryFundings(MarketTypes.SumUnitaryFundingsInner calldata data) external;
+    function updateMarketUpload(MarketTypes.PerpMarketUploadPerpPrice calldata data) external;
+    function updateMarketUpload(MarketTypes.PerpMarketUploadSumUnitaryFundings calldata data) external;
 
     function setPerpMarketCfg(bytes32 _pairSymbol, MarketTypes.PerpMarketCfg memory _perpMarketCfg) external;
     function getPerpMarketCfg(bytes32 _pairSymbol) external view returns (MarketTypes.PerpMarketCfg memory);

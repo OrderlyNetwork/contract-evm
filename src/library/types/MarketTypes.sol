@@ -13,21 +13,18 @@ library MarketTypes {
         uint256 lastFundingUpdated;
     }
 
-    // WIP: change me
-    struct PerpMarketUpload {
+    struct PerpMarketUploadPerpPrice {
         bytes32 r;
         bytes32 s;
         uint8 v;
-        uint8 bizType;
-        bytes data;
-    }
-
-    struct PerpPriceInner {
         uint64 maxTimestamp;
         PerpPrice[] perpPrices;
     }
 
-    struct SumUnitaryFundingsInner {
+    struct PerpMarketUploadSumUnitaryFundings {
+        bytes32 r;
+        bytes32 s;
+        uint8 v;
         uint64 maxTimestamp;
         SumUnitaryFunding[] sumUnitaryFundings;
     }

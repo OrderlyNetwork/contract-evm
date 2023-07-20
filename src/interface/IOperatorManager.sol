@@ -23,7 +23,8 @@ interface IOperatorManager {
     // operator call event upload
     function eventUpload(EventTypes.EventUpload calldata data) external;
     // operator call perp market info
-    function PerpMarketInfo(MarketTypes.PerpMarketUpload calldata data) external;
+    function PerpMarketInfoPerpPrice(MarketTypes.PerpMarketUploadPerpPrice calldata data) external;
+    function PerpMarketInfoSumUnitaryFundings(MarketTypes.PerpMarketUploadSumUnitaryFundings calldata data) external;
     // operator call ping
     function operatorPing() external;
 
