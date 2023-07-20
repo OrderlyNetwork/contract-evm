@@ -208,7 +208,7 @@ library Signature {
         return verify(h, data.r, data.s, data.v, signer);
     }
 
-    function marketUploadEncodeHashVerify(MarketTypes.PerpMarketUploadPerpPrice memory data, address signer)
+    function marketUploadEncodeHashVerify(MarketTypes.UploadPerpPrice memory data, address signer)
         internal
         pure
         returns (bool)
@@ -218,7 +218,7 @@ library Signature {
         return verify(h, data.r, data.s, data.v, signer);
     }
 
-    function marketUploadEncodeHashVerify(MarketTypes.PerpMarketUploadSumUnitaryFundings memory data, address signer)
+    function marketUploadEncodeHashVerify(MarketTypes.UploadSumUnitaryFundings memory data, address signer)
         internal
         pure
         returns (bool)

@@ -87,16 +87,12 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable {
     }
 
     // PerpMarketInfo
-    function PerpMarketInfoPerpPrice(MarketTypes.PerpMarketUploadPerpPrice calldata data)
-        public
-        override
-        onlyOperator
-    {
+    function PerpPriceUpload(MarketTypes.UploadPerpPrice calldata data) public override onlyOperator {
         _innerPing();
         _perpMarketInfo(data);
     }
 
-    function PerpMarketInfoSumUnitaryFundings(MarketTypes.PerpMarketUploadSumUnitaryFundings calldata data)
+    function SumUnitaryFundingsUpload(MarketTypes.UploadSumUnitaryFundings calldata data)
         public
         override
         onlyOperator
@@ -161,7 +157,7 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable {
     }
 
     // perp market info
-    function _perpMarketInfo(MarketTypes.PerpMarketUploadPerpPrice calldata data) internal {
+    function _perpMarketInfo(MarketTypes.UploadPerpPrice calldata data) internal {
         // check cefi signature
         bool succ = Signature.marketUploadEncodeHashVerify(data, cefiSignatureAddress);
         if (!succ) revert SignatureNotMatch();
@@ -169,7 +165,7 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable {
         ledger.executePerpMarketInfo(data);
     }
 
-    function _perpMarketInfo(MarketTypes.PerpMarketUploadSumUnitaryFundings calldata data) internal {
+    function _perpMarketInfo(MarketTypes.UploadSumUnitaryFundings calldata data) internal {
         // check cefi signature
         bool succ = Signature.marketUploadEncodeHashVerify(data, cefiSignatureAddress);
         if (!succ) revert SignatureNotMatch();

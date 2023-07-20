@@ -13,7 +13,7 @@ library MarketTypes {
         uint256 lastFundingUpdated;
     }
 
-    struct PerpMarketUploadPerpPrice {
+    struct UploadPerpPrice {
         bytes32 r;
         bytes32 s;
         uint8 v;
@@ -21,7 +21,7 @@ library MarketTypes {
         PerpPrice[] perpPrices;
     }
 
-    struct PerpMarketUploadSumUnitaryFundings {
+    struct UploadSumUnitaryFundings {
         bytes32 r;
         bytes32 s;
         uint8 v;
