@@ -19,7 +19,7 @@ contract MarketManager is IMarketManager, LedgerComponent {
         __Ownable_init();
     }
 
-    function updateMarketUpload(MarketTypes.PerpMarketUploadPerpPrice calldata data) external onlyLedger {
+    function updateMarketUpload(MarketTypes.UploadPerpPrice calldata data) external onlyLedger {
         uint256 length = data.perpPrices.length;
         for (uint256 i = 0; i < length; i++) {
             MarketTypes.PerpPrice calldata perpPrice = data.perpPrices[i];
@@ -31,7 +31,7 @@ contract MarketManager is IMarketManager, LedgerComponent {
         emit MarketData(data.maxTimestamp);
     }
 
-    function updateMarketUpload(MarketTypes.PerpMarketUploadSumUnitaryFundings calldata data) external onlyLedger {
+    function updateMarketUpload(MarketTypes.UploadSumUnitaryFundings calldata data) external onlyLedger {
         uint256 length = data.sumUnitaryFundings.length;
         for (uint256 i = 0; i < length; i++) {
             MarketTypes.SumUnitaryFunding calldata sumUnitaryFunding = data.sumUnitaryFundings[i];
