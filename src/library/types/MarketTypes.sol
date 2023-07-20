@@ -15,6 +15,9 @@ library MarketTypes {
 
     // WIP: change me
     struct PerpMarketUpload {
+        bytes32 r;
+        bytes32 s;
+        uint8 v;
         uint8 bizType;
         bytes data;
     }

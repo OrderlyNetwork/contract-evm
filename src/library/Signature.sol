@@ -3,6 +3,7 @@ pragma solidity ^0.8.18;
 
 import "./types/PerpTypes.sol";
 import "./types/EventTypes.sol";
+import "./types/MarketTypes.sol";
 
 library Signature {
     function verifyWithdraw(address sender, EventTypes.WithdrawData memory data) internal view returns (bool) {
@@ -205,5 +206,29 @@ library Signature {
     {
         bytes32 h = getEthSignedMessageHash(keccak256(eventsUploadEncodeHash(data)));
         return verify(h, data.r, data.s, data.v, signer);
+    }
+
+    function marketCfgUploadEncodeHashVerify(
+        bytes32 r,
+        bytes32 s,
+        uint8 v,
+        MarketTypes.PerpPriceInner memory data,
+        address signer
+    ) internal pure returns (bool) {
+        bytes memory encoded = abi.encode(data.maxTimestamp, data.perpPrices);
+        bytes32 h = getEthSignedMessageHash(keccak256(encoded));
+        return verify(h, r, s, v, signer);
+    }
+
+    function marketCfgUploadEncodeHashVerify(
+        bytes32 r,
+        bytes32 s,
+        uint8 v,
+        MarketTypes.SumUnitaryFundingsInner memory data,
+        address signer
+    ) internal pure returns (bool) {
+        bytes memory encoded = abi.encode(data.maxTimestamp, data.sumUnitaryFundings);
+        bytes32 h = getEthSignedMessageHash(keccak256(encoded));
+        return verify(h, r, s, v, signer);
     }
 }
