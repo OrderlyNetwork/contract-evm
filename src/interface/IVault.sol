@@ -8,8 +8,6 @@ interface IVault {
     error AccountIdInvalid();
     error TokenNotAllowed();
     error BrokerNotAllowed();
-    error TransferFromFailed();
-    error TransferFailed();
     error BalanceNotEnough(uint256 balance, uint128 amount);
 
     event AccountDeposit(

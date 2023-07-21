@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
-import "../src/library/typesHelper/AccountTypePositionHelper.sol";
+import "../../src/library/typesHelper/AccountTypePositionHelper.sol";
 
 contract AccountTypePositionHelperTest is Test {
     using AccountTypePositionHelper for AccountTypes.PerpPosition;
