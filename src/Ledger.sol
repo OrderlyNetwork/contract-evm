@@ -11,6 +11,7 @@ import "./library/Utils.sol";
 import "./library/Signature.sol";
 import "./library/typesHelper/AccountTypeHelper.sol";
 import "./library/typesHelper/AccountTypePositionHelper.sol";
+import "./library/typesHelper/SafeCastHelper.sol";
 
 /**
  * Ledger is responsible for saving traders' Account (balance, perpPosition, and other meta)
@@ -20,6 +21,7 @@ import "./library/typesHelper/AccountTypePositionHelper.sol";
 contract Ledger is ILedger, OwnableUpgradeable {
     using AccountTypeHelper for AccountTypes.Account;
     using AccountTypePositionHelper for AccountTypes.PerpPosition;
+    using SafeCastHelper for *;
 
     // OperatorManager contract address
     address public operatorManagerAddress;
@@ -177,7 +179,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
         AccountTypes.Account storage account = userLedger[trade.accountId];
         AccountTypes.PerpPosition storage perpPosition = account.perpPositions[trade.symbolHash];
         perpPosition.chargeFundingFee(trade.sumUnitaryFundings);
-        perpPosition.calAverageEntryPrice(trade.tradeQty, int128(trade.executedPrice), 0);
+        perpPosition.calAverageEntryPrice(trade.tradeQty, trade.executedPrice.toInt128(), 0);
         perpPosition.positionQty += trade.tradeQty;
         perpPosition.costPosition += trade.notional;
         perpPosition.lastExecutedPrice = trade.executedPrice;
@@ -310,8 +312,8 @@ contract Ledger is ILedger, OwnableUpgradeable {
             uint128 balance = account.balances[settlement.settledAssetHash];
             // transfer insurance fund
             if (
-                int128(balance) + int128(settlement.insuranceTransferAmount) + settlement.settledAmount < 0
-                    || settlement.insuranceTransferAmount > uint128(Utils.abs(settlement.settledAmount))
+                balance.toInt128() + settlement.insuranceTransferAmount.toInt128() + settlement.settledAmount < 0
+                    || settlement.insuranceTransferAmount > settlement.settledAmount.abs()
             ) {
                 // overflow
                 revert InsuranceTransferAmountInvalid(
@@ -333,11 +335,11 @@ contract Ledger is ILedger, OwnableUpgradeable {
             }
             // check balance + settledAmount >= 0, where balance should cast to int128 first
             uint128 balance = account.balances[settlement.settledAssetHash];
-            if (int128(account.balances[settlement.settledAssetHash]) + ledgerExecution.settledAmount < 0) {
+            if (account.balances[settlement.settledAssetHash].toInt128() + ledgerExecution.settledAmount < 0) {
                 revert BalanceNotEnough(balance, ledgerExecution.settledAmount);
             }
             account.balances[settlement.settledAssetHash] =
-                uint128(int128(account.balances[settlement.settledAssetHash]) + ledgerExecution.settledAmount);
+                (account.balances[settlement.settledAssetHash].toInt128() + ledgerExecution.settledAmount).toUint128();
         }
         account.lastCefiEventId = eventId;
         // emit event
@@ -394,13 +396,13 @@ contract Ledger is ILedger, OwnableUpgradeable {
         AccountTypes.Account storage insuranceFund = userLedger[adl.insuranceAccountId];
         AccountTypes.PerpPosition storage insurancePosition = insuranceFund.perpPositions[adl.symbolHash];
         if (userPosition.positionQty == 0) revert UserPerpPositionQtyZero(adl.accountId, adl.symbolHash);
-        if (Utils.abs(adl.positionQtyTransfer) > Utils.abs(userPosition.positionQty)) {
+        if (adl.positionQtyTransfer.abs() > userPosition.positionQty.abs()) {
             revert InsurancePositionQtyInvalid(adl.positionQtyTransfer, userPosition.positionQty);
         }
 
         insurancePosition.chargeFundingFee(adl.sumUnitaryFundings);
         insurancePosition.positionQty -= adl.positionQtyTransfer;
-        userPosition.calAverageEntryPrice(adl.positionQtyTransfer, int128(adl.adlPrice), -adl.costPositionTransfer);
+        userPosition.calAverageEntryPrice(adl.positionQtyTransfer, adl.adlPrice.toInt128(), -adl.costPositionTransfer);
         userPosition.positionQty += adl.positionQtyTransfer;
         insurancePosition.costPosition -= adl.costPositionTransfer;
         userPosition.costPosition += adl.costPositionTransfer;
@@ -459,7 +461,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
     ) internal {
         if (feeAmount == 0) return;
         perpFeeCollectorDeposit(symbol, feeAmount, tradeId, sumUnitaryFundings);
-        traderPosition.costPosition += int128(feeAmount);
+        traderPosition.costPosition += feeAmount.toInt128();
     }
 
     function perpFeeCollectorDeposit(bytes32 symbol, uint128 amount, uint64 tradeId, int128 sumUnitaryFundings)
@@ -468,7 +470,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
         bytes32 feeCollectorAccountId = feeManager.getFeeCollector(IFeeManager.FeeCollectorType.FuturesFeeCollector);
         AccountTypes.Account storage feeCollectorAccount = userLedger[feeCollectorAccountId];
         AccountTypes.PerpPosition storage feeCollectorPosition = feeCollectorAccount.perpPositions[symbol];
-        feeCollectorPosition.costPosition -= int128(amount);
+        feeCollectorPosition.costPosition -= amount.toInt128();
         feeCollectorPosition.lastSumUnitaryFundings = sumUnitaryFundings;
         if (tradeId > feeCollectorAccount.lastPerpTradeId) {
             feeCollectorAccount.lastPerpTradeId = tradeId;
@@ -498,7 +500,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
         liquidatorPosition.chargeFundingFee(liquidationTransfer.sumUnitaryFundings);
         liquidatorPosition.calAverageEntryPrice(
             liquidationTransfer.positionQtyTransfer,
-            int128(liquidationTransfer.markPrice),
+            liquidationTransfer.markPrice.toInt128(),
             -(liquidationTransfer.costPositionTransfer - liquidationTransfer.liquidatorFee)
         );
         liquidatorPosition.positionQty += liquidationTransfer.positionQtyTransfer;
@@ -516,7 +518,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
         liquidatedPosition.chargeFundingFee(liquidationTransfer.sumUnitaryFundings);
         liquidatedPosition.calAverageEntryPrice(
             -liquidationTransfer.positionQtyTransfer,
-            int128(liquidationTransfer.markPrice),
+            liquidationTransfer.markPrice.toInt128(),
             liquidationTransfer.costPositionTransfer
                 - (liquidationTransfer.liquidatorFee + liquidationTransfer.insuranceFee)
         );

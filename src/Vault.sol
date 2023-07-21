@@ -8,6 +8,7 @@ import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
 import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 import "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
+import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /**
  * Vault is responsible for saving user's USDC (where USDC which is a IERC20 token).
@@ -17,6 +18,7 @@ import "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
  */
 contract Vault is IVault, ReentrancyGuardUpgradeable, OwnableUpgradeable {
     using EnumerableSet for EnumerableSet.Bytes32Set;
+    using SafeERC20 for IERC20;
 
     // cross-chain operator address
     address public crossChainManagerAddress;
@@ -110,9 +112,8 @@ contract Vault is IVault, ReentrancyGuardUpgradeable, OwnableUpgradeable {
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
         if (!Utils.validateAccountId(data.accountId, data.brokerHash, msg.sender)) revert AccountIdInvalid();
         IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
-
-        bool succ = tokenAddress.transferFrom(msg.sender, address(this), data.tokenAmount);
-        if (!succ) revert TransferFromFailed();
+        // avoid non-standard ERC20 tranferFrom bug
+        tokenAddress.safeTransferFrom(msg.sender, address(this), data.tokenAmount);
         // cross-chain tx to ledger
         VaultTypes.VaultDeposit memory depositData = VaultTypes.VaultDeposit(
             data.accountId, msg.sender, data.brokerHash, data.tokenHash, data.tokenAmount, _newDepositId()
@@ -131,8 +132,8 @@ contract Vault is IVault, ReentrancyGuardUpgradeable, OwnableUpgradeable {
             revert BalanceNotEnough(tokenAddress.balanceOf(address(this)), amount);
         }
         // transfer to user
-        bool succ = tokenAddress.transfer(data.receiver, amount);
-        if (!succ) revert TransferFailed();
+        // avoid non-standard ERC20 tranfer bug
+        tokenAddress.safeTransfer(data.receiver, amount);
         // send cross-chain tx to ledger
         crossChainManager.withdraw(data);
         // emit withdraw event
