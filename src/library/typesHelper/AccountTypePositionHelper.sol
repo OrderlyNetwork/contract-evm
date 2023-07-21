@@ -3,8 +3,11 @@ pragma solidity ^0.8.18;
 
 import "../types/AccountTypes.sol";
 import "../Utils.sol";
+import "./SafeCastHelper.sol";
 
 library AccountTypePositionHelper {
+    using SafeCastHelper for *;
+
     int128 constant FUNDING_MOVE_RIGHT_PRECISIONS = 1e17; // 1e17
     int128 constant PRICE_QTY_MOVE_RIGHT_PRECISIONS = 1e10; // 1e10
     int32 constant MARGIN_100PERCENT = 1e4; // 1e4
@@ -32,8 +35,8 @@ library AccountTypePositionHelper {
         int128 markPrice,
         int128 baseMaintenanceMargin
     ) internal view returns (int128) {
-        return Utils.abs(position.positionQty) * markPrice / PRICE_QTY_MOVE_RIGHT_PRECISIONS * baseMaintenanceMargin
-            / int128(MARGIN_100PERCENT);
+        return position.positionQty.abs().toInt128() * markPrice / PRICE_QTY_MOVE_RIGHT_PRECISIONS
+            * baseMaintenanceMargin / int128(MARGIN_100PERCENT);
     }
 
     // is full settled
@@ -76,7 +79,7 @@ library AccountTypePositionHelper {
         } else {
             openingCost = halfUp24_8_i256(int256(quoteDiff) * int256(currentHolding), qty);
         }
-        position.averageEntryPrice = uint128(halfDown16_8(-openingCost, currentHolding));
+        position.averageEntryPrice = halfDown16_8(-openingCost, currentHolding).toUint128();
         position.openingCost = halfUp16_8(openingCost, 1e8);
     }
 
@@ -110,7 +113,7 @@ library AccountTypePositionHelper {
     function halfUp16_8(int128 dividend, int128 divisor) internal pure returns (int128) {
         int128 quotient = dividend / divisor;
         int128 remainder = dividend % divisor;
-        if (Utils.abs(remainder) * 2 >= Utils.abs(divisor)) {
+        if (remainder.abs() * 2 >= divisor.abs()) {
             if (quotient > 0) {
                 quotient += 1;
             } else {
@@ -123,7 +126,7 @@ library AccountTypePositionHelper {
     function halfUp16_8_i256(int256 dividend, int128 divisor) internal pure returns (int128) {
         int256 quotient = dividend / divisor;
         int256 remainder = dividend % divisor;
-        if (Utils.abs_i256(remainder) * 2 >= Utils.abs(divisor)) {
+        if (remainder.abs_i256() * 2 >= divisor.abs()) {
             if (quotient > 0) {
                 quotient += 1;
             } else {
@@ -152,7 +155,7 @@ library AccountTypePositionHelper {
     function halfDown16_8(int128 dividend, int128 divisor) internal pure returns (int128) {
         int128 quotient = dividend / divisor;
         int128 remainder = dividend % divisor;
-        if (Utils.abs(remainder) * 2 > Utils.abs(divisor)) {
+        if (remainder.abs() * 2 > divisor.abs()) {
             if (quotient > 0) {
                 quotient += 1;
             } else {
