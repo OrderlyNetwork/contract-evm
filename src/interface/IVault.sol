@@ -37,6 +37,10 @@ interface IVault {
 
     // admin call
     function setCrossChainManager(address _crossChainManagerAddress) external;
+    function emergencyPause() external;
+    function emergencyUnpause() external;
+
+    // whitelist
     function setAllowedToken(bytes32 _tokenHash, bool _allowed) external;
     function setAllowedBroker(bytes32 _brokerHash, bool _allowed) external;
     function changeTokenAddressAndAllow(bytes32 _tokenHash, address _tokenAddress) external;

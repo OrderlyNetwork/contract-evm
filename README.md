@@ -86,6 +86,10 @@ forge test -vvvv
 
 `forge script script/vault/DeployProxyVault.s.sol -f $VAULT_NETWORK --json --broadcast`
 
+### Upgrade command:
+
+`forge script script/vault/UpgradeVault.s.sol -f $VAULT_NETWORK --json --broadcast`
+
 ### Deposit commond:
 
 `forge script script/vault/StartDeposit.s.sol -f $VAULT_NETWORK --json --broadcast`

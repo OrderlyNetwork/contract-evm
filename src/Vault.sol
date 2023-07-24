@@ -5,7 +5,7 @@ import "./interface/IVault.sol";
 import "./interface/IVaultCrossChainManager.sol";
 import "./library/Utils.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import "openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeable.sol";
 import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 import "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -16,7 +16,7 @@ import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
  * User can deposit USDC from Vault.
  * Only crossChainManager can approve withdraw request.
  */
-contract Vault is IVault, ReentrancyGuardUpgradeable, OwnableUpgradeable {
+contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     using EnumerableSet for EnumerableSet.Bytes32Set;
     using SafeERC20 for IERC20;
 
@@ -48,7 +48,7 @@ contract Vault is IVault, ReentrancyGuardUpgradeable, OwnableUpgradeable {
 
     function initialize() public override initializer {
         __Ownable_init();
-        __ReentrancyGuard_init();
+        __Pausable_init();
     }
 
     // change crossChainManager
@@ -106,7 +106,7 @@ contract Vault is IVault, ReentrancyGuardUpgradeable, OwnableUpgradeable {
     }
 
     // user deposit
-    function deposit(VaultTypes.VaultDepositFE calldata data) public override {
+    function deposit(VaultTypes.VaultDepositFE calldata data) public override whenNotPaused {
         // require tokenAddress exist
         if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
@@ -124,7 +124,7 @@ contract Vault is IVault, ReentrancyGuardUpgradeable, OwnableUpgradeable {
     }
 
     // user withdraw
-    function withdraw(VaultTypes.VaultWithdraw calldata data) public override onlyCrossChainManager nonReentrant {
+    function withdraw(VaultTypes.VaultWithdraw calldata data) public override onlyCrossChainManager whenNotPaused {
         IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
         uint128 amount = data.tokenAmount - data.fee;
         // check balane gt amount
@@ -153,5 +153,13 @@ contract Vault is IVault, ReentrancyGuardUpgradeable, OwnableUpgradeable {
     function _newDepositId() internal returns (uint64) {
         depositId += 1;
         return depositId;
+    }
+
+    function emergencyPause() public onlyOwner {
+        _pause();
+    }
+
+    function emergencyUnpause() public onlyOwner {
+        _unpause();
     }
 }
