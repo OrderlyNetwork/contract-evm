@@ -33,13 +33,15 @@ contract Ledger is ILedger, OwnableUpgradeable {
     uint64 public globalEventId;
     // globalDepositId
     uint64 public globalDepositId;
+    // @Rubick refactor order when next deployment
     // userLedger accountId -> Account
     mapping(bytes32 => AccountTypes.Account) internal userLedger;
 
     // VaultManager contract
     IVaultManager public vaultManager;
+    // @Rubick remove this when next deployment
     // CrossChainManager contract
-    ILedgerCrossChainManager public crossChainManager;
+    ILedgerCrossChainManager public _deprecated;
     // MarketManager contract
     IMarketManager public marketManager;
     // FeeManager contract
@@ -73,7 +75,6 @@ contract Ledger is ILedger, OwnableUpgradeable {
     // set crossChainManager & Address
     function setCrossChainManager(address _crossChainManagerAddress) public override onlyOwner {
         crossChainManagerAddress = _crossChainManagerAddress;
-        crossChainManager = ILedgerCrossChainManager(_crossChainManagerAddress);
     }
 
     // set vaultManager
@@ -152,11 +153,12 @@ contract Ledger is ILedger, OwnableUpgradeable {
         }
         account.addBalance(data.tokenHash, data.tokenAmount);
         vaultManager.addBalance(data.tokenHash, data.srcChainId, data.tokenAmount);
-        account.lastDepositEventId = _newGlobalDepositId();
+        uint64 tmpGlobalDepositId = _newGlobalDepositId(); // gas saving
+        account.lastDepositEventId = tmpGlobalDepositId;
         // emit deposit event
         emit AccountDeposit(
             data.accountId,
-            globalDepositId,
+            tmpGlobalDepositId,
             _newGlobalEventId(),
             data.userAddress,
             data.tokenHash,
@@ -256,7 +258,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
             block.timestamp
         );
         // send cross-chain tx
-        crossChainManager.withdraw(withdraw);
+        ILedgerCrossChainManager(crossChainManagerAddress).withdraw(withdraw);
     }
 
     function accountWithDrawFinish(AccountTypes.AccountWithdraw calldata withdraw)
