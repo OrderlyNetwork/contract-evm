@@ -25,10 +25,11 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     mapping(bytes32 => bool) public _deprecatedA; // @Rubick depracated
     mapping(bytes32 => IERC20) public _deprecatedB; // @Rubick depracated
 
+    // TODO @Rubick reorder to save slots
     // deposit id / nonce
     uint64 public depositId;
     // CrossChainManager contract
-    IVaultCrossChainManager public crossChainManager;
+    IVaultCrossChainManager public _deprecated;
 
     // list to record the hash value of allowed brokerIds
     EnumerableSet.Bytes32Set private allowedBrokerSet;
@@ -54,7 +55,6 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     // change crossChainManager
     function setCrossChainManager(address _crossChainManagerAddress) public override onlyOwner {
         crossChainManagerAddress = _crossChainManagerAddress;
-        crossChainManager = IVaultCrossChainManager(_crossChainManagerAddress);
     }
 
     // add contract address for an allowed token
@@ -118,7 +118,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         VaultTypes.VaultDeposit memory depositData = VaultTypes.VaultDeposit(
             data.accountId, msg.sender, data.brokerHash, data.tokenHash, data.tokenAmount, _newDepositId()
         );
-        crossChainManager.deposit(depositData);
+        IVaultCrossChainManager(crossChainManagerAddress).deposit(depositData);
         // emit deposit event
         emit AccountDeposit(data.accountId, msg.sender, depositId, data.tokenHash, data.tokenAmount);
     }
@@ -135,7 +135,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         // avoid non-standard ERC20 tranfer bug
         tokenAddress.safeTransfer(data.receiver, amount);
         // send cross-chain tx to ledger
-        crossChainManager.withdraw(data);
+        IVaultCrossChainManager(crossChainManagerAddress).withdraw(data);
         // emit withdraw event
         emit AccountWithdraw(
             data.accountId,

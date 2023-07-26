@@ -16,6 +16,7 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable {
     // ledger Interface
     ILedger public ledger;
 
+    // TODO @Rubick reorder to save slots
     // ids
     // futuresUploadBatchId
     uint64 public futuresUploadBatchId;
