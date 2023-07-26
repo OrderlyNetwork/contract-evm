@@ -33,6 +33,9 @@ interface IOperatorManager {
 
     // admin call
     function setOperator(address _operatorAddress) external;
-    function setCefiSignatureAddress(address _cefiSignatureAddress) external;
     function setLedger(address _ledger) external;
+    function setCefiSpotTradeUploadAddress(address _cefiSpotTradeUploadAddress) external;
+    function setCefiPerpTradeUploadAddress(address _cefiPerpTradeUploadAddress) external;
+    function setCefiEventUploadAddress(address _cefiEventUploadAddress) external;
+    function setCefiMarketUploadAddress(address _cefiMarketUploadAddress) external;
 }
