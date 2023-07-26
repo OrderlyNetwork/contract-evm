@@ -27,6 +27,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
     address public operatorManagerAddress;
     // crossChainManagerAddress contract address
     address public crossChainManagerAddress;
+    // TODO @Rubick reorder to save slots
     // operatorTradesBatchId
     uint64 public operatorTradesBatchId;
     // globalEventId, for event trade upload
