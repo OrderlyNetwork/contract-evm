@@ -23,9 +23,13 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable {
     uint64 public eventUploadBatchId;
     // last operator interaction timestamp
     uint256 public lastOperatorInteraction;
+    // @depreacted @Rubick
+    address public _depreacted;
     // cefi sign address
-    // @Rubick move this with operatorAddress when next deployment
-    address public cefiSignatureAddress;
+    address public cefiSpotTradeUploadAddress;
+    address public cefiPerpTradeUploadAddress;
+    address public cefiEventUploadAddress;
+    address public cefiMarketUploadAddress;
 
     // only operator
     modifier onlyOperator() {
@@ -38,9 +42,21 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable {
         operatorAddress = _operatorAddress;
     }
 
-    // set cefiSignatureAddress
-    function setCefiSignatureAddress(address _cefiSignatureAddress) public override onlyOwner {
-        cefiSignatureAddress = _cefiSignatureAddress;
+    // set cefi sign address
+    function setCefiSpotTradeUploadAddress(address _cefiSpotTradeUploadAddress) public override onlyOwner {
+        cefiSpotTradeUploadAddress = _cefiSpotTradeUploadAddress;
+    }
+
+    function setCefiPerpTradeUploadAddress(address _cefiPerpTradeUploadAddress) public override onlyOwner {
+        cefiPerpTradeUploadAddress = _cefiPerpTradeUploadAddress;
+    }
+
+    function setCefiEventUploadAddress(address _cefiEventUploadAddress) public override onlyOwner {
+        cefiEventUploadAddress = _cefiEventUploadAddress;
+    }
+
+    function setCefiMarketUploadAddress(address _cefiMarketUploadAddress) public override onlyOwner {
+        cefiMarketUploadAddress = _cefiMarketUploadAddress;
     }
 
     // set ledger
@@ -57,6 +73,7 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable {
         futuresUploadBatchId = 1;
         eventUploadBatchId = 1;
         lastOperatorInteraction = block.timestamp;
+        // TODO init all cefi sign address
     }
 
     // operator ping
@@ -107,7 +124,7 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable {
         if (trades.length != data.count) revert CountNotMatch(trades.length, data.count);
 
         // check cefi signature
-        bool succ = Signature.perpUploadEncodeHashVerify(data, cefiSignatureAddress);
+        bool succ = Signature.perpUploadEncodeHashVerify(data, cefiPerpTradeUploadAddress);
         if (!succ) revert SignatureNotMatch();
 
         // process each validated perp trades
@@ -127,7 +144,7 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable {
         if (events.length != data.count) revert CountNotMatch(events.length, data.count);
 
         // check cefi signature
-        bool succ = Signature.eventsUploadEncodeHashVerify(data, cefiSignatureAddress);
+        bool succ = Signature.eventsUploadEncodeHashVerify(data, cefiEventUploadAddress);
         if (!succ) revert SignatureNotMatch();
 
         // process each event upload
@@ -159,7 +176,7 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable {
     // perp market info
     function _perpMarketInfo(MarketTypes.UploadPerpPrice calldata data) internal {
         // check cefi signature
-        bool succ = Signature.marketUploadEncodeHashVerify(data, cefiSignatureAddress);
+        bool succ = Signature.marketUploadEncodeHashVerify(data, cefiMarketUploadAddress);
         if (!succ) revert SignatureNotMatch();
         // process perp market info
         ledger.executePerpMarketInfo(data);
@@ -167,7 +184,7 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable {
 
     function _perpMarketInfo(MarketTypes.UploadSumUnitaryFundings calldata data) internal {
         // check cefi signature
-        bool succ = Signature.marketUploadEncodeHashVerify(data, cefiSignatureAddress);
+        bool succ = Signature.marketUploadEncodeHashVerify(data, cefiMarketUploadAddress);
         if (!succ) revert SignatureNotMatch();
         // process perp market info
         ledger.executePerpMarketInfo(data);
