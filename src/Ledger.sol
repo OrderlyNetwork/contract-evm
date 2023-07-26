@@ -207,15 +207,16 @@ contract Ledger is ILedger, OwnableUpgradeable {
         if (!Utils.validateAccountId(withdraw.accountId, brokerHash, withdraw.sender)) revert AccountIdInvalid();
         AccountTypes.Account storage account = userLedger[withdraw.accountId];
         uint8 state = 0;
-        if (account.balances[tokenHash] < withdraw.tokenAmount) {
+        // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/326402549/Withdraw+Error+Code
+        if (account.lastWithdrawNonce >= withdraw.withdrawNonce) {
+            // require withdraw nonce inc
+            state = 101;
+        } else if (account.balances[tokenHash] < withdraw.tokenAmount) {
             // require balance enough
             state = 1;
         } else if (vaultManager.getBalance(tokenHash, withdraw.chainId) < withdraw.tokenAmount) {
             // require chain has enough balance
             state = 2;
-        } else if (account.lastWithdrawNonce >= withdraw.withdrawNonce) {
-            // require withdraw nonce inc
-            state = 3;
         } else if (!Signature.verifyWithdraw(withdraw.sender, withdraw)) {
             // require signature verify
             state = 4;
