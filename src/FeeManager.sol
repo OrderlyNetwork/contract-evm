@@ -45,4 +45,7 @@ contract FeeManager is IFeeManager, LedgerComponent {
             futuresFeeCollector = _newCollector;
         }
     }
+
+    // every time call `upgradeAndCall` will call this function, to do some data migrate or value init
+    function upgradeInit() external {}
 }

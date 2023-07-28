@@ -89,4 +89,7 @@ contract MarketManager is IMarketManager, LedgerComponent {
     function setLastFundingUpdated(bytes32 _pairSymbol, uint64 _lastFundingUpdated) external override onlyLedger {
         perpMarketCfg[_pairSymbol].setLastFundingUpdated(_lastFundingUpdated);
     }
+
+    // every time call `upgradeAndCall` will call this function, to do some data migrate or value init
+    function upgradeInit() external {}
 }

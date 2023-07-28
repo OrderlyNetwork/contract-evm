@@ -103,4 +103,7 @@ contract VaultManager is IVaultManager, LedgerComponent {
     function getAllowedToken(bytes32 _tokenHash) public view override returns (bool) {
         return allowedTokenSet.contains(_tokenHash);
     }
+
+    // every time call `upgradeAndCall` will call this function, to do some data migrate or value init
+    function upgradeInit() external {}
 }
