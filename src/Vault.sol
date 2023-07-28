@@ -162,4 +162,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     function emergencyUnpause() public onlyOwner {
         _unpause();
     }
+
+    // every time call `upgradeAndCall` will call this function, to do some data migrate or value init
+    function upgradeInit() external {}
 }
