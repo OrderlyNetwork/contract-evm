@@ -18,7 +18,7 @@ contract UpgradeMarketManager is Script {
         vm.startBroadcast(orderlyPrivateKey);
 
         IMarketManager marketManagerImpl = new MarketManager();
-        admin.upgrade(marketManagerProxy, address(marketManagerImpl));
+        admin.upgradeAndCall(marketManagerProxy, address(marketManagerImpl), abi.encodeWithSignature("upgradeInit()"));
 
         vm.stopBroadcast();
     }
