@@ -187,7 +187,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
         perpPosition.costPosition += trade.notional;
         perpPosition.lastExecutedPrice = trade.executedPrice;
         // fee_swap_position
-        feeSwapPosition(perpPosition, trade.symbolHash, trade.fee, trade.tradeId, trade.sumUnitaryFundings);
+        _feeSwapPosition(perpPosition, trade.symbolHash, trade.fee, trade.tradeId, trade.sumUnitaryFundings);
         account.lastPerpTradeId = trade.tradeId;
         // update last funding update timestamp
         marketManager.setLastFundingUpdated(trade.symbolHash, trade.timestamp);
@@ -227,7 +227,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
                 withdraw.accountId,
                 withdraw.withdrawNonce,
                 _newGlobalEventId(),
-                account.brokerHash,
+                brokerHash,
                 withdraw.sender,
                 withdraw.receiver,
                 withdraw.chainId,
@@ -250,7 +250,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
             withdraw.accountId,
             withdraw.withdrawNonce,
             _newGlobalEventId(),
-            account.brokerHash,
+            brokerHash,
             withdraw.sender,
             withdraw.receiver,
             withdraw.chainId,
@@ -284,7 +284,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
             withdraw.accountId,
             withdraw.withdrawNonce,
             _newGlobalEventId(),
-            account.brokerHash,
+            withdraw.brokerHash,
             withdraw.sender,
             withdraw.receiver,
             withdraw.chainId,
@@ -339,11 +339,11 @@ contract Ledger is ILedger, OwnableUpgradeable {
             }
             // check balance + settledAmount >= 0, where balance should cast to int128 first
             uint128 balance = account.balances[settlement.settledAssetHash];
-            if (account.balances[settlement.settledAssetHash].toInt128() + ledgerExecution.settledAmount < 0) {
+            if (balance.toInt128() + ledgerExecution.settledAmount < 0) {
                 revert BalanceNotEnough(balance, ledgerExecution.settledAmount);
             }
             account.balances[settlement.settledAssetHash] =
-                (account.balances[settlement.settledAssetHash].toInt128() + ledgerExecution.settledAmount).toUint128();
+                (balance.toInt128() + ledgerExecution.settledAmount).toUint128();
         }
         account.lastCefiEventId = eventId;
         // emit event
@@ -399,9 +399,10 @@ contract Ledger is ILedger, OwnableUpgradeable {
         userPosition.chargeFundingFee(adl.sumUnitaryFundings);
         AccountTypes.Account storage insuranceFund = userLedger[adl.insuranceAccountId];
         AccountTypes.PerpPosition storage insurancePosition = insuranceFund.perpPositions[adl.symbolHash];
-        if (userPosition.positionQty == 0) revert UserPerpPositionQtyZero(adl.accountId, adl.symbolHash);
-        if (adl.positionQtyTransfer.abs() > userPosition.positionQty.abs()) {
-            revert InsurancePositionQtyInvalid(adl.positionQtyTransfer, userPosition.positionQty);
+        int128 tmpUserPositionQty = userPosition.positionQty; // gas saving
+        if (tmpUserPositionQty == 0) revert UserPerpPositionQtyZero(adl.accountId, adl.symbolHash);
+        if (adl.positionQtyTransfer.abs() > tmpUserPositionQty.abs()) {
+            revert InsurancePositionQtyInvalid(adl.positionQtyTransfer, tmpUserPositionQty);
         }
 
         insurancePosition.chargeFundingFee(adl.sumUnitaryFundings);
@@ -456,7 +457,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
 
     // =================== internal =================== //
 
-    function feeSwapPosition(
+    function _feeSwapPosition(
         AccountTypes.PerpPosition storage traderPosition,
         bytes32 symbol,
         uint128 feeAmount,
@@ -464,11 +465,11 @@ contract Ledger is ILedger, OwnableUpgradeable {
         int128 sumUnitaryFundings
     ) internal {
         if (feeAmount == 0) return;
-        perpFeeCollectorDeposit(symbol, feeAmount, tradeId, sumUnitaryFundings);
+        _perpFeeCollectorDeposit(symbol, feeAmount, tradeId, sumUnitaryFundings);
         traderPosition.costPosition += feeAmount.toInt128();
     }
 
-    function perpFeeCollectorDeposit(bytes32 symbol, uint128 amount, uint64 tradeId, int128 sumUnitaryFundings)
+    function _perpFeeCollectorDeposit(bytes32 symbol, uint128 amount, uint64 tradeId, int128 sumUnitaryFundings)
         internal
     {
         bytes32 feeCollectorAccountId = feeManager.getFeeCollector(IFeeManager.FeeCollectorType.FuturesFeeCollector);
