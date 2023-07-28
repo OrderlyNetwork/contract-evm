@@ -18,7 +18,7 @@ contract UpgradeVault is Script {
         vm.startBroadcast(orderlyPrivateKey);
 
         IVault vaultManagerImpl = new Vault();
-        admin.upgrade(vaultManagerProxy, address(vaultManagerImpl));
+        admin.upgradeAndCall(vaultManagerProxy, address(vaultManagerImpl), abi.encodeWithSignature("upgradeInit()"));
 
         vm.stopBroadcast();
     }

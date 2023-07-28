@@ -18,7 +18,9 @@ contract UpgradeOperatorManager is Script {
         vm.startBroadcast(orderlyPrivateKey);
 
         IOperatorManager operatorManagerImpl = new OperatorManager();
-        admin.upgrade(operatorManagerProxy, address(operatorManagerImpl));
+        admin.upgradeAndCall(
+            operatorManagerProxy, address(operatorManagerImpl), abi.encodeWithSignature("upgradeInit()")
+        );
 
         vm.stopBroadcast();
     }

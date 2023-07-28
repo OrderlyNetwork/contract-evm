@@ -550,4 +550,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
         insurancePosition.lastExecutedPrice = liquidationTransfer.markPrice;
         insuranceFund.lastCefiEventId = eventId;
     }
+
+    // every time call `upgradeAndCall` will call this function, to do some data migrate or value init
+    function upgradeInit() external {}
 }

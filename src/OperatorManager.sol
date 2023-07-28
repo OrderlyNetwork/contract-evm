@@ -198,4 +198,7 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable {
     function checkCefiDown() public view override returns (bool) {
         return (lastOperatorInteraction + 3 days < block.timestamp);
     }
+
+    // every time call `upgradeAndCall` will call this function, to do some data migrate or value init
+    function upgradeInit() external {}
 }

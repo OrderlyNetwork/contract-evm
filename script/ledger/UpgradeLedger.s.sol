@@ -18,7 +18,7 @@ contract UpgradeLedger is Script {
         vm.startBroadcast(orderlyPrivateKey);
 
         ILedger ledgerImpl = new Ledger();
-        admin.upgrade(ledgerProxy, address(ledgerImpl));
+        admin.upgradeAndCall(ledgerProxy, address(ledgerImpl), abi.encodeWithSignature("upgradeInit()"));
 
         vm.stopBroadcast();
     }
