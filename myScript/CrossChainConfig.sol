@@ -4,7 +4,6 @@ pragma solidity ^0.8.17;
 import "./Utils.sol";
 
 contract CrossChainConfig {
-
     using StringCompare for string;
 
     mapping(uint256 => uint16) public _chainId2LzIdMapping;
@@ -41,6 +40,7 @@ contract CrossChainConfig {
         _netork2ChainIdMapping["mumbai"] = 80001;
 
         _chainConfigMapping["fuji-mumbai"] = getFujiMumbaiChainConfig();
+        _chainConfigMapping["fuji-orderly"] = getFujiOrderlyChainConfig();
     }
 
     function getChainConfig(string memory crosschainOption) public view returns (ChainConfig memory) {
@@ -65,6 +65,28 @@ contract CrossChainConfig {
             ledgerRelayTransfer: 2_000_000_000_000_000_000,
             // 1 native token (fuji)
             vaultRelayTransfer: 1_000_000_000_000_000_000,
+            ledgerChainId: 80001,
+            ledgerLzChainId: 10109,
+            vaultChainId: 43113,
+            vaultLzChainId: 10106,
+            lzCrossChainPath: abi.encodePacked(ledgerRelay, vaultRelay)
+        });
+    }
+
+    function getFujiOrderlyChainConfig() internal pure returns (ChainConfig memory) {
+        address ledgerRelay = 0xD95832A046366C710c0dAfbF6c21f0A5ADAA6193;
+        address vaultRelay = 0xF88a250d55D7f94A9006B89E283700eB90FC7738;
+        return ChainConfig({
+            vaultNetwork: "fuji",
+            ledgerNetwork: "orderly",
+            ledgerCrossChainManager: 0x5E212beC81Cc5D048B72E896897424034a0df6b6,
+            vaultCrossChainManager: 0x783744176804C59B2a25CE71d68A94713C73fD8E,
+            ledgerRelay: ledgerRelay,
+            vaultRelay: vaultRelay,
+            // 2 native token (Orderly)
+            ledgerRelayTransfer: 2_000_000_000_000_000_000,
+            // 1 native token (fuji)
+            vaultRelayTransfer: 1_000_000_000_000_000_000,
             ledgerChainId: 986532,
             ledgerLzChainId: 10174,
             vaultChainId: 43113,
@@ -72,5 +94,4 @@ contract CrossChainConfig {
             lzCrossChainPath: abi.encodePacked(ledgerRelay, vaultRelay)
         });
     }
-
 }
