@@ -21,3 +21,7 @@ node_modules
 src/**/artifacts/
 
 broadcast/
+
+*.zip
+
+.DS_Store
