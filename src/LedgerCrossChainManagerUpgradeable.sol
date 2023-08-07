@@ -13,6 +13,7 @@ import "crosschain/utils/OrderlyCrossChainMessage.sol";
 import "./library/types/AccountTypes.sol";
 import "./library/types/EventTypes.sol";
 import "./library/types/VaultTypes.sol";
+import "./library/Utils.sol";
 
 contract LedgerCrossChainManagerDatalayout {
     // chain id of this contract
@@ -38,10 +39,10 @@ contract DecimalManager is LedgerCrossChainManagerDatalayout {
         return tokenDecimalMapping[tokenHash][tokenChainId];
     }
 
-    function convertDecimal(uint256 tokenAmount, uint256 srcDecimal, uint256 dstDecimal)
+    function convertDecimal(uint128 tokenAmount, uint256 srcDecimal, uint256 dstDecimal)
         internal
         pure
-        returns (uint256)
+        returns (uint128)
     {
         if (srcDecimal == dstDecimal) {
             return tokenAmount;
@@ -132,7 +133,7 @@ contract LedgerCrossChainManagerUpgradeable is
         if (message.payloadDataType == uint8(OrderlyCrossChainMessage.PayloadDataType.VaultTypesVaultDeposit)) {
             VaultTypes.VaultDeposit memory data = abi.decode(payload, (VaultTypes.VaultDeposit));
 
-            uint256 cvtTokenAmount = convertDecimal(data.tokenAmount, data.tokenHash, message.srcChainId, chainId);
+            uint128 cvtTokenAmount = convertDecimal(data.tokenAmount, data.tokenHash, message.srcChainId, chainId);
 
             AccountTypes.AccountDeposit memory depositData = AccountTypes.AccountDeposit({
                 accountId: data.accountId,
@@ -148,7 +149,7 @@ contract LedgerCrossChainManagerUpgradeable is
         } else if (message.payloadDataType == uint8(OrderlyCrossChainMessage.PayloadDataType.VaultTypesVaultWithdraw)) {
             VaultTypes.VaultWithdraw memory data = abi.decode(payload, (VaultTypes.VaultWithdraw));
 
-            uint256 cvtTokenAmount = convertDecimal(data.tokenAmount, data.tokenHash, message.srcChainId, chainId);
+            uint128 cvtTokenAmount = convertDecimal(data.tokenAmount, data.tokenHash, message.srcChainId, chainId);
 
             AccountTypes.AccountWithdraw memory withdrawData = AccountTypes.AccountWithdraw({
                 accountId: data.accountId,
@@ -156,7 +157,7 @@ contract LedgerCrossChainManagerUpgradeable is
                 receiver: data.receiver,
                 brokerHash: data.brokerHash,
                 tokenHash: data.tokenHash,
-                tokenAmount: cvtTokenAmount,
+                tokenAmount: uint128(cvtTokenAmount),
                 fee: data.fee,
                 chainId: message.srcChainId,
                 withdrawNonce: data.withdrawNonce
@@ -183,7 +184,7 @@ contract LedgerCrossChainManagerUpgradeable is
         });
 
         // convert token amount to dst chain decimal
-        uint256 cvtTokenAmount = convertDecimal(data.tokenAmount, data.tokenHash, chainId, data.chainId);
+        uint128 cvtTokenAmount = convertDecimal(data.tokenAmount, Utils.getTokenHash(data.tokenSymbol), chainId, data.chainId);
         data.tokenAmount = cvtTokenAmount;
 
         bytes memory payload = abi.encode(data);
