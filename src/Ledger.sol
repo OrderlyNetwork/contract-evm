@@ -134,26 +134,34 @@ contract Ledger is ILedger, OwnableUpgradeable {
     }
 
     // omni batch get
-    function batchGetUserLedgerByTokens(bytes32[] calldata accountIds, bytes32[] memory tokens)
-        public
-        view
-        override
-        returns (AccountTypes.AccountFlat[] memory accountFlats)
-    {
+    function batchGetUserLedgerByTokens(
+        bytes32[] calldata accountIds,
+        bytes32[] memory tokens,
+        bytes32[] memory symbols
+    ) public view override returns (AccountTypes.AccountSnapshot[] memory accountFlats) {
         uint256 accountIdLength = accountIds.length;
         uint256 tokenLength = tokens.length;
-        accountFlats = new AccountTypes.AccountFlat[](accountIdLength);
+        uint256 symbolLength = symbols.length;
+        accountFlats = new AccountTypes.AccountSnapshot[](accountIdLength);
         for (uint256 i = 0; i < accountIdLength; ++i) {
             bytes32 accountId = accountIds[i];
             AccountTypes.Account storage account = userLedger[accountId];
-            AccountTypes.AccountFlatInner[] memory inner = new AccountTypes.AccountFlatInner[](tokenLength);
+            AccountTypes.AccountTokenBalances[] memory tokenInner = new AccountTypes.AccountTokenBalances[](tokenLength);
             for (uint256 j = 0; j < tokenLength; ++j) {
                 bytes32 tokenHash = tokens[j];
-                AccountTypes.PerpPosition storage perpPosition = account.perpPositions[tokenHash];
-                inner[j] = AccountTypes.AccountFlatInner({
+                tokenInner[j] = AccountTypes.AccountTokenBalances({
                     tokenHash: tokenHash,
                     balance: account.getBalance(tokenHash),
-                    totalFrozenBalance: account.getFrozenTotalBalance(tokenHash),
+                    frozenBalance: account.getFrozenTotalBalance(tokenHash)
+                });
+            }
+            AccountTypes.AccountPerpPositions[] memory symbolInner =
+                new AccountTypes.AccountPerpPositions[](symbolLength);
+            for (uint256 j = 0; j < symbolLength; ++j) {
+                bytes32 symbolHash = symbols[j];
+                AccountTypes.PerpPosition storage perpPosition = account.perpPositions[symbolHash];
+                symbolInner[j] = AccountTypes.AccountPerpPositions({
+                    symbolHash: symbolHash,
                     positionQty: perpPosition.positionQty,
                     costPosition: perpPosition.costPosition,
                     lastSumUnitaryFundings: perpPosition.lastSumUnitaryFundings,
@@ -164,7 +172,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
                     lastAdlPrice: perpPosition.lastAdlPrice
                 });
             }
-            accountFlats[i] = AccountTypes.AccountFlat({
+            accountFlats[i] = AccountTypes.AccountSnapshot({
                 accountId: accountId,
                 brokerHash: account.brokerHash,
                 userAddress: account.userAddress,
@@ -172,7 +180,8 @@ contract Ledger is ILedger, OwnableUpgradeable {
                 lastPerpTradeId: account.lastPerpTradeId,
                 lastCefiEventId: account.lastCefiEventId,
                 lastDepositEventId: account.lastDepositEventId,
-                tokenMeta: inner
+                tokenBalances: tokenInner,
+                perpPositions: symbolInner
             });
         }
     }
@@ -180,10 +189,11 @@ contract Ledger is ILedger, OwnableUpgradeable {
     function batchGetUserLedger(bytes32[] calldata accountIds)
         external
         view
-        returns (AccountTypes.AccountFlat[] memory)
+        returns (AccountTypes.AccountSnapshot[] memory)
     {
         bytes32[] memory tokens = vaultManager.getAllAllowedToken();
-        return batchGetUserLedgerByTokens(accountIds, tokens);
+        bytes32[] memory symbols = vaultManager.getAllAllowedSymbol();
+        return batchGetUserLedgerByTokens(accountIds, tokens, symbols);
     }
 
     // Interface implementation
