@@ -11,7 +11,7 @@ interface ILedgerCrossChainManager {
     //) external;
 
     // cross chain withdraw approve | from leger to vault
-    function withdraw(EventTypes.WithdrawData calldata data) external;
+    function withdraw(EventTypes.WithdrawData memory data) external;
     // cross chain withdraw finish | from vault to leger
     //function withdrawFinish(AccountTypes.AccountWithdraw memory message) external;
 
