@@ -27,19 +27,19 @@ contract LedgerCrossChainManagerDatalayout {
     // map of chainId => VaultCrossChainManager
     mapping(uint256 => address) public vaultCrossChainManagers;
 
-    mapping(bytes32 => mapping(uint256 => uint256)) public tokenDecimalMapping;
+    mapping(bytes32 => mapping(uint256 => uint128)) public tokenDecimalMapping;
 }
 
 contract DecimalManager is LedgerCrossChainManagerDatalayout {
-    function setTokenDecimal(bytes32 tokenHash, uint256 tokenChainId, uint256 decimal) external {
+    function setTokenDecimal(bytes32 tokenHash, uint256 tokenChainId, uint128 decimal) external {
         tokenDecimalMapping[tokenHash][tokenChainId] = decimal;
     }
 
-    function getTokenDecimal(bytes32 tokenHash, uint256 tokenChainId) internal view returns (uint256) {
+    function getTokenDecimal(bytes32 tokenHash, uint256 tokenChainId) internal view returns (uint128) {
         return tokenDecimalMapping[tokenHash][tokenChainId];
     }
 
-    function convertDecimal(uint128 tokenAmount, uint256 srcDecimal, uint256 dstDecimal)
+    function convertDecimal(uint128 tokenAmount, uint128 srcDecimal, uint128 dstDecimal)
         internal
         pure
         returns (uint128)
@@ -47,20 +47,20 @@ contract DecimalManager is LedgerCrossChainManagerDatalayout {
         if (srcDecimal == dstDecimal) {
             return tokenAmount;
         } else if (srcDecimal > dstDecimal) {
-            return tokenAmount / (10 ** (srcDecimal - dstDecimal));
+            return tokenAmount / uint128(10 ** (srcDecimal - dstDecimal));
         } else {
-            return tokenAmount * (10 ** (dstDecimal - srcDecimal));
+            return tokenAmount * uint128(10 ** (dstDecimal - srcDecimal));
         }
     }
 
     function convertDecimal(
-        uint256 tokenAmount,
+        uint128 tokenAmount,
         bytes32 tokenHash,
         uint256 srcChainId,
         uint256 dstChainId
-    ) internal view returns (uint256) {
-        uint256 srcDecimal = getTokenDecimal(tokenHash, srcChainId);
-        uint256 dstDecimal = getTokenDecimal(tokenHash, dstChainId);
+    ) internal view returns (uint128) {
+        uint128 srcDecimal = getTokenDecimal(tokenHash, srcChainId);
+        uint128 dstDecimal = getTokenDecimal(tokenHash, dstChainId);
         return convertDecimal(tokenAmount, srcDecimal, dstDecimal);
     }
 }
@@ -169,7 +169,7 @@ contract LedgerCrossChainManagerUpgradeable is
         }
     }
 
-    function withdraw(EventTypes.WithdrawData calldata data) external override {
+    function withdraw(EventTypes.WithdrawData memory data) external override {
         // only ledger can call this function
         require(msg.sender == address(ledger), "caller is not ledger");
 
