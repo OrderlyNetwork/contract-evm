@@ -133,6 +133,59 @@ contract Ledger is ILedger, OwnableUpgradeable {
         perpPosition = userLedger[accountId].perpPositions[symbolHash];
     }
 
+    // omni batch get
+    function batchGetUserLedgerByTokens(bytes32[] calldata accountIds, bytes32[] memory tokens)
+        public
+        view
+        override
+        returns (AccountTypes.AccountFlat[] memory accountFlats)
+    {
+        uint256 accountIdLength = accountIds.length;
+        uint256 tokenLength = tokens.length;
+        accountFlats = new AccountTypes.AccountFlat[](accountIdLength);
+        for (uint256 i = 0; i < accountIdLength; ++i) {
+            bytes32 accountId = accountIds[i];
+            AccountTypes.Account storage account = userLedger[accountId];
+            AccountTypes.AccountFlatInner[] memory inner = new AccountTypes.AccountFlatInner[](tokenLength);
+            for (uint256 j = 0; j < tokenLength; ++j) {
+                bytes32 tokenHash = tokens[j];
+                AccountTypes.PerpPosition storage perpPosition = account.perpPositions[tokenHash];
+                inner[j] = AccountTypes.AccountFlatInner({
+                    tokenHash: tokenHash,
+                    balance: account.getBalance(tokenHash),
+                    totalFrozenBalance: account.getFrozenTotalBalance(tokenHash),
+                    positionQty: perpPosition.positionQty,
+                    costPosition: perpPosition.costPosition,
+                    lastSumUnitaryFundings: perpPosition.lastSumUnitaryFundings,
+                    lastExecutedPrice: perpPosition.lastExecutedPrice,
+                    lastSettledPrice: perpPosition.lastSettledPrice,
+                    averageEntryPrice: perpPosition.averageEntryPrice,
+                    openingCost: perpPosition.openingCost,
+                    lastAdlPrice: perpPosition.lastAdlPrice
+                });
+            }
+            accountFlats[i] = AccountTypes.AccountFlat({
+                accountId: accountId,
+                brokerHash: account.brokerHash,
+                userAddress: account.userAddress,
+                lastWithdrawNonce: account.lastWithdrawNonce,
+                lastPerpTradeId: account.lastPerpTradeId,
+                lastCefiEventId: account.lastCefiEventId,
+                lastDepositEventId: account.lastDepositEventId,
+                tokenMeta: inner
+            });
+        }
+    }
+
+    function batchGetUserLedger(bytes32[] calldata accountIds)
+        external
+        view
+        returns (AccountTypes.AccountFlat[] memory)
+    {
+        bytes32[] memory tokens = vaultManager.getAllAllowedToken();
+        return batchGetUserLedgerByTokens(accountIds, tokens);
+    }
+
     // Interface implementation
 
     function accountDeposit(AccountTypes.AccountDeposit calldata data) external override onlyCrossChainManager {

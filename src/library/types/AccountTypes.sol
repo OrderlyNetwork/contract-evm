@@ -60,4 +60,33 @@ library AccountTypes {
         uint256 chainId;
         uint64 withdrawNonce;
     }
+
+    struct AccountFlatInner {
+        // token hash
+        bytes32 tokenHash;
+        // balance & frozenBalance
+        uint128 balance;
+        uint128 totalFrozenBalance;
+        // perp position
+        int128 positionQty;
+        int128 costPosition;
+        int128 lastSumUnitaryFundings;
+        uint128 lastExecutedPrice;
+        uint128 lastSettledPrice;
+        uint128 averageEntryPrice;
+        int128 openingCost;
+        uint128 lastAdlPrice;
+    }
+
+    // for batch get
+    struct AccountFlat {
+        bytes32 accountId;
+        bytes32 brokerHash; // need this?
+        address userAddress; // need this?
+        uint64 lastWithdrawNonce;
+        uint64 lastPerpTradeId;
+        uint64 lastCefiEventId;
+        uint64 lastDepositEventId;
+        AccountFlatInner[] tokenMeta;
+    }
 }
