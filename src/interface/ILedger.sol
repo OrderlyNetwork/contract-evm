@@ -137,14 +137,15 @@ interface ILedger {
         view
         returns (AccountTypes.PerpPosition memory);
     // omni view call
-    function batchGetUserLedgerByTokens(bytes32[] calldata accountIds, bytes32[] memory tokens)
-        external
-        view
-        returns (AccountTypes.AccountFlat[] memory);
+    function batchGetUserLedgerByTokens(
+        bytes32[] calldata accountIds,
+        bytes32[] memory tokens,
+        bytes32[] memory symbols
+    ) external view returns (AccountTypes.AccountSnapshot[] memory);
     function batchGetUserLedger(bytes32[] calldata accountIds)
         external
         view
-        returns (AccountTypes.AccountFlat[] memory);
+        returns (AccountTypes.AccountSnapshot[] memory);
 
     // admin call
     function setOperatorManagerAddress(address _operatorManagerAddress) external;

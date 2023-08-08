@@ -61,12 +61,17 @@ library AccountTypes {
         uint64 withdrawNonce;
     }
 
-    struct AccountFlatInner {
+    struct AccountTokenBalances {
         // token hash
         bytes32 tokenHash;
         // balance & frozenBalance
         uint128 balance;
-        uint128 totalFrozenBalance;
+        uint128 frozenBalance;
+    }
+
+    struct AccountPerpPositions {
+        // symbol hash
+        bytes32 symbolHash;
         // perp position
         int128 positionQty;
         int128 costPosition;
@@ -79,14 +84,15 @@ library AccountTypes {
     }
 
     // for batch get
-    struct AccountFlat {
+    struct AccountSnapshot {
         bytes32 accountId;
-        bytes32 brokerHash; // need this?
-        address userAddress; // need this?
+        bytes32 brokerHash;
+        address userAddress;
         uint64 lastWithdrawNonce;
         uint64 lastPerpTradeId;
         uint64 lastCefiEventId;
         uint64 lastDepositEventId;
-        AccountFlatInner[] tokenMeta;
+        AccountTokenBalances[] tokenBalances;
+        AccountPerpPositions[] perpPositions;
     }
 }
