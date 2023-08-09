@@ -76,6 +76,7 @@ contract DeployLedger is Script {
             // feeManager.changeFeeCollector(2, address(0x2));
             // feeManager.changeFeeCollector(3, address(0x3));
 
+            marketManager.setOperatorManagerAddress(address(operatorManager));
             marketManager.setLedgerAddress(address(ledger));
 
             ledgerCrossChainManager.setLedger(address(ledger));

@@ -3,8 +3,9 @@ pragma solidity ^0.8.18;
 
 import "../library/types/MarketTypes.sol";
 import "./ILedgerComponent.sol";
+import "./IOperatorManagerComponent.sol";
 
-interface IMarketManager is ILedgerComponent {
+interface IMarketManager is ILedgerComponent, IOperatorManagerComponent {
     event MarketData(uint64 maxTimestamp);
     event FundingData(uint64 maxTimestamp);
 

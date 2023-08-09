@@ -120,22 +120,12 @@ interface ILedger {
     function executeSettlement(EventTypes.Settlement calldata ledger, uint64 eventId) external;
     function executeLiquidation(EventTypes.Liquidation calldata liquidation, uint64 eventId) external;
     function executeAdl(EventTypes.Adl calldata adl, uint64 eventId) external;
-    function executePerpMarketInfo(MarketTypes.UploadPerpPrice calldata data) external;
-    function executePerpMarketInfo(MarketTypes.UploadSumUnitaryFundings calldata data) external;
 
     // view call
-    function getUserLedgerBalance(bytes32 accountId, bytes32 symbol) external view returns (uint128);
-    function getUserLedgerBrokerHash(bytes32 accountId) external view returns (bytes32);
-    function getUserLedgerLastCefiEventId(bytes32 accountId) external view returns (uint64);
-    function getFrozenTotalBalance(bytes32 accountId, bytes32 tokenHash) external view returns (uint128);
     function getFrozenWithdrawNonce(bytes32 accountId, uint64 withdrawNonce, bytes32 tokenHash)
         external
         view
         returns (uint128);
-    function getPerpPosition(bytes32 accountId, bytes32 symbolHash)
-        external
-        view
-        returns (AccountTypes.PerpPosition memory);
     // omni view call
     function batchGetUserLedgerByTokens(
         bytes32[] calldata accountIds,
