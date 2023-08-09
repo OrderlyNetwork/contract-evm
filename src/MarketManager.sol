@@ -4,8 +4,9 @@ pragma solidity ^0.8.18;
 import "./interface/IMarketManager.sol";
 import "./library/typesHelper/MarketTypeHelper.sol";
 import "./LedgerComponent.sol";
+import "./OperatorManagerComponent.sol";
 
-contract MarketManager is IMarketManager, LedgerComponent {
+contract MarketManager is IMarketManager, LedgerComponent, OperatorManagerComponent {
     using MarketTypeHelper for MarketTypes.PerpMarketCfg;
 
     // pairSymbol => PerpMarketCfg
@@ -19,7 +20,7 @@ contract MarketManager is IMarketManager, LedgerComponent {
         __Ownable_init();
     }
 
-    function updateMarketUpload(MarketTypes.UploadPerpPrice calldata data) external onlyLedger {
+    function updateMarketUpload(MarketTypes.UploadPerpPrice calldata data) external onlyOperatorManager {
         uint256 length = data.perpPrices.length;
         for (uint256 i = 0; i < length; i++) {
             MarketTypes.PerpPrice calldata perpPrice = data.perpPrices[i];
@@ -31,7 +32,7 @@ contract MarketManager is IMarketManager, LedgerComponent {
         emit MarketData(data.maxTimestamp);
     }
 
-    function updateMarketUpload(MarketTypes.UploadSumUnitaryFundings calldata data) external onlyLedger {
+    function updateMarketUpload(MarketTypes.UploadSumUnitaryFundings calldata data) external onlyOperatorManager {
         uint256 length = data.sumUnitaryFundings.length;
         for (uint256 i = 0; i < length; i++) {
             MarketTypes.SumUnitaryFunding calldata sumUnitaryFunding = data.sumUnitaryFundings[i];
@@ -45,7 +46,7 @@ contract MarketManager is IMarketManager, LedgerComponent {
     function setPerpMarketCfg(bytes32 _symbolHash, MarketTypes.PerpMarketCfg memory _perpMarketCfg)
         external
         override
-        onlyLedger
+        onlyOwner
     {
         perpMarketCfg[_symbolHash] = _perpMarketCfg;
     }
@@ -54,35 +55,31 @@ contract MarketManager is IMarketManager, LedgerComponent {
         return perpMarketCfg[_pairSymbol];
     }
 
-    function setBaseMaintenanceMargin(bytes32 _pairSymbol, uint32 _baseMaintenanceMargin)
-        external
-        override
-        onlyLedger
-    {
+    function setBaseMaintenanceMargin(bytes32 _pairSymbol, uint32 _baseMaintenanceMargin) external override onlyOwner {
         perpMarketCfg[_pairSymbol].setBaseMaintenanceMargin(_baseMaintenanceMargin);
     }
 
-    function setBaseInitialMargin(bytes32 _pairSymbol, uint32 _baseInitialMargin) external override onlyLedger {
+    function setBaseInitialMargin(bytes32 _pairSymbol, uint32 _baseInitialMargin) external override onlyOwner {
         perpMarketCfg[_pairSymbol].setBaseInitialMargin(_baseInitialMargin);
     }
 
-    function setLiquidationFeeMax(bytes32 _pairSymbol, uint128 _liquidationFeeMax) external override onlyLedger {
+    function setLiquidationFeeMax(bytes32 _pairSymbol, uint128 _liquidationFeeMax) external override onlyOwner {
         perpMarketCfg[_pairSymbol].setLiquidationFeeMax(_liquidationFeeMax);
     }
 
-    function setMarkPrice(bytes32 _pairSymbol, uint128 _markPrice) external override onlyLedger {
+    function setMarkPrice(bytes32 _pairSymbol, uint128 _markPrice) external override onlyOwner {
         perpMarketCfg[_pairSymbol].setMarkPrice(_markPrice);
     }
 
-    function setIndexPriceOrderly(bytes32 _pairSymbol, uint128 _indexPriceOrderly) external override onlyLedger {
+    function setIndexPriceOrderly(bytes32 _pairSymbol, uint128 _indexPriceOrderly) external override onlyOwner {
         perpMarketCfg[_pairSymbol].setIndexPriceOrderly(_indexPriceOrderly);
     }
 
-    function setSumUnitaryFundings(bytes32 _pairSymbol, int128 _sumUnitaryFundings) external override onlyLedger {
+    function setSumUnitaryFundings(bytes32 _pairSymbol, int128 _sumUnitaryFundings) external override onlyOwner {
         perpMarketCfg[_pairSymbol].setSumUnitaryFundings(_sumUnitaryFundings);
     }
 
-    function setLastMarkPriceUpdated(bytes32 _pairSymbol, uint64 _lastMarkPriceUpdated) external override onlyLedger {
+    function setLastMarkPriceUpdated(bytes32 _pairSymbol, uint64 _lastMarkPriceUpdated) external override onlyOwner {
         perpMarketCfg[_pairSymbol].setLastMarkPriceUpdated(_lastMarkPriceUpdated);
     }
 

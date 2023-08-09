@@ -80,6 +80,7 @@ contract SettlementTest is Test {
 
         feeManager.setLedgerAddress(address(ledger));
 
+        marketManager.setOperatorManagerAddress(address(operatorManager));
         marketManager.setLedgerAddress(address(ledger));
 
         ledgerCrossChainManager.setLedger(address(ledger));

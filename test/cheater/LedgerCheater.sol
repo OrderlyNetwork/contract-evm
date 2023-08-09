@@ -21,4 +21,28 @@ contract LedgerCheater is Ledger {
         AccountTypes.Account storage account = userLedger[accountId];
         account.perpPositions[symbolHash] = position;
     }
+
+    // get userLedger balance
+    function getUserLedgerBalance(bytes32 accountId, bytes32 tokenHash) public view returns (uint128) {
+        return userLedger[accountId].getBalance(tokenHash);
+    }
+
+    // get userLedger lastCefiEventId
+    function getUserLedgerLastCefiEventId(bytes32 accountId) public view returns (uint64) {
+        return userLedger[accountId].getLastCefiEventId();
+    }
+
+    // get frozen total balance
+    function getFrozenTotalBalance(bytes32 accountId, bytes32 tokenHash) public view returns (uint128) {
+        return userLedger[accountId].getFrozenTotalBalance(tokenHash);
+    }
+
+    // get perp position
+    function getPerpPosition(bytes32 accountId, bytes32 symbolHash)
+        public
+        view
+        returns (AccountTypes.PerpPosition memory perpPosition)
+    {
+        perpPosition = userLedger[accountId].perpPositions[symbolHash];
+    }
 }
