@@ -80,8 +80,8 @@ contract LiquidationTest is Test {
 
         feeManager.setLedgerAddress(address(ledger));
 
+        marketManager.setOperatorManagerAddress(address(operatorManager));
         marketManager.setLedgerAddress(address(ledger));
-        vm.prank(address(ledger));
         marketManager.setPerpMarketCfg(
             SYMBOL_HASH_BTC_USDC,
             MarketTypes.PerpMarketCfg({

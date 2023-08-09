@@ -93,26 +93,6 @@ contract Ledger is ILedger, OwnableUpgradeable {
         feeManager = IFeeManager(_feeManagerAddress);
     }
 
-    // get userLedger balance
-    function getUserLedgerBalance(bytes32 accountId, bytes32 tokenHash) public view override returns (uint128) {
-        return userLedger[accountId].getBalance(tokenHash);
-    }
-
-    // get userLedger brokerId
-    function getUserLedgerBrokerHash(bytes32 accountId) public view override returns (bytes32) {
-        return userLedger[accountId].getBrokerHash();
-    }
-
-    // get userLedger lastCefiEventId
-    function getUserLedgerLastCefiEventId(bytes32 accountId) public view override returns (uint64) {
-        return userLedger[accountId].getLastCefiEventId();
-    }
-
-    // get frozen total balance
-    function getFrozenTotalBalance(bytes32 accountId, bytes32 tokenHash) public view override returns (uint128) {
-        return userLedger[accountId].getFrozenTotalBalance(tokenHash);
-    }
-
     // get frozen withdrawNonce balance
     function getFrozenWithdrawNonce(bytes32 accountId, uint64 withdrawNonce, bytes32 tokenHash)
         public
@@ -121,16 +101,6 @@ contract Ledger is ILedger, OwnableUpgradeable {
         returns (uint128)
     {
         return userLedger[accountId].getFrozenWithdrawNonceBalance(withdrawNonce, tokenHash);
-    }
-
-    // get perp position
-    function getPerpPosition(bytes32 accountId, bytes32 symbolHash)
-        public
-        view
-        override
-        returns (AccountTypes.PerpPosition memory perpPosition)
-    {
-        perpPosition = userLedger[accountId].perpPositions[symbolHash];
     }
 
     // omni batch get
@@ -494,18 +464,6 @@ contract Ledger is ILedger, OwnableUpgradeable {
             adl.sumUnitaryFundings,
             eventId
         );
-    }
-
-    function executePerpMarketInfo(MarketTypes.UploadPerpPrice calldata data) external override onlyOperatorManager {
-        marketManager.updateMarketUpload(data);
-    }
-
-    function executePerpMarketInfo(MarketTypes.UploadSumUnitaryFundings calldata data)
-        external
-        override
-        onlyOperatorManager
-    {
-        marketManager.updateMarketUpload(data);
     }
 
     function _newGlobalEventId() internal returns (uint64) {
