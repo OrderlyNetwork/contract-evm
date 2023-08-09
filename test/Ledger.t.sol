@@ -5,11 +5,11 @@ import "forge-std/Test.sol";
 import "openzeppelin-contracts/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import "openzeppelin-contracts/contracts/proxy/transparent/ProxyAdmin.sol";
 import "../src/OperatorManager.sol";
-import "../src/Ledger.sol";
 import "../src/VaultManager.sol";
 import "../src/marketManager.sol";
 import "../src/feeManager.sol";
 import "./mock/LedgerCrossChainManagerMock.sol";
+import "./cheater/LedgerCheater.sol";
 
 contract LedgerTest is Test {
     ProxyAdmin admin;
@@ -17,7 +17,7 @@ contract LedgerTest is Test {
     LedgerCrossChainManagerMock ledgerCrossChainManager;
     IOperatorManager operatorManager;
     IVaultManager vaultManager;
-    ILedger ledger;
+    LedgerCheater ledger;
     IFeeManager feeManager;
     IMarketManager marketManager;
     TransparentUpgradeableProxy operatorProxy;
@@ -113,7 +113,7 @@ contract LedgerTest is Test {
 
         IOperatorManager operatorManagerImpl = new OperatorManager();
         IVaultManager vaultManagerImpl = new VaultManager();
-        ILedger ledgerImpl = new Ledger();
+        ILedger ledgerImpl = new LedgerCheater();
         IFeeManager feeImpl = new FeeManager();
         IMarketManager marketImpl = new MarketManager();
 
@@ -125,7 +125,7 @@ contract LedgerTest is Test {
 
         operatorManager = IOperatorManager(address(operatorProxy));
         vaultManager = IVaultManager(address(vaultProxy));
-        ledger = ILedger(address(ledgerProxy));
+        ledger = LedgerCheater(address(ledgerProxy));
         feeManager = IFeeManager(address(feeProxy));
         marketManager = IMarketManager(address(marketProxy));
 
@@ -151,6 +151,7 @@ contract LedgerTest is Test {
 
         feeManager.setLedgerAddress(address(ledger));
 
+        marketManager.setOperatorManagerAddress(address(operatorManager));
         marketManager.setLedgerAddress(address(ledger));
 
         ledgerCrossChainManager.setLedger(address(ledger));

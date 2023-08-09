@@ -2,6 +2,7 @@
 pragma solidity ^0.8.18;
 
 import "./interface/ILedger.sol";
+import "./interface/IMarketManager.sol";
 import "./interface/IOperatorManager.sol";
 import "./library/Signature.sol";
 import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
@@ -31,6 +32,9 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable {
     address public cefiPerpTradeUploadAddress;
     address public cefiEventUploadAddress;
     address public cefiMarketUploadAddress;
+    // TODO @Rubick reoerder this
+    // market manager Interface
+    IMarketManager public marketManager;
 
     // only operator
     modifier onlyOperator() {
@@ -180,7 +184,7 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable {
         bool succ = Signature.marketUploadEncodeHashVerify(data, cefiMarketUploadAddress);
         if (!succ) revert SignatureNotMatch();
         // process perp market info
-        ledger.executePerpMarketInfo(data);
+        marketManager.updateMarketUpload(data);
     }
 
     function _perpMarketInfo(MarketTypes.UploadSumUnitaryFundings calldata data) internal {
@@ -188,7 +192,7 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable {
         bool succ = Signature.marketUploadEncodeHashVerify(data, cefiMarketUploadAddress);
         if (!succ) revert SignatureNotMatch();
         // process perp market info
-        ledger.executePerpMarketInfo(data);
+        marketManager.updateMarketUpload(data);
     }
 
     function _innerPing() internal {
