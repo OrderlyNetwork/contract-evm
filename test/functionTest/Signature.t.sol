@@ -430,4 +430,38 @@ contract SignatureTest is Test {
         bool succ = Signature.marketUploadEncodeHashVerify(data, addr);
         assertEq(succ, true);
     }
+
+    // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/299009164/Test+vector#settlement
+    function test_eventUploadEncodeHash_extra_2() public {
+        EventTypes.SettlementExecution[] memory se = new EventTypes.SettlementExecution[](1);
+        se[0] = EventTypes.SettlementExecution({
+            symbolHash: 0x1723cb226c337a417a6022890bc5671ebb4db551db0273536bf1094edf39ed70,
+            markPrice: 212000000,
+            sumUnitaryFundings: 1230000000000,
+            settledAmount: 101000000
+        });
+        EventTypes.Settlement memory s1 = EventTypes.Settlement({
+            accountId: 0x1723cb226c337a417a6022890bc5671ebb4db551db0273536bf1094edf39ed67,
+            settledAmount: 101000000,
+            settledAssetHash: 0x1723cb226c337a417a6022890bc5671ebb4db551db0273536bf1094edf39ed68,
+            insuranceAccountId: 0x0000000000000000000000000000000000000000000000000000000000000000,
+            insuranceTransferAmount: 0,
+            settlementExecutions: se,
+            timestamp: 1683270380555
+        });
+
+        EventTypes.EventUploadData[] memory events = new EventTypes.EventUploadData[](1);
+        events[0] = EventTypes.EventUploadData({bizType: 2, eventId: 7, data: abi.encode(s1)});
+        EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
+            events: events,
+            r: 0xd6248d44b4f0750cb9c46b615c1c58959d815288ecd2c7a0c43bf02f5f9ef1d0,
+            s: 0x1d68800fb0743f1355f32f6eefb86fc599af4c949ab45c585913de37af4658ac,
+            v: 0x1c,
+            count: 4,
+            batchId: 18
+        });
+
+        bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
+        assertEq(succ, true);
+    }
 }
