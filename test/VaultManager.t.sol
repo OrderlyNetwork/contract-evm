@@ -56,6 +56,56 @@ contract VaultManagerTest is Test {
         vm.stopPrank();
     }
 
+    function test_frozen_finish_frozen() public {
+        vm.startPrank(address(ledger));
+        vaultManager.addBalance(TOKEN_HASH, CHAIN_ID, 300);
+        assertEq(vaultManager.getBalance(TOKEN_HASH, CHAIN_ID), 300);
+        vaultManager.frozenBalance(TOKEN_HASH, CHAIN_ID, 200);
+        assertEq(vaultManager.getBalance(TOKEN_HASH, CHAIN_ID), 100);
+        assertEq(vaultManager.getFrozenBalance(TOKEN_HASH, CHAIN_ID), 200);
+        vaultManager.finishFrozenBalance(TOKEN_HASH, CHAIN_ID, 200);
+        assertEq(vaultManager.getBalance(TOKEN_HASH, CHAIN_ID), 100);
+        assertEq(vaultManager.getFrozenBalance(TOKEN_HASH, CHAIN_ID), 0);
+        vm.stopPrank();
+    }
+
+    function test_frozen_finish_frozen_zero() public {
+        vm.startPrank(address(ledger));
+        vaultManager.addBalance(TOKEN_HASH, CHAIN_ID, 300);
+        assertEq(vaultManager.getBalance(TOKEN_HASH, CHAIN_ID), 300);
+        vaultManager.frozenBalance(TOKEN_HASH, CHAIN_ID, 200);
+        assertEq(vaultManager.getBalance(TOKEN_HASH, CHAIN_ID), 100);
+        assertEq(vaultManager.getFrozenBalance(TOKEN_HASH, CHAIN_ID), 200);
+        vaultManager.finishFrozenBalance(TOKEN_HASH, CHAIN_ID, 200);
+        assertEq(vaultManager.getBalance(TOKEN_HASH, CHAIN_ID), 100);
+        assertEq(vaultManager.getFrozenBalance(TOKEN_HASH, CHAIN_ID), 0);
+        vaultManager.frozenBalance(TOKEN_HASH, CHAIN_ID, 100);
+        assertEq(vaultManager.getBalance(TOKEN_HASH, CHAIN_ID), 0);
+        assertEq(vaultManager.getFrozenBalance(TOKEN_HASH, CHAIN_ID), 100);
+        vaultManager.finishFrozenBalance(TOKEN_HASH, CHAIN_ID, 100);
+        assertEq(vaultManager.getBalance(TOKEN_HASH, CHAIN_ID), 0);
+        assertEq(vaultManager.getFrozenBalance(TOKEN_HASH, CHAIN_ID), 0);
+        vm.stopPrank();
+    }
+
+    function testFail_frozen_overflow_1() public {
+        vm.startPrank(address(ledger));
+        vaultManager.addBalance(TOKEN_HASH, CHAIN_ID, 100);
+        assertEq(vaultManager.getBalance(TOKEN_HASH, CHAIN_ID), 100);
+        vaultManager.frozenBalance(TOKEN_HASH, CHAIN_ID, 150);
+        vm.stopPrank();
+    }
+
+    function testFail_frozen_overflow_2() public {
+        vm.startPrank(address(ledger));
+        vaultManager.addBalance(TOKEN_HASH, CHAIN_ID, 200);
+        assertEq(vaultManager.getBalance(TOKEN_HASH, CHAIN_ID), 200);
+        vaultManager.subBalance(TOKEN_HASH, CHAIN_ID, 100);
+        assertEq(vaultManager.getBalance(TOKEN_HASH, CHAIN_ID), 100);
+        vaultManager.frozenBalance(TOKEN_HASH, CHAIN_ID, 150);
+        vm.stopPrank();
+    }
+
     function test_getAllWhitelistSet() public {
         vaultManager.setAllowedChainToken(TOKEN_HASH, CHAIN_ID, true);
         vaultManager.setAllowedToken(TOKEN_HASH, true);
