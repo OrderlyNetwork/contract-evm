@@ -467,13 +467,11 @@ contract Ledger is ILedger, OwnableUpgradeable {
     }
 
     function _newGlobalEventId() internal returns (uint64) {
-        globalEventId += 1;
-        return globalEventId;
+        return ++globalEventId;
     }
 
     function _newGlobalDepositId() internal returns (uint64) {
-        globalDepositId += 1;
-        return globalDepositId;
+        return ++globalDepositId;
     }
 
     // =================== internal =================== //
