@@ -276,7 +276,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
         // frozen balance
         account.frozenBalance(withdraw.withdrawNonce, tokenHash, withdraw.tokenAmount);
         account.lastWithdrawNonce = withdraw.withdrawNonce;
-        vaultManager.subBalance(tokenHash, withdraw.chainId, withdraw.tokenAmount);
+        vaultManager.frozenBalance(tokenHash, withdraw.chainId, withdraw.tokenAmount);
         account.lastCefiEventId = eventId;
         // emit withdraw approve event
         emit AccountWithdrawApprove(
@@ -304,6 +304,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
         AccountTypes.Account storage account = userLedger[withdraw.accountId];
         // finish frozen balance
         account.finishFrozenBalance(withdraw.withdrawNonce, withdraw.tokenHash, withdraw.tokenAmount);
+        vaultManager.finishFrozenBalance(withdraw.tokenHash, withdraw.chainId, withdraw.tokenAmount);
         // withdraw fee
         if (withdraw.fee > 0) {
             // gas saving if no fee
