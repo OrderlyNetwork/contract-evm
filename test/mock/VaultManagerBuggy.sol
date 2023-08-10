@@ -53,4 +53,10 @@ contract VaultManagerBuggy is IVaultManager, LedgerComponent {
     function setAllowedToken(bytes32 _tokenHash, bool _allowed) external override {}
 
     function getAllowedToken(bytes32 _tokenHash) external view override returns (bool) {}
+
+    function getFrozenBalance(bytes32 _tokenHash, uint256 _chainId) external view override returns (uint128) {}
+
+    function frozenBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) external override {}
+
+    function finishFrozenBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) external override {}
 }

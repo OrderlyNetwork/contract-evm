@@ -21,6 +21,7 @@ contract VaultManager is IVaultManager, LedgerComponent {
     EnumerableSet.Bytes32Set private allowedTokenSet; // supported token
     EnumerableSet.Bytes32Set private allowedBrokerSet; // supported broker
     EnumerableSet.Bytes32Set private allowedSymbolSet; // supported symbol
+    mapping(bytes32 => mapping(uint256 => uint128)) private tokenFrozenBalanceOnchain; // @Rubick reorder
 
     constructor() {
         _disableInitializers();
@@ -28,6 +29,20 @@ contract VaultManager is IVaultManager, LedgerComponent {
 
     function initialize() public override initializer {
         __Ownable_init();
+    }
+
+    // frozen & finish frozen
+    function frozenBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) external override onlyLedger {
+        tokenBalanceOnchain[_tokenHash][_chainId] -= _deltaBalance;
+        tokenFrozenBalanceOnchain[_tokenHash][_chainId] += _deltaBalance;
+    }
+
+    function finishFrozenBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance)
+        external
+        override
+        onlyLedger
+    {
+        tokenFrozenBalanceOnchain[_tokenHash][_chainId] -= _deltaBalance;
     }
 
     // get balance
@@ -43,6 +58,11 @@ contract VaultManager is IVaultManager, LedgerComponent {
     // sub balance
     function subBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) external override onlyLedger {
         tokenBalanceOnchain[_tokenHash][_chainId] -= _deltaBalance;
+    }
+
+    // get frozen balance
+    function getFrozenBalance(bytes32 _tokenHash, uint256 _chainId) public view override returns (uint128) {
+        return tokenFrozenBalanceOnchain[_tokenHash][_chainId];
     }
 
     function setAllowedBroker(bytes32 _brokerHash, bool _allowed) public override onlyOwner {

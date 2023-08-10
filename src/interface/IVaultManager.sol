@@ -13,6 +13,13 @@ interface IVaultManager is ILedgerComponent {
     // sub balance
     function subBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) external;
 
+    // get frozen balance
+    function getFrozenBalance(bytes32 _tokenHash, uint256 _chainId) external view returns (uint128);
+
+    // frozen & finish frozen
+    function frozenBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) external;
+    function finishFrozenBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) external;
+
     // allow broker
     function setAllowedBroker(bytes32 _brokerHash, bool _allowed) external;
     function getAllowedBroker(bytes32 _brokerHash) external view returns (bool);
