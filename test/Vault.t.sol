@@ -137,6 +137,13 @@ contract VaultTest is Test {
         vault.withdraw(withdrawData);
     }
 
+    function test_getAllWhitelistSet() public {
+        vault.changeTokenAddressAndAllow(TOKEN_HASH, address(tUSDC));
+        vault.setAllowedBroker(BROKER_HASH, true);
+        assertEq(vault.getAllAllowedBroker().length, 1);
+        assertEq(vault.getAllAllowedToken().length, 1);
+    }
+
     function test_whitelist() public {
         vault.changeTokenAddressAndAllow(TOKEN_HASH, address(tUSDC));
         vault.setAllowedBroker(BROKER_HASH, true);
