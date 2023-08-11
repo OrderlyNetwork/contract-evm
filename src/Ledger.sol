@@ -275,7 +275,6 @@ contract Ledger is ILedger, OwnableUpgradeable {
         // update status, should never fail
         // frozen balance
         account.frozenBalance(withdraw.withdrawNonce, tokenHash, withdraw.tokenAmount);
-        account.lastWithdrawNonce = withdraw.withdrawNonce;
         vaultManager.frozenBalance(tokenHash, withdraw.chainId, withdraw.tokenAmount);
         account.lastCefiEventId = eventId;
         // emit withdraw approve event

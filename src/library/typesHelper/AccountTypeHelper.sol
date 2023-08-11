@@ -46,6 +46,7 @@ library AccountTypeHelper {
         account.balances[tokenHash] -= amount;
         account.totalFrozenBalances[tokenHash] += amount;
         account.frozenBalances[withdrawNonce][tokenHash] = amount;
+        account.lastWithdrawNonce = withdrawNonce;
     }
 
     // revert frozen balance
