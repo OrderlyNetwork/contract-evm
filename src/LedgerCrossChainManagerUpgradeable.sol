@@ -82,6 +82,7 @@ contract LedgerCrossChainManagerUpgradeable is
     DecimalManager
 {
     event DepositReceived(AccountTypes.AccountDeposit data);
+    event TestWithdrawDone();
 
     function initialize() public initializer {
         __Ownable_init();
@@ -90,7 +91,7 @@ contract LedgerCrossChainManagerUpgradeable is
 
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 
-    function upgradeTo(address newImplementation) public override onlyOwner onlyProxy {
+    function upgradeTo(address newImplementation) public override onlyOwner {
         _upgradeToAndCallUUPS(newImplementation, new bytes(0), false);
     }
 
@@ -149,6 +150,12 @@ contract LedgerCrossChainManagerUpgradeable is
         } else if (message.payloadDataType == uint8(OrderlyCrossChainMessage.PayloadDataType.VaultTypesVaultWithdraw)) {
             VaultTypes.VaultWithdraw memory data = abi.decode(payload, (VaultTypes.VaultWithdraw));
 
+            // handle test withdraw
+            if (data.tokenHash == Utils.getBrokerHash("CrossChainManagerTest")) {
+                emit TestWithdrawDone();
+                return;
+            }
+
             uint128 cvtTokenAmount = convertDecimal(data.tokenAmount, data.tokenHash, message.srcChainId, chainId);
 
             AccountTypes.AccountWithdraw memory withdrawData = AccountTypes.AccountWithdraw({
@@ -169,7 +176,7 @@ contract LedgerCrossChainManagerUpgradeable is
         }
     }
 
-    function withdraw(EventTypes.WithdrawData memory data) external override {
+    function withdraw(EventTypes.WithdrawData memory data) public override {
         // only ledger can call this function
         require(msg.sender == address(ledger), "caller is not ledger");
 
@@ -192,7 +199,47 @@ contract LedgerCrossChainManagerUpgradeable is
         crossChainRelay.sendMessage(message, payload);
     }
 
+    function sendTestWithdraw(uint256 dstChainId) external onlyOwner {
+        EventTypes.WithdrawData memory data = EventTypes.WithdrawData({
+            tokenAmount: 100,
+            fee: 0,
+            chainId: dstChainId,
+            accountId: bytes32(""),
+            r: bytes32(""),
+            s: bytes32(""),
+            v: 1,
+            sender: address(0x126),
+            withdrawNonce: 1,
+            receiver: address(0x127),
+            timestamp: 1,
+            brokerId: "brokerId",
+            tokenSymbol: "CrossChainManagerTest"
+        });
+        OrderlyCrossChainMessage.MessageV1 memory message = OrderlyCrossChainMessage.MessageV1({
+            method: uint8(OrderlyCrossChainMessage.CrossChainMethod.Withdraw),
+            option: uint8(OrderlyCrossChainMessage.CrossChainOption.LayerZero),
+            payloadDataType: uint8(OrderlyCrossChainMessage.PayloadDataType.EventTypesWithdrawData),
+            srcCrossChainManager: address(this),
+            dstCrossChainManager: vaultCrossChainManagers[data.chainId],
+            srcChainId: chainId,
+            dstChainId: data.chainId
+        });
+
+        // convert token amount to dst chain decimal
+        uint128 cvtTokenAmount = convertDecimal(data.tokenAmount, Utils.getTokenHash(data.tokenSymbol), chainId, data.chainId);
+        data.tokenAmount = cvtTokenAmount;
+
+        bytes memory payload = abi.encode(data);
+
+        crossChainRelay.sendMessage(message, payload);
+
+    }
+
     function withdrawFinish(AccountTypes.AccountWithdraw memory message) internal {
         ledger.accountWithDrawFinish(message);
+    }
+
+    function getVersion() external pure returns (string memory) {
+        return "0.0.1";
     }
 }
