@@ -133,3 +133,61 @@ LEDGER_ADDRESS="0xB3b86341E796684A7D33Ca102703b85BDE5925b6"
 FEE_MANAGER_ADDRESS="0x3bF7fbf5B61DEFC9ee26972AfB1a4A4977b6A2fd"
 
 MARKET_MANAGER_ADDRESS="0x21759c38A7047d73Fe77db5693f12Dc4F51f81Ff"
+
+# CrossChain Manager Upgradeable Deployment and Setup
+## prerequiste
+- cross-chain relay on target two chains are deployed, address of the relay proxy is put into `.env` file. env variables are `XXX_RELAY_PROXY`, where `XXX` denotes the network name
+
+## Deployment or Upgrading
+set the following variables in `.env` accordingly:
+```shell
+# Script Parameters
+CURRENT_NETWORK="fuji" # or other network names
+CURRENT_SIDE="ledger" # or vault
+CALL_METHOD="deploy" # or upgrade
+```
+and then run the command:
+```shell
+source .env
+# call deploy with vault on the right network
+forge script myScript/DeployAndUpgradeManager.s.sol  --rpc-url $RPC_URL_FUJI -vvvv  --via-ir --broadcast
+# call deploy with ledger on the right network
+forge script myScript/DeployAndUpgradeManager.s.sol  --rpc-url $RPC_URL_ORDERLY -vvvv  --via-ir --broadcast
+```
+change the `--rpc-url` value to the one suits your instruction.
+
+## Setup
+
+### First setup basic information like chain IDs and other contract address
+here is some sample env variables:
+```shell
+# Script Parameters
+CURRENT_NETWORK="fuji" # or other networks
+CURRENT_SIDE="vault" # or vault
+CALL_METHOD="ledger" # or addVault
+LEDGER_NETWORK="orderly"
+ADD_VAULT_NETWORK="fuji"
+```
+then run the command:
+```shell
+source .env
+# call setup
+forge script myScript/SetupManager.s.sol --rpc-url $RPC_URL_FUJI -vvvv  --via-ir --broadcast
+# call setup
+forge script myScript/SetupManager.s.sol --rpc-url $RPC_URL_ORDERLY -vvvv  --via-ir --broadcast
+# call addVault
+forge script myScript/SetupManager.s.sol --rpc-url $RPC_URL_ORDERLY -vvvv  --via-ir --broadcast
+```
+
+## Test
+you can set the following variables in `.env` first:
+```shell
+CURRENT_NETWORK="orderly"
+CALL_METHOD="test"
+TARGET_NETWORK="fuji"
+```
+and call to send test withdraw message
+```shell
+forge script myScript/SetupManager.s.sol --rpc-url $RPC_URL_ORDERLY -vvvv  --via-ir --broadcast
+```
+later view payload status on layerzeroscan to check whether test succeed.
