@@ -127,11 +127,10 @@ interface ILedger {
         view
         returns (uint128);
     // omni view call
-    function batchGetUserLedgerByTokens(
-        bytes32[] calldata accountIds,
-        bytes32[] memory tokens,
-        bytes32[] memory symbols
-    ) external view returns (AccountTypes.AccountSnapshot[] memory);
+    function batchGetUserLedger(bytes32[] calldata accountIds, bytes32[] memory tokens, bytes32[] memory symbols)
+        external
+        view
+        returns (AccountTypes.AccountSnapshot[] memory);
     function batchGetUserLedger(bytes32[] calldata accountIds)
         external
         view
