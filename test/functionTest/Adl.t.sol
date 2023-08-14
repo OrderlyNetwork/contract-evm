@@ -261,7 +261,9 @@ contract AdlTest is Test {
 
     function testRevert_insuranceFundAdlLessPosition() public {
         vm.prank(address(operatorManager));
-        vm.expectRevert(abi.encodeWithSelector(ILedger.InsurancePositionQtyInvalid.selector, 1000000000, -500000000));
+        vm.expectRevert(
+            abi.encodeWithSelector(ILedgerError.InsurancePositionQtyInvalid.selector, 1000000000, -500000000)
+        );
         ledger.executeAdl({
             adl: EventTypes.Adl({
                 accountId: CHARLIE,
@@ -281,7 +283,7 @@ contract AdlTest is Test {
         vm.prank(address(operatorManager));
         vm.expectRevert(
             abi.encodeWithSelector(
-                ILedger.UserPerpPositionQtyZero.selector,
+                ILedgerError.UserPerpPositionQtyZero.selector,
                 0xa11ce00000000000000000000000000000000000000000000000000000000000,
                 0x2222101010101010101010101010101010101010101010101010101010101010
             )
