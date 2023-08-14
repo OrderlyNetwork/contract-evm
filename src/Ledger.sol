@@ -409,11 +409,12 @@ contract Ledger is ILedger, OwnableUpgradeable {
         }
         uint256 length = liquidation.liquidationTransfers.length;
         for (uint256 i = 0; i < length; i++) {
-            _liquidatorLiquidateAndUpdateEventId(liquidation.liquidationTransfers[i], eventId);
-            _liquidatedAccountLiquidate(liquidatedAccount, liquidation.liquidationTransfers[i]);
-            _insuranceLiquidateAndUpdateEventId(
-                liquidation.insuranceAccountId, liquidation.liquidationTransfers[i], eventId
+            EventTypes.LiquidationTransfer calldata liquidationTransfer = liquidation.liquidationTransfers[i];
+            _liquidatorLiquidateAndUpdateEventId(
+                liquidationTransfer, eventId, liquidationTransfer.liquidatorAccountId != liquidation.insuranceAccountId
             );
+            _liquidatedAccountLiquidate(liquidatedAccount, liquidationTransfer);
+            _insuranceLiquidateAndUpdateEventId(liquidation.insuranceAccountId, liquidationTransfer, eventId);
         }
         liquidatedAccount.lastCefiEventId = eventId;
         emit LiquidationResult(
@@ -516,17 +517,20 @@ contract Ledger is ILedger, OwnableUpgradeable {
 
     function _liquidatorLiquidateAndUpdateEventId(
         EventTypes.LiquidationTransfer calldata liquidationTransfer,
-        uint64 eventId
+        uint64 eventId,
+        bool needCalAvg
     ) internal {
         AccountTypes.Account storage liquidatorAccount = userLedger[liquidationTransfer.liquidatorAccountId];
         AccountTypes.PerpPosition storage liquidatorPosition =
             liquidatorAccount.perpPositions[liquidationTransfer.symbolHash];
         liquidatorPosition.chargeFundingFee(liquidationTransfer.sumUnitaryFundings);
-        liquidatorPosition.calAverageEntryPrice(
-            liquidationTransfer.positionQtyTransfer,
-            liquidationTransfer.markPrice.toInt128(),
-            -(liquidationTransfer.costPositionTransfer - liquidationTransfer.liquidatorFee)
-        );
+        if (needCalAvg) {
+            liquidatorPosition.calAverageEntryPrice(
+                liquidationTransfer.positionQtyTransfer,
+                liquidationTransfer.markPrice.toInt128(),
+                -(liquidationTransfer.costPositionTransfer - liquidationTransfer.liquidatorFee)
+            );
+        }
         liquidatorPosition.positionQty += liquidationTransfer.positionQtyTransfer;
         liquidatorPosition.costPosition += liquidationTransfer.costPositionTransfer - liquidationTransfer.liquidatorFee;
         liquidatorPosition.lastExecutedPrice = liquidationTransfer.markPrice;
