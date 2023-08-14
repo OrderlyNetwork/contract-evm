@@ -104,15 +104,16 @@ contract Ledger is ILedger, OwnableUpgradeable {
     }
 
     // omni batch get
-    function batchGetUserLedgerByTokens(
-        bytes32[] calldata accountIds,
-        bytes32[] memory tokens,
-        bytes32[] memory symbols
-    ) public view override returns (AccountTypes.AccountSnapshot[] memory accountFlats) {
+    function batchGetUserLedger(bytes32[] calldata accountIds, bytes32[] memory tokens, bytes32[] memory symbols)
+        public
+        view
+        override
+        returns (AccountTypes.AccountSnapshot[] memory accountSnapshots)
+    {
         uint256 accountIdLength = accountIds.length;
         uint256 tokenLength = tokens.length;
         uint256 symbolLength = symbols.length;
-        accountFlats = new AccountTypes.AccountSnapshot[](accountIdLength);
+        accountSnapshots = new AccountTypes.AccountSnapshot[](accountIdLength);
         for (uint256 i = 0; i < accountIdLength; ++i) {
             bytes32 accountId = accountIds[i];
             AccountTypes.Account storage account = userLedger[accountId];
@@ -142,7 +143,7 @@ contract Ledger is ILedger, OwnableUpgradeable {
                     lastAdlPrice: perpPosition.lastAdlPrice
                 });
             }
-            accountFlats[i] = AccountTypes.AccountSnapshot({
+            accountSnapshots[i] = AccountTypes.AccountSnapshot({
                 accountId: accountId,
                 brokerHash: account.brokerHash,
                 userAddress: account.userAddress,
@@ -157,13 +158,13 @@ contract Ledger is ILedger, OwnableUpgradeable {
     }
 
     function batchGetUserLedger(bytes32[] calldata accountIds)
-        external
+        public
         view
         returns (AccountTypes.AccountSnapshot[] memory)
     {
         bytes32[] memory tokens = vaultManager.getAllAllowedToken();
         bytes32[] memory symbols = vaultManager.getAllAllowedSymbol();
-        return batchGetUserLedgerByTokens(accountIds, tokens, symbols);
+        return batchGetUserLedger(accountIds, tokens, symbols);
     }
 
     // Interface implementation
