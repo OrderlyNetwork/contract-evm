@@ -5,9 +5,9 @@ import "../library/types/AccountTypes.sol";
 import "../library/types/PerpTypes.sol";
 import "../library/types/EventTypes.sol";
 import "../library/types/MarketTypes.sol";
+import "./ILedgerError.sol";
 
-interface IOperatorManager {
-    error OnlyOperatorCanCall();
+interface IOperatorManager is ILedgerError {
     error InvalidBizType(uint8 bizType);
     error BatchIdNotMatch(uint64 batchId, uint64 futuresUploadBatchId);
     error CountNotMatch(uint256 length, uint256 count);
