@@ -5,21 +5,9 @@ import "../library/types/AccountTypes.sol";
 import "../library/types/PerpTypes.sol";
 import "../library/types/EventTypes.sol";
 import "../library/types/MarketTypes.sol";
+import "./ILedgerError.sol";
 
-interface ILedger {
-    error OnlyOperatorCanCall();
-    error OnlyCrossChainManagerCanCall();
-    error TotalSettleAmountNotMatch(int128 amount);
-    error BalanceNotEnough(uint128 balance, int128 amount);
-    error InsuranceTransferToSelf();
-    error InsuranceTransferAmountInvalid(uint128 balance, uint128 insuranceTransferAmount, int128 settledAmount);
-    error UserPerpPositionQtyZero(bytes32 accountId, bytes32 symbolHash);
-    error InsurancePositionQtyInvalid(int128 adlPositionQtyTransfer, int128 userPositionQty);
-    error AccountIdInvalid();
-    error TokenNotAllowed(bytes32 tokenHash, uint256 chainId);
-    error BrokerNotAllowed();
-    error SymbolNotAllowed();
-
+interface ILedger is ILedgerError {
     event AccountRegister(
         bytes32 indexed accountId, bytes32 indexed brokerId, address indexed userAddress, uint256 blocktime
     );
