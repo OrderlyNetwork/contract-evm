@@ -2,6 +2,7 @@
 pragma solidity ^0.8.18;
 
 import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
+import "./dataLayout/LedgerDataLayout.sol";
 import "./interface/ILedger.sol";
 import "./interface/IVaultManager.sol";
 import "./interface/ILedgerCrossChainManager.sol";
@@ -18,35 +19,13 @@ import "./library/typesHelper/SafeCastHelper.sol";
  * and global state (e.g. futuresUploadBatchId)
  * This contract should only have one in main-chain (avalanche)
  */
-contract Ledger is ILedger, OwnableUpgradeable {
+contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
     using AccountTypeHelper for AccountTypes.Account;
     using AccountTypePositionHelper for AccountTypes.PerpPosition;
     using SafeCastHelper for *;
 
-    // OperatorManager contract address
-    address public operatorManagerAddress;
-    // crossChainManagerAddress contract address
-    address public crossChainManagerAddress;
-    // TODO @Rubick reorder to save slots
-    // operatorTradesBatchId
-    uint64 public operatorTradesBatchId;
-    // globalEventId, for event trade upload
-    uint64 public globalEventId;
-    // globalDepositId
-    uint64 public globalDepositId;
-    // @Rubick refactor order when next deployment
-    // userLedger accountId -> Account
-    mapping(bytes32 => AccountTypes.Account) internal userLedger;
-
-    // VaultManager contract
-    IVaultManager public vaultManager;
-    // @Rubick remove this when next deployment
-    // CrossChainManager contract
-    ILedgerCrossChainManager public _deprecated;
-    // MarketManager contract
-    IMarketManager public marketManager;
-    // FeeManager contract
-    IFeeManager public feeManager;
+    // TODO ledgerImpl1, LedgerImpl2 addresses start here
+    // usage: `ledgerImpl1.delegatecall(abi.encodeWithSelector(ILedger.accountDeposit.selector, data));`
 
     // require operator
     modifier onlyOperatorManager() {
