@@ -123,6 +123,22 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         emit AccountDeposit(data.accountId, msg.sender, depositId, data.tokenHash, data.tokenAmount);
     }
 
+    function depositTo(address receiver, VaultTypes.VaultDepositFE calldata data) public whenNotPaused {
+        if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
+        if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
+        if (!Utils.validateAccountId(data.accountId, data.brokerHash, receiver)) revert AccountIdInvalid();
+        IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
+        // avoid non-standard ERC20 tranferFrom bug
+        tokenAddress.safeTransferFrom(msg.sender, address(this), data.tokenAmount);
+        // cross-chain tx to ledger
+        VaultTypes.VaultDeposit memory depositData = VaultTypes.VaultDeposit(
+            data.accountId, receiver, data.brokerHash, data.tokenHash, data.tokenAmount, _newDepositId()
+        );
+        IVaultCrossChainManager(crossChainManagerAddress).deposit(depositData);
+        // emit deposit event
+        emit AccountDeposit(data.accountId, receiver, depositId, data.tokenHash, data.tokenAmount);
+    }
+
     // user withdraw
     function withdraw(VaultTypes.VaultWithdraw calldata data) public override onlyCrossChainManager whenNotPaused {
         IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
