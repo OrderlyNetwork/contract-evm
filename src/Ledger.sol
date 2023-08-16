@@ -254,8 +254,9 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         }
         // update status, should never fail
         // frozen balance
+        // account should frozen `tokenAmount`, and vault should frozen `tokenAmount - fee`, because vault will payout `tokenAmount - fee`
         account.frozenBalance(withdraw.withdrawNonce, tokenHash, withdraw.tokenAmount);
-        vaultManager.frozenBalance(tokenHash, withdraw.chainId, withdraw.tokenAmount);
+        vaultManager.frozenBalance(tokenHash, withdraw.chainId, withdraw.tokenAmount - withdraw.fee);
         account.lastCefiEventId = eventId;
         // emit withdraw approve event
         emit AccountWithdrawApprove(
@@ -283,7 +284,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         AccountTypes.Account storage account = userLedger[withdraw.accountId];
         // finish frozen balance
         account.finishFrozenBalance(withdraw.withdrawNonce, withdraw.tokenHash, withdraw.tokenAmount);
-        vaultManager.finishFrozenBalance(withdraw.tokenHash, withdraw.chainId, withdraw.tokenAmount);
+        vaultManager.finishFrozenBalance(withdraw.tokenHash, withdraw.chainId, withdraw.tokenAmount - withdraw.fee);
         // withdraw fee
         if (withdraw.fee > 0) {
             // gas saving if no fee
