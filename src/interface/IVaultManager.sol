@@ -40,4 +40,8 @@ interface IVaultManager is ILedgerComponent {
     function getAllAllowedToken() external view returns (bytes32[] memory);
     function getAllAllowedBroker() external view returns (bytes32[] memory);
     function getAllAllowedSymbol() external view returns (bytes32[] memory);
+
+    // maxWithdrawFee
+    function setMaxWithdrawFee(bytes32 _tokenHash, uint128 _maxWithdrawFee) external;
+    function getMaxWithdrawFee(bytes32 _tokenHash) external view returns (uint128);
 }
