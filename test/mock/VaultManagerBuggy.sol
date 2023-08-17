@@ -59,4 +59,8 @@ contract VaultManagerBuggy is IVaultManager, LedgerComponent {
     function frozenBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) external override {}
 
     function finishFrozenBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) external override {}
+
+    function setMaxWithdrawFee(bytes32 _tokenHash, uint128 _maxWithdrawFee) external override {}
+
+    function getMaxWithdrawFee(bytes32 _tokenHash) external view override returns (uint128) {}
 }

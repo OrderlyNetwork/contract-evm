@@ -23,6 +23,8 @@ contract VaultManager is IVaultManager, LedgerComponent {
     EnumerableSet.Bytes32Set private allowedSymbolSet; // supported symbol
     mapping(bytes32 => mapping(uint256 => uint128)) private tokenFrozenBalanceOnchain; // @Rubick reorder
 
+    mapping(bytes32 => uint128) private maxWithdrawFee; // default = unlimited
+
     constructor() {
         _disableInitializers();
     }
@@ -122,6 +124,15 @@ contract VaultManager is IVaultManager, LedgerComponent {
 
     function getAllowedToken(bytes32 _tokenHash) public view override returns (bool) {
         return allowedTokenSet.contains(_tokenHash);
+    }
+
+    // maxWithdrawFee
+    function setMaxWithdrawFee(bytes32 _tokenHash, uint128 _maxWithdrawFee) public override onlyOwner {
+        maxWithdrawFee[_tokenHash] = _maxWithdrawFee;
+    }
+
+    function getMaxWithdrawFee(bytes32 _tokenHash) public view override returns (uint128) {
+        return maxWithdrawFee[_tokenHash];
     }
 
     // every time call `upgradeAndCall` will call this function, to do some data migrate or value init
