@@ -28,27 +28,24 @@ contract DeployLedger is Script {
         IFeeManager feeImpl = new FeeManager();
         IMarketManager marketImpl = new MarketManager();
 
+        bytes memory initData = abi.encodeWithSignature("initialize()");
+
         TransparentUpgradeableProxy operatorProxy =
-            new TransparentUpgradeableProxy(address(operatorManagerImpl), address(admin), "");
+            new TransparentUpgradeableProxy(address(operatorManagerImpl), address(admin), initData);
         TransparentUpgradeableProxy vaultProxy =
-            new TransparentUpgradeableProxy(address(vaultManagerImpl), address(admin), "");
+            new TransparentUpgradeableProxy(address(vaultManagerImpl), address(admin), initData);
         TransparentUpgradeableProxy ledgerProxy =
-            new TransparentUpgradeableProxy(address(ledgerImpl), address(admin), "");
-        TransparentUpgradeableProxy feeProxy = new TransparentUpgradeableProxy(address(feeImpl), address(admin), "");
+            new TransparentUpgradeableProxy(address(ledgerImpl), address(admin), initData);
+        TransparentUpgradeableProxy feeProxy =
+            new TransparentUpgradeableProxy(address(feeImpl), address(admin), initData);
         TransparentUpgradeableProxy marketProxy =
-            new TransparentUpgradeableProxy(address(marketImpl), address(admin), "");
+            new TransparentUpgradeableProxy(address(marketImpl), address(admin), initData);
 
         IOperatorManager operatorManager = IOperatorManager(address(operatorProxy));
         IVaultManager vaultManager = IVaultManager(address(vaultProxy));
         ILedger ledger = ILedger(address(ledgerProxy));
         IFeeManager feeManager = IFeeManager(address(feeProxy));
         IMarketManager marketManager = IMarketManager(address(marketProxy));
-
-        operatorManager.initialize();
-        vaultManager.initialize();
-        ledger.initialize();
-        feeManager.initialize();
-        marketManager.initialize();
 
         // avoid stack too deep error
         {
