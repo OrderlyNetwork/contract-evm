@@ -37,10 +37,8 @@ contract FeeManagerTest is Test {
     }
 
     function test_set_get() public {
-        feeManager.changeFeeCollector(IFeeManager.FeeCollectorType.TradingFeeCollector, accountId1);
-        assertEq(feeManager.getFeeCollector(IFeeManager.FeeCollectorType.TradingFeeCollector), accountId1);
-        feeManager.changeFeeCollector(IFeeManager.FeeCollectorType.OperatorGasFeeCollector, accountId2);
-        assertEq(feeManager.getFeeCollector(IFeeManager.FeeCollectorType.OperatorGasFeeCollector), accountId2);
+        feeManager.changeFeeCollector(IFeeManager.FeeCollectorType.WithdrawFeeCollector, accountId2);
+        assertEq(feeManager.getFeeCollector(IFeeManager.FeeCollectorType.WithdrawFeeCollector), accountId2);
         feeManager.changeFeeCollector(IFeeManager.FeeCollectorType.FuturesFeeCollector, accountId3);
         assertEq(feeManager.getFeeCollector(IFeeManager.FeeCollectorType.FuturesFeeCollector), accountId3);
     }

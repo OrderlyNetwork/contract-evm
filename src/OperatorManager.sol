@@ -56,6 +56,10 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         eventUploadBatchId = 1;
         lastOperatorInteraction = block.timestamp;
         // TODO init all cefi sign address
+        // cefiSpotTradeUploadAddress = 0xEd914b637eE097B432b5e85F15565aFE02bFD350;
+        // cefiPerpTradeUploadAddress = 0xD780D67ff05046170D00223316bA4b0fa27a88e3;
+        // cefiEventUploadAddress = 0xD7B54C1c4078AAd489eF1413956BD8Cb92804D19;
+        // cefiMarketUploadAddress = 0xEDA4Ec3449536A22CfCF28c133d8AC8589d1813A;
     }
 
     // operator ping
@@ -179,7 +183,4 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
     function checkCefiDown() public view override returns (bool) {
         return (lastOperatorInteraction + 3 days < block.timestamp);
     }
-
-    // every time call `upgradeAndCall` will call this function, to do some data migrate or value init
-    function upgradeInit() external {}
 }

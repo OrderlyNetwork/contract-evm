@@ -18,7 +18,8 @@ contract UpgradeFeeManager is Script {
         vm.startBroadcast(orderlyPrivateKey);
 
         IFeeManager feeManagerImpl = new FeeManager();
-        admin.upgradeAndCall(feeManagerProxy, address(feeManagerImpl), abi.encodeWithSignature("upgradeInit()"));
+        admin.upgrade(feeManagerProxy, address(feeManagerImpl));
+        // admin.upgradeAndCall(feeManagerProxy, address(feeManagerImpl), abi.encodeWithSignature("initialize()"));
 
         vm.stopBroadcast();
     }
