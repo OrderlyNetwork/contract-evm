@@ -13,23 +13,17 @@ library PerpTypes {
     }
 
     struct FuturesTradeUpload {
-        uint64 tradeId;
-        uint64 matchId;
         bytes32 accountId;
         bytes32 symbolHash;
-        bool side; // buy (false) or sell (true)
+        bytes32 feeAssetHash;
         int128 tradeQty;
         int128 notional;
         uint128 executedPrice;
         uint128 fee;
-        bytes32 feeAssetHash;
         int128 sumUnitaryFundings;
+        uint64 tradeId;
+        uint64 matchId;
         uint64 timestamp;
-    }
-
-    struct LiquidationInfo {
-        bool isUnderLiquidation;
-        int128 totalCollateral;
-        int128 totalMaintenanceMargin;
+        bool side; // buy (false) or sell (true)
     }
 }

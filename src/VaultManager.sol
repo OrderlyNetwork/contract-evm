@@ -15,13 +15,12 @@ contract VaultManager is IVaultManager, LedgerComponent {
     address public crossChainManagerAddress;
     // valut balance, used for check if withdraw is valid
     mapping(bytes32 => mapping(uint256 => uint128)) private tokenBalanceOnchain;
+    mapping(bytes32 => mapping(uint256 => uint128)) private tokenFrozenBalanceOnchain;
     mapping(bytes32 => mapping(uint256 => bool)) private allowedChainToken; // supported token on each chain
-    mapping(bytes32 => bool) private _deprecatedA; // @Rubick depracated
-    mapping(bytes32 => bool) private _deprecatedB; // @Rubick depracated
+
     EnumerableSet.Bytes32Set private allowedTokenSet; // supported token
     EnumerableSet.Bytes32Set private allowedBrokerSet; // supported broker
     EnumerableSet.Bytes32Set private allowedSymbolSet; // supported symbol
-    mapping(bytes32 => mapping(uint256 => uint128)) private tokenFrozenBalanceOnchain; // @Rubick reorder
 
     mapping(bytes32 => uint128) private maxWithdrawFee; // default = unlimited
 
