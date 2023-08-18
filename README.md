@@ -96,57 +96,59 @@ forge test -vvvv
 
 ## Contract address
 
-### Vault address (Fuji)
+### Vault address (Arb goerli testnet)
 
 #### Cross chain
 
-VAULT_RELAY_ADDRESS="0xc8E38C1Fd1422f49DB592BAe619080EA5Deb50e0"
-
-VAULT_CROSS_CHAIN_MANAGER_ADDRESS="0xC0136Ae389F2AB4b1517c0bF9488Cc13d0546090"
+VAULT_CROSS_CHAIN_MANAGER_ADDRESS="0xbc9c21d0986fb7b5ef70caeb16e0abb7c36f1595"
 
 #### Vault
 
-VAULT_PROXY_ADMIN="0x873c120b42C80D528389d85cEA9d4dC0197974aD"
+VAULT_PROXY_ADMIN="0x93A5486E16553eb112Ec1Fa41f5B8b9E24102B6e"
 
-TEST_USDC_ADDRESS="0x1826B75e2ef249173FC735149AE4B8e9ea10abff"
+TEST_USDC_ADDRESS="0x004d88aa993fd2100d6c8beb6cdb6bc04f565b44"
 
-VAULT_ADDRESS="0x523Ab490B15803d6Ba60dC95F1579536F95edD4e"
+VAULT_ADDRESS="0x0C554dDb6a9010Ed1FD7e50d92559A06655dA482"
 
-### Ledger address (Orderly subnet)
+### Ledger address (OP Orderly)
 
 #### Cross chain
 
-LEDGER_RELAY_ADDRESS="0x2521750f89bEb11C53a3646D45073bef33312a91"
-
-LEDGER_CROSS_CHAIN_MANAGER_ADDRESS="0xa6814dF691F6fDAD1573cCC5103A712056E1a27c"
+LEDGER_CROSS_CHAIN_MANAGER_ADDRESS="0xdecdf6f646d5cfaf16abf12222ccc84febae5934"
 
 #### Ledger
 
-LEDGER_PROXY_ADMIN="0xD9094Ea3AEEEc98af007325d37459E92027D92b4"
+LEDGER_PROXY_ADMIN="0x8910A067473C1800b371183124AEdC95684244DE"
 
-OPERATOR_MANAGER_ADDRESS="0x7831C3587388bdC4b037E4F01C82Edd1d4edCA99"
+OPERATOR_MANAGER_ADDRESS="0xe34614EB781C5838C78B7f913b89A05e7a5b97e2"
 
-VAULT_MANAGER_ADDRESS="0xEbA7BEf0AF268f60fA572B7FDa286f876Ad44BEb"
+VAULT_MANAGER_ADDRESS="0x4922872C26Befa37AdcA287fF68106013C82FeeD"
 
-LEDGER_ADDRESS="0xB3b86341E796684A7D33Ca102703b85BDE5925b6"
+LEDGER_ADDRESS="0x8794E7260517B1766fc7b55cAfcd56e6bf08600e"
 
-FEE_MANAGER_ADDRESS="0x3bF7fbf5B61DEFC9ee26972AfB1a4A4977b6A2fd"
+FEE_MANAGER_ADDRESS="0x835E970110E4a46BCA21A7551FEaA5F532F72701"
 
-MARKET_MANAGER_ADDRESS="0x21759c38A7047d73Fe77db5693f12Dc4F51f81Ff"
+MARKET_MANAGER_ADDRESS="0x3ac2Ba11Ca2f9f109d50fb1a46d4C23fCadbbef6"
 
 # CrossChain Manager Upgradeable Deployment and Setup
+
 ## prerequiste
+
 - cross-chain relay on target two chains are deployed, address of the relay proxy is put into `.env` file. env variables are `XXX_RELAY_PROXY`, where `XXX` denotes the network name
 
 ## Deployment or Upgrading
+
 set the following variables in `.env` accordingly:
+
 ```shell
 # Script Parameters
 CURRENT_NETWORK="fuji" # or other network names
 CURRENT_SIDE="ledger" # or vault
 CALL_METHOD="deploy" # or upgrade
 ```
+
 and then run the command:
+
 ```shell
 source .env
 # call deploy with vault on the right network
@@ -154,12 +156,15 @@ forge script myScript/DeployAndUpgradeManager.s.sol  --rpc-url $RPC_URL_FUJI -vv
 # call deploy with ledger on the right network
 forge script myScript/DeployAndUpgradeManager.s.sol  --rpc-url $RPC_URL_ORDERLY -vvvv  --via-ir --broadcast
 ```
+
 change the `--rpc-url` value to the one suits your instruction.
 
 ## Setup
 
 ### First setup basic information like chain IDs and other contract address
+
 here is some sample env variables:
+
 ```shell
 # Script Parameters
 CURRENT_NETWORK="fuji" # or other networks
@@ -168,7 +173,9 @@ CALL_METHOD="ledger" # or addVault
 LEDGER_NETWORK="orderly"
 ADD_VAULT_NETWORK="fuji"
 ```
+
 then run the command:
+
 ```shell
 source .env
 # call setup
@@ -180,14 +187,19 @@ forge script myScript/SetupManager.s.sol --rpc-url $RPC_URL_ORDERLY -vvvv  --via
 ```
 
 ## Test
+
 you can set the following variables in `.env` first:
+
 ```shell
 CURRENT_NETWORK="orderly"
 CALL_METHOD="test"
 TARGET_NETWORK="fuji"
 ```
+
 and call to send test withdraw message
+
 ```shell
 forge script myScript/SetupManager.s.sol --rpc-url $RPC_URL_ORDERLY -vvvv  --via-ir --broadcast
 ```
+
 later view payload status on layerzeroscan to check whether test succeed.
