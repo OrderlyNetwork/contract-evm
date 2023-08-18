@@ -6,9 +6,7 @@ import "./LedgerComponent.sol";
 
 contract FeeManager is IFeeManager, LedgerComponent {
     // accountId
-    bytes32 public tradingFeeCollector;
-    // accountId
-    bytes32 public operatorGasFeeCollector;
+    bytes32 public withdrawFeeCollector;
     // accountId
     bytes32 public futuresFeeCollector;
 
@@ -22,10 +20,8 @@ contract FeeManager is IFeeManager, LedgerComponent {
 
     // get_fee_collector
     function getFeeCollector(FeeCollectorType feeCollectorType) public view override returns (bytes32) {
-        if (feeCollectorType == FeeCollectorType.TradingFeeCollector) {
-            return tradingFeeCollector;
-        } else if (feeCollectorType == FeeCollectorType.OperatorGasFeeCollector) {
-            return operatorGasFeeCollector;
+        if (feeCollectorType == FeeCollectorType.WithdrawFeeCollector) {
+            return withdrawFeeCollector;
         } else if (feeCollectorType == FeeCollectorType.FuturesFeeCollector) {
             return futuresFeeCollector;
         }
@@ -34,18 +30,12 @@ contract FeeManager is IFeeManager, LedgerComponent {
 
     // change_fee_collector
     function changeFeeCollector(FeeCollectorType feeCollectorType, bytes32 _newCollector) public override onlyOwner {
-        if (feeCollectorType == FeeCollectorType.TradingFeeCollector) {
-            emit ChangeFeeCollector(feeCollectorType, tradingFeeCollector, _newCollector);
-            tradingFeeCollector = _newCollector;
-        } else if (feeCollectorType == FeeCollectorType.OperatorGasFeeCollector) {
-            emit ChangeFeeCollector(feeCollectorType, operatorGasFeeCollector, _newCollector);
-            operatorGasFeeCollector = _newCollector;
+        if (feeCollectorType == FeeCollectorType.WithdrawFeeCollector) {
+            emit ChangeFeeCollector(feeCollectorType, withdrawFeeCollector, _newCollector);
+            withdrawFeeCollector = _newCollector;
         } else if (feeCollectorType == FeeCollectorType.FuturesFeeCollector) {
             emit ChangeFeeCollector(feeCollectorType, futuresFeeCollector, _newCollector);
             futuresFeeCollector = _newCollector;
         }
     }
-
-    // every time call `upgradeAndCall` will call this function, to do some data migrate or value init
-    function upgradeInit() external {}
 }

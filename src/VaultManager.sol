@@ -30,6 +30,12 @@ contract VaultManager is IVaultManager, LedgerComponent {
 
     function initialize() public override initializer {
         __Ownable_init();
+        // setAllowedBroker(0x083098c593f395bea1de45dda552d9f14e8fcb0be3faaa7a1903c5477d7ba7fd, true); // woofi_dex
+        // setAllowedToken(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa, true); // USDC
+        // setAllowedChainToken(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa, 421613, true); // Arbitrum Goerli
+        // setAllowedSymbol(0xa2adc016e890b4fbbf161c7eaeb615b893e4fbeceae918fa7bf16cc40d46610b, true); // PERP_NEAR_USDC
+        // setAllowedSymbol(0x49df22fa3f2797cf4509a70c4ffab549016526639b2301b319dac895f9a0da68, true);
+        // setAllowedSymbol(0x7e83089239db756ee233fa8972addfea16ae653db0f692e4851aed546b21caeb, true); // PERP_ETH_USDC
     }
 
     // frozen & finish frozen
@@ -133,7 +139,4 @@ contract VaultManager is IVaultManager, LedgerComponent {
     function getMaxWithdrawFee(bytes32 _tokenHash) public view override returns (uint128) {
         return maxWithdrawFee[_tokenHash];
     }
-
-    // every time call `upgradeAndCall` will call this function, to do some data migrate or value init
-    function upgradeInit() external {}
 }
