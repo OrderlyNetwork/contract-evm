@@ -30,15 +30,15 @@ library MarketTypes {
     }
 
     struct PerpPrice {
+        bytes32 symbolHash;
         uint128 indexPrice;
         uint128 markPrice;
-        bytes32 symbolHash;
         uint64 timestamp;
     }
 
     struct SumUnitaryFunding {
-        int128 sumUnitaryFunding;
         bytes32 symbolHash;
+        int128 sumUnitaryFunding;
         uint64 timestamp;
     }
 }

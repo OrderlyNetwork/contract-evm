@@ -20,22 +20,22 @@ library AccountTypes {
         bytes32 brokerHash;
         // primary address
         address userAddress;
-        // lastwithdraw nonce
-        uint64 lastWithdrawNonce;
         // mapping symbol => balance
         mapping(bytes32 => uint128) balances;
         // mapping symbol => totalFrozenBalance
         mapping(bytes32 => uint128) totalFrozenBalances;
         // mapping withdrawNonce => symbol => balance
         mapping(uint64 => mapping(bytes32 => uint128)) frozenBalances;
+        // perp position
+        mapping(bytes32 => PerpPosition) perpPositions;
+        // lastwithdraw nonce
+        uint64 lastWithdrawNonce;
         // last perp trade id
         uint64 lastPerpTradeId;
         // last cefi event id
         uint64 lastCefiEventId;
         // last deposit event id
         uint64 lastDepositEventId;
-        // perp position
-        mapping(bytes32 => PerpPosition) perpPositions;
     }
 
     struct AccountDeposit {
@@ -43,8 +43,8 @@ library AccountTypes {
         bytes32 brokerHash;
         address userAddress;
         bytes32 tokenHash;
-        uint128 tokenAmount;
         uint256 srcChainId;
+        uint128 tokenAmount;
         uint64 srcChainDepositNonce;
     }
 
