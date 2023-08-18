@@ -18,7 +18,8 @@ contract UpgradeVaultManager is Script {
         vm.startBroadcast(orderlyPrivateKey);
 
         IVaultManager vaultManagerImpl = new VaultManager();
-        admin.upgradeAndCall(vaultManagerProxy, address(vaultManagerImpl), abi.encodeWithSignature("upgradeInit()"));
+        admin.upgrade(vaultManagerProxy, address(vaultManagerImpl));
+        // admin.upgradeAndCall(vaultManagerProxy, address(vaultManagerImpl), abi.encodeWithSignature("initialize()"));
 
         vm.stopBroadcast();
     }

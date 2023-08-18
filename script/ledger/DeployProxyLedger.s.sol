@@ -11,9 +11,9 @@ import "../../src/FeeManager.sol";
 import "../../src/MarketManager.sol";
 
 contract DeployLedger is Script {
-    bytes32 constant BROKER_HASH = 0x083098c593f395bea1de45dda552d9f14e8fcb0be3faaa7a1903c5477d7ba7fd; // woofi_dex
-    bytes32 constant TOKEN_HASH = 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa; // USDC
-    uint256 constant CHAIN_ID = 43113; // fuji
+    // bytes32 constant BROKER_HASH = 0x083098c593f395bea1de45dda552d9f14e8fcb0be3faaa7a1903c5477d7ba7fd; // woofi_dex
+    // bytes32 constant TOKEN_HASH = 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa; // USDC
+    // uint256 constant CHAIN_ID = 421613; // Arbitrum Goerli
 
     function run() external {
         uint256 orderlyPrivateKey = vm.envUint("ORDERLY_PRIVATE_KEY");
@@ -63,9 +63,9 @@ contract DeployLedger is Script {
             operatorManager.setLedger(address(ledger));
 
             vaultManager.setLedgerAddress(address(ledger));
-            vaultManager.setAllowedBroker(BROKER_HASH, true);
-            vaultManager.setAllowedToken(TOKEN_HASH, true);
-            vaultManager.setAllowedChainToken(TOKEN_HASH, CHAIN_ID, true);
+            // vaultManager.setAllowedBroker(BROKER_HASH, true);
+            // vaultManager.setAllowedToken(TOKEN_HASH, true);
+            // vaultManager.setAllowedChainToken(TOKEN_HASH, CHAIN_ID, true);
             // vaultManager.setAllowedSymbol(SYMBOL_HASH, true);
 
             feeManager.setLedgerAddress(address(ledger));
@@ -76,7 +76,7 @@ contract DeployLedger is Script {
             marketManager.setOperatorManagerAddress(address(operatorManager));
             marketManager.setLedgerAddress(address(ledger));
 
-            ledgerCrossChainManager.setLedger(address(ledger));
+            // ledgerCrossChainManager.setLedger(address(ledger));
         }
         vm.stopBroadcast();
     }

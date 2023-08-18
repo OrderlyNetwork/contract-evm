@@ -8,8 +8,7 @@ interface IFeeManager is ILedgerComponent {
 
     enum FeeCollectorType {
         None,
-        TradingFeeCollector,
-        OperatorGasFeeCollector,
+        WithdrawFeeCollector,
         FuturesFeeCollector
     }
 
