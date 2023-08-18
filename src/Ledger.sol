@@ -296,7 +296,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         if (withdraw.fee > 0) {
             // gas saving if no fee
             bytes32 feeCollectorAccountId =
-                feeManager.getFeeCollector(IFeeManager.FeeCollectorType.OperatorGasFeeCollector);
+                feeManager.getFeeCollector(IFeeManager.FeeCollectorType.WithdrawFeeCollector);
             AccountTypes.Account storage feeCollectorAccount = userLedger[feeCollectorAccountId];
             feeCollectorAccount.addBalance(withdraw.tokenHash, withdraw.fee);
         }
@@ -561,7 +561,4 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         insurancePosition.lastExecutedPrice = liquidationTransfer.markPrice;
         insuranceFund.lastCefiEventId = eventId;
     }
-
-    // every time call `upgradeAndCall` will call this function, to do some data migrate or value init
-    function upgradeInit() external {}
 }

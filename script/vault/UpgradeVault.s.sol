@@ -10,15 +10,16 @@ contract UpgradeVault is Script {
     function run() external {
         uint256 orderlyPrivateKey = vm.envUint("ORDERLY_PRIVATE_KEY");
         address adminAddress = vm.envAddress("VAULT_PROXY_ADMIN");
-        address vaultManagerAddress = vm.envAddress("VAULT_ADDRESS");
+        address vaultAddress = vm.envAddress("VAULT_ADDRESS");
 
         ProxyAdmin admin = ProxyAdmin(adminAddress);
-        ITransparentUpgradeableProxy vaultManagerProxy = ITransparentUpgradeableProxy(vaultManagerAddress);
+        ITransparentUpgradeableProxy vaultProxy = ITransparentUpgradeableProxy(vaultAddress);
 
         vm.startBroadcast(orderlyPrivateKey);
 
-        IVault vaultManagerImpl = new Vault();
-        admin.upgradeAndCall(vaultManagerProxy, address(vaultManagerImpl), abi.encodeWithSignature("upgradeInit()"));
+        IVault vaultImpl = new Vault();
+        admin.upgrade(vaultProxy, address(vaultImpl));
+        // admin.upgradeAndCall(vaultProxy, address(vaultImpl), abi.encodeWithSignature("initialize()"));
 
         vm.stopBroadcast();
     }
