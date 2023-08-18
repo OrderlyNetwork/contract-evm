@@ -33,6 +33,7 @@ interface IVault {
     function initialize() external;
 
     function deposit(VaultTypes.VaultDepositFE calldata data) external;
+    function depositTo(address receiver, VaultTypes.VaultDepositFE calldata data) external;
     function withdraw(VaultTypes.VaultWithdraw calldata data) external;
 
     // admin call
