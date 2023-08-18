@@ -9,31 +9,25 @@ import "../interface/IMarketManager.sol";
 import "../interface/IFeeManager.sol";
 
 contract LedgerDataLayout {
+    // userLedger accountId -> Account
+    mapping(bytes32 => AccountTypes.Account) internal userLedger;
     // OperatorManager contract address
     address public operatorManagerAddress;
     // crossChainManagerAddress contract address
     address public crossChainManagerAddress;
-    // TODO @Rubick reorder to save slots
-    // operatorTradesBatchId
-    uint64 public operatorTradesBatchId;
-    // globalEventId, for event trade upload
-    uint64 public globalEventId;
-    // globalDepositId
-    uint64 public globalDepositId;
-    // @Rubick refactor order when next deployment
-    // userLedger accountId -> Account
-    mapping(bytes32 => AccountTypes.Account) internal userLedger;
-
     // VaultManager contract
     IVaultManager public vaultManager;
-    // @Rubick remove this when next deployment
-    // CrossChainManager contract
-    ILedgerCrossChainManager public _deprecated;
+    // operatorTradesBatchId
+    uint64 public operatorTradesBatchId;
     // MarketManager contract
     IMarketManager public marketManager;
+    // globalEventId, for event trade upload
+    uint64 public globalEventId;
     // FeeManager contract
     IFeeManager public feeManager;
+    // globalDepositId
+    uint64 public globalDepositId;
 
     // gap
-    uint256[42] private __gap;
+    uint256[44] private __gap;
 }
