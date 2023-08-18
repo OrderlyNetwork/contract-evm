@@ -22,14 +22,8 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
 
     // cross-chain operator address
     address public crossChainManagerAddress;
-    mapping(bytes32 => bool) public _deprecatedA; // @Rubick depracated
-    mapping(bytes32 => IERC20) public _deprecatedB; // @Rubick depracated
-
-    // TODO @Rubick reorder to save slots
     // deposit id / nonce
     uint64 public depositId;
-    // CrossChainManager contract
-    IVaultCrossChainManager public _deprecated;
 
     // list to record the hash value of allowed brokerIds
     EnumerableSet.Bytes32Set private allowedBrokerSet;

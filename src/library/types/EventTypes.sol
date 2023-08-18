@@ -73,7 +73,6 @@ library EventTypes {
     }
 
     struct LiquidationTransfer {
-        uint64 liquidationTransferId;
         bytes32 liquidatorAccountId;
         bytes32 symbolHash;
         int128 positionQtyTransfer;
@@ -83,5 +82,6 @@ library EventTypes {
         int128 liquidationFee;
         uint128 markPrice;
         int128 sumUnitaryFundings;
+        uint64 liquidationTransferId;
     }
 }
