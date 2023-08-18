@@ -22,15 +22,15 @@ contract DeployVault is Script {
         TestUSDC tUSDC = new TestUSDC();
 
         IVault vaultImpl = new Vault();
-        TransparentUpgradeableProxy vaultProxy = new TransparentUpgradeableProxy(address(vaultImpl), address(admin), "");
+        TransparentUpgradeableProxy vaultProxy =
+            new TransparentUpgradeableProxy(address(vaultImpl), address(admin), abi.encodeWithSignature("initialize()"));
         IVault vault = IVault(address(vaultProxy));
-        vault.initialize();
 
         vault.changeTokenAddressAndAllow(USDC, address(tUSDC));
         vault.setAllowedBroker(BROKER_HASH, true);
         vault.setCrossChainManager(address(vaultCrossChainManager));
 
-        vaultCrossChainManager.setVault(address(vault));
+        // vaultCrossChainManager.setVault(address(vault));
 
         vm.stopBroadcast();
     }
