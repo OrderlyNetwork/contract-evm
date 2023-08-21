@@ -61,6 +61,7 @@ contract DeployLedger is Script {
 
             operatorManager.setOperator(operatorAdminAddress);
             operatorManager.setLedger(address(ledger));
+            operatorManager.setMarketManager(address(marketManager));
 
             vaultManager.setLedgerAddress(address(ledger));
             // vaultManager.setAllowedBroker(BROKER_HASH, true);
