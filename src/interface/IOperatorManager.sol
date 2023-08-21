@@ -34,6 +34,7 @@ interface IOperatorManager is ILedgerError {
     // admin call
     function setOperator(address _operatorAddress) external;
     function setLedger(address _ledger) external;
+    function setMarketManager(address _marketManagerAddress) external;
     function setCefiSpotTradeUploadAddress(address _cefiSpotTradeUploadAddress) external;
     function setCefiPerpTradeUploadAddress(address _cefiPerpTradeUploadAddress) external;
     function setCefiEventUploadAddress(address _cefiEventUploadAddress) external;
