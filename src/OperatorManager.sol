@@ -46,6 +46,10 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         ledger = ILedger(_ledger);
     }
 
+    function setMarketManager(address _marketManagerAddress) public override onlyOwner {
+        marketManager = IMarketManager(_marketManagerAddress);
+    }
+
     constructor() {
         _disableInitializers();
     }
