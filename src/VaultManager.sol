@@ -11,8 +11,8 @@ import "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 contract VaultManager is IVaultManager, LedgerComponent {
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
-    // crossChainManagerAddress contract address
-    address public crossChainManagerAddress;
+    // TODO @Rubick remove this
+    address public _deprecated;
     // valut balance, used for check if withdraw is valid
     mapping(bytes32 => mapping(uint256 => uint128)) private tokenBalanceOnchain;
     mapping(bytes32 => mapping(uint256 => uint128)) private tokenFrozenBalanceOnchain;
