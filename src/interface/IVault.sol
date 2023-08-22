@@ -18,6 +18,14 @@ interface IVault {
         uint128 tokenAmount
     );
 
+    event AccountDepositTo(
+        bytes32 indexed accountId,
+        address indexed userAddress,
+        uint64 indexed depositNonce,
+        bytes32 tokenHash,
+        uint128 tokenAmount
+    );
+
     event AccountWithdraw(
         bytes32 indexed accountId,
         uint64 indexed withdrawNonce,
@@ -29,6 +37,10 @@ interface IVault {
         uint128 fee,
         uint256 blocktime
     );
+
+    event SetAllowedToken(bytes32 indexed _tokenHash, bool _allowed);
+    event SetAllowedBroker(bytes32 indexed _brokerHash, bool _allowed);
+    event ChangeTokenAddressAndAllow(bytes32 indexed _tokenHash, address _tokenAddress);
 
     function initialize() external;
 

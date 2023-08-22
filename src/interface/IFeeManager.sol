@@ -12,7 +12,10 @@ interface IFeeManager is ILedgerComponent {
         FuturesFeeCollector
     }
 
-    event ChangeFeeCollector(FeeCollectorType feeCollectorType, bytes32 oldFeeCollector, bytes32 newFeeCollector);
+    // event
+    event ChangeFeeCollector(
+        FeeCollectorType indexed feeCollectorType, bytes32 oldFeeCollector, bytes32 newFeeCollector
+    );
 
     function initialize() external;
 

@@ -6,6 +6,13 @@ import "./ILedgerComponent.sol";
 interface IVaultManager is ILedgerComponent {
     function initialize() external;
 
+    // event
+    event SetAllowedBroker(bytes32 indexed _brokerHash, bool _allowed);
+    event SetAllowedSymbol(bytes32 indexed _symbolHash, bool _allowed);
+    event SetAllowedToken(bytes32 indexed _tokenHash, bool _allowed);
+    event SetAllowedChainToken(bytes32 indexed _tokenHash, uint256 indexed _chainId, bool _allowed);
+    event SetMaxWithdrawFee(bytes32 indexed _tokenHash, uint128 _maxWithdrawFee);
+
     // get balance
     function getBalance(bytes32 _tokenHash, uint256 _chainId) external view returns (uint128);
     // add balance
