@@ -78,6 +78,7 @@ contract VaultManager is IVaultManager, LedgerComponent {
         } else {
             allowedBrokerSet.remove(_brokerHash);
         }
+        emit SetAllowedBroker(_brokerHash, _allowed);
     }
 
     function getAllowedBroker(bytes32 _brokerHash) public view override returns (bool) {
@@ -86,6 +87,7 @@ contract VaultManager is IVaultManager, LedgerComponent {
 
     function setAllowedChainToken(bytes32 _tokenHash, uint256 _chainId, bool _allowed) public override onlyOwner {
         allowedChainToken[_tokenHash][_chainId] = _allowed;
+        emit SetAllowedChainToken(_tokenHash, _chainId, _allowed);
     }
 
     function getAllowedChainToken(bytes32 _tokenHash, uint256 _chainId) public view override returns (bool) {
@@ -98,6 +100,7 @@ contract VaultManager is IVaultManager, LedgerComponent {
         } else {
             allowedSymbolSet.remove(_symbolHash);
         }
+        emit SetAllowedSymbol(_symbolHash, _allowed);
     }
 
     function getAllowedSymbol(bytes32 _symbolHash) public view override returns (bool) {
@@ -125,6 +128,7 @@ contract VaultManager is IVaultManager, LedgerComponent {
         } else {
             allowedTokenSet.remove(_tokenHash);
         }
+        emit SetAllowedToken(_tokenHash, _allowed);
     }
 
     function getAllowedToken(bytes32 _tokenHash) public view override returns (bool) {
@@ -134,6 +138,7 @@ contract VaultManager is IVaultManager, LedgerComponent {
     // maxWithdrawFee
     function setMaxWithdrawFee(bytes32 _tokenHash, uint128 _maxWithdrawFee) public override onlyOwner {
         maxWithdrawFee[_tokenHash] = _maxWithdrawFee;
+        emit SetMaxWithdrawFee(_tokenHash, _maxWithdrawFee);
     }
 
     function getMaxWithdrawFee(bytes32 _tokenHash) public view override returns (uint128) {
