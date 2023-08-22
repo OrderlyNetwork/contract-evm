@@ -58,6 +58,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         } else {
             allowedTokenSet.remove(_tokenHash);
         }
+        emit SetAllowedToken(_tokenHash, _allowed);
     }
 
     // add the hash value for an allowed brokerId
@@ -67,12 +68,14 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         } else {
             allowedBrokerSet.remove(_brokerHash);
         }
+        emit SetAllowedBroker(_brokerHash, _allowed);
     }
 
     // change the token address for an allowed token
     function changeTokenAddressAndAllow(bytes32 _tokenHash, address _tokenAddress) public override onlyOwner {
         allowedToken[_tokenHash] = _tokenAddress;
         allowedTokenSet.add(_tokenHash);
+        emit ChangeTokenAddressAndAllow(_tokenHash, _tokenAddress);
     }
 
     // check if the tokenHash is allowed
@@ -130,7 +133,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         );
         IVaultCrossChainManager(crossChainManagerAddress).deposit(depositData);
         // emit deposit event
-        emit AccountDeposit(data.accountId, receiver, depositId, data.tokenHash, data.tokenAmount);
+        emit AccountDepositTo(data.accountId, receiver, depositId, data.tokenHash, data.tokenAmount);
     }
 
     // user withdraw
@@ -161,8 +164,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     }
 
     function _newDepositId() internal returns (uint64) {
-        depositId += 1;
-        return depositId;
+        return ++depositId;
     }
 
     function emergencyPause() public onlyOwner {
