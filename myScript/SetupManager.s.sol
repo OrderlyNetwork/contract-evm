@@ -35,14 +35,14 @@ contract SetupManager is BaseScript {
             } else {
                 revert("Invalid side");
             }
-        } else if (method.compare("addVault")) {
+        } else if (method.compare("addVaultOnLedger")) {
             string memory addVaultNetwork = vm.envString("ADD_VAULT_NETWORK");
             address vaultManagerAddress = getManagerProxyAddress(addVaultNetwork);
             uint256 vaultChainId = getChainId(addVaultNetwork);
             address managerAddress = getManagerProxyAddress(network);
             addVaultManagerToLedgerManager(managerAddress, vaultManagerAddress, vaultChainId);
-        } else if (method.compare("setLedger")) {
-
+        } else if (method.compare("setLedgerOnVault")) {
+            setLedgerOnVault(network);
         } else if (method.compare("test")) {
             sendTestWithdraw(network);
         } else {
@@ -52,7 +52,14 @@ contract SetupManager is BaseScript {
         vm.stopBroadcast();
     }
 
-    function vaultSetup(address managerAddress, address relayAddress, address ledgerManagerAddress, address vaultAddress, uint256 chainId, uint256 ledgerChainId) internal {
+    function vaultSetup(
+        address managerAddress,
+        address relayAddress,
+        address ledgerManagerAddress,
+        address vaultAddress,
+        uint256 chainId,
+        uint256 ledgerChainId
+    ) internal {
         VaultCrossChainManagerUpgradeable manager = VaultCrossChainManagerUpgradeable(payable(managerAddress));
         manager.setChainId(chainId);
         manager.setCrossChainRelay(relayAddress);
@@ -60,7 +67,13 @@ contract SetupManager is BaseScript {
         manager.setVault(vaultAddress);
     }
 
-    function ledgerSetup(address managerAddress, address relayAddress, address operatorAddress, address ledgerAddress, uint256 chainId) internal {
+    function ledgerSetup(
+        address managerAddress,
+        address relayAddress,
+        address operatorAddress,
+        address ledgerAddress,
+        uint256 chainId
+    ) internal {
         LedgerCrossChainManagerUpgradeable manager = LedgerCrossChainManagerUpgradeable(payable(managerAddress));
         manager.setChainId(chainId);
         manager.setCrossChainRelay(relayAddress);
@@ -68,15 +81,20 @@ contract SetupManager is BaseScript {
         manager.setLedger(ledgerAddress);
 
         // subnet USDC decimal
-        manager.setTokenDecimal(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa, 986532, 6);
-        manager.setTokenDecimal(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa, 986533, 4);
-        manager.setTokenDecimal(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa, 986534, 6);
+        manager.setTokenDecimal(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa, 4460, 6);
+        // manager.setTokenDecimal(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa, 986533, 4);
+        // manager.setTokenDecimal(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa, 986534, 6);
         // fuji USDC decimal
-        manager.setTokenDecimal(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa, 43113, 6);
+        manager.setTokenDecimal(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa, 421613, 6);
     }
 
-    function addVaultManagerToLedgerManager(address ledgerManagerAddress, address vaultManagerAddress, uint256 vaultChainId) internal {
-        LedgerCrossChainManagerUpgradeable ledgerManager = LedgerCrossChainManagerUpgradeable(payable(ledgerManagerAddress));
+    function addVaultManagerToLedgerManager(
+        address ledgerManagerAddress,
+        address vaultManagerAddress,
+        uint256 vaultChainId
+    ) internal {
+        LedgerCrossChainManagerUpgradeable ledgerManager =
+            LedgerCrossChainManagerUpgradeable(payable(ledgerManagerAddress));
         ledgerManager.setVaultCrossChainManager(vaultChainId, vaultManagerAddress);
     }
 
@@ -88,7 +106,7 @@ contract SetupManager is BaseScript {
         manager.sendTestWithdraw(dstChainId);
     }
 
-    function setLedger(string memory network) internal {
+    function setLedgerOnVault(string memory network) internal {
         string memory ledgerNetwork = vm.envString("LEDGER_NETWORK");
         address ledgerProxy = getManagerProxyAddress(ledgerNetwork);
         address vaultProxy = getManagerProxyAddress(network);
