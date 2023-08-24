@@ -11,9 +11,9 @@ import "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /**
- * Vault is responsible for saving user's USDC (where USDC which is a IERC20 token).
+ * Vault is responsible for saving user's erc20 token.
  * EACH CHAIN SHOULD HAVE ONE Vault CONTRACT.
- * User can deposit USDC from Vault.
+ * User can deposit erc20 (USDC) from Vault.
  * Only crossChainManager can approve withdraw request.
  */
 contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {

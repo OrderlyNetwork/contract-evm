@@ -10,7 +10,7 @@ import "./library/Signature.sol";
 
 /**
  * OperatorManager is responsible for executing cefi tx, only called by operator.
- * This contract should only have one in main-chain (avalanche)
+ * This contract should only have one in main-chain
  */
 contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManagerDataLayout {
     // only operator
@@ -60,10 +60,11 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         eventUploadBatchId = 1;
         lastOperatorInteraction = block.timestamp;
         // TODO init all cefi sign address
-        // cefiSpotTradeUploadAddress = 0xEd914b637eE097B432b5e85F15565aFE02bFD350;
-        // cefiPerpTradeUploadAddress = 0xD780D67ff05046170D00223316bA4b0fa27a88e3;
-        // cefiEventUploadAddress = 0xD7B54C1c4078AAd489eF1413956BD8Cb92804D19;
-        // cefiMarketUploadAddress = 0xEDA4Ec3449536A22CfCF28c133d8AC8589d1813A;
+        // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/315785217/Orderly+V2+Keys+Smart+Contract
+        cefiSpotTradeUploadAddress = 0xEd914b637eE097B432b5e85F15565aFE02bFD350;
+        cefiPerpTradeUploadAddress = 0xD780D67ff05046170D00223316bA4b0fa27a88e3;
+        cefiEventUploadAddress = 0xD7B54C1c4078AAd489eF1413956BD8Cb92804D19;
+        cefiMarketUploadAddress = 0xEDA4Ec3449536A22CfCF28c133d8AC8589d1813A;
     }
 
     // operator ping

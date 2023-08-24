@@ -17,7 +17,7 @@ import "./library/typesHelper/SafeCastHelper.sol";
 /**
  * Ledger is responsible for saving traders' Account (balance, perpPosition, and other meta)
  * and global state (e.g. futuresUploadBatchId)
- * This contract should only have one in main-chain (avalanche)
+ * This contract should only have one in main-chain (e.g. OP orderly L2)
  */
 contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
     using AccountTypeHelper for AccountTypes.Account;
