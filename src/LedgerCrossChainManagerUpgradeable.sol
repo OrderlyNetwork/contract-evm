@@ -53,12 +53,11 @@ contract DecimalManager is LedgerCrossChainManagerDatalayout {
         }
     }
 
-    function convertDecimal(
-        uint128 tokenAmount,
-        bytes32 tokenHash,
-        uint256 srcChainId,
-        uint256 dstChainId
-    ) internal view returns (uint128) {
+    function convertDecimal(uint128 tokenAmount, bytes32 tokenHash, uint256 srcChainId, uint256 dstChainId)
+        internal
+        view
+        returns (uint128)
+    {
         uint128 srcDecimal = getTokenDecimal(tokenHash, srcChainId);
         uint128 dstDecimal = getTokenDecimal(tokenHash, dstChainId);
         return convertDecimal(tokenAmount, srcDecimal, dstDecimal);
@@ -157,6 +156,7 @@ contract LedgerCrossChainManagerUpgradeable is
             }
 
             uint128 cvtTokenAmount = convertDecimal(data.tokenAmount, data.tokenHash, message.srcChainId, chainId);
+            uint128 cvtFeeAmount = convertDecimal(data.fee, data.tokenHash, message.srcChainId, chainId);
 
             AccountTypes.AccountWithdraw memory withdrawData = AccountTypes.AccountWithdraw({
                 accountId: data.accountId,
@@ -164,8 +164,8 @@ contract LedgerCrossChainManagerUpgradeable is
                 receiver: data.receiver,
                 brokerHash: data.brokerHash,
                 tokenHash: data.tokenHash,
-                tokenAmount: uint128(cvtTokenAmount),
-                fee: data.fee,
+                tokenAmount: cvtTokenAmount,
+                fee: cvtFeeAmount,
                 chainId: message.srcChainId,
                 withdrawNonce: data.withdrawNonce
             });
@@ -191,8 +191,11 @@ contract LedgerCrossChainManagerUpgradeable is
         });
 
         // convert token amount to dst chain decimal
-        uint128 cvtTokenAmount = convertDecimal(data.tokenAmount, Utils.getTokenHash(data.tokenSymbol), chainId, data.chainId);
+        uint128 cvtTokenAmount =
+            convertDecimal(data.tokenAmount, Utils.getTokenHash(data.tokenSymbol), chainId, data.chainId);
+        uint128 cvtFeeAmount = convertDecimal(data.fee, Utils.getTokenHash(data.tokenSymbol), chainId, data.chainId);
         data.tokenAmount = cvtTokenAmount;
+        data.fee = cvtFeeAmount;
 
         bytes memory payload = abi.encode(data);
 
@@ -226,13 +229,15 @@ contract LedgerCrossChainManagerUpgradeable is
         });
 
         // convert token amount to dst chain decimal
-        uint128 cvtTokenAmount = convertDecimal(data.tokenAmount, Utils.getTokenHash(data.tokenSymbol), chainId, data.chainId);
+        uint128 cvtTokenAmount =
+            convertDecimal(data.tokenAmount, Utils.getTokenHash(data.tokenSymbol), chainId, data.chainId);
+        uint128 cvtFeeAmount = convertDecimal(data.fee, Utils.getTokenHash(data.tokenSymbol), chainId, data.chainId);
         data.tokenAmount = cvtTokenAmount;
+        data.fee = cvtFeeAmount;
 
         bytes memory payload = abi.encode(data);
 
         crossChainRelay.sendMessage(message, payload);
-
     }
 
     function withdrawFinish(AccountTypes.AccountWithdraw memory message) internal {
