@@ -4,6 +4,9 @@ pragma solidity ^0.8.18;
 import "./interface/IFeeManager.sol";
 import "./LedgerComponent.sol";
 
+/**
+ * FeeManager saves FeeCollector accountId
+ */
 contract FeeManager is IFeeManager, LedgerComponent {
     // accountId
     bytes32 public withdrawFeeCollector;
@@ -16,6 +19,9 @@ contract FeeManager is IFeeManager, LedgerComponent {
 
     function initialize() public override initializer {
         __Ownable_init();
+        // https://wootraders.atlassian.net/jira/software/c/projects/ORDOPS/boards/102?modal=detail&selectedIssue=ORDOPS-264
+        futuresFeeCollector = 0x2d7f165afa581711dec503b332511d3e9691068e03bd66cca63dadcc5a26e91f;
+        withdrawFeeCollector = 0x62acc78595f76ee3ab5309bcfee3fec4cb3fd7686a4a2cd06b77ce1a12946f33;
     }
 
     // get_fee_collector

@@ -6,6 +6,9 @@ import "./library/typesHelper/MarketTypeHelper.sol";
 import "./LedgerComponent.sol";
 import "./OperatorManagerComponent.sol";
 
+/**
+ * MarketManager saves perpMarketCfg
+ */
 contract MarketManager is IMarketManager, LedgerComponent, OperatorManagerComponent {
     using MarketTypeHelper for MarketTypes.PerpMarketCfg;
 
