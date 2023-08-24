@@ -7,6 +7,7 @@ import "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 
 /**
  * VaultManager is responsible for saving vaults' balance, to ensure the cross-chain tx should success
+ * VaultManager also saves the allowed brokerIds, tokenHash, symbolHash
  */
 contract VaultManager is IVaultManager, LedgerComponent {
     using EnumerableSet for EnumerableSet.Bytes32Set;
