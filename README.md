@@ -137,21 +137,16 @@ MARKET_MANAGER_ADDRESS="0x1AFE8286eD1b365671870A735f7deb4dcc9DB16D"
 - cross-chain relay on target two chains are deployed, address of the relay proxy is put into `.env` file. env variables are `XXX_RELAY_PROXY`, where `XXX` denotes the network name
 
 ## Workflow
-
 1. you need to set all common public env variables first
-
-- RPC urls for each network
-- chain ids for each network
-- private keys for each network
-
+ - RPC urls for each network
+ - chain ids for each network
+ - private keys for each network
 2. set project related env variables
-
-- ledger address
-- vault address
-- operator manager address
-- vault relay address per network
-- ledger relay address per network
-
+ - ledger address
+ - vault address
+ - operator manager address
+ - vault relay address per network
+ - ledger relay address per network
 2. deploy managers
 3. setup managers
 4. send test tx(ABA) for test manager cross-chain msg sending and receiving
@@ -221,5 +216,4 @@ and call to send test withdraw message
 ```shell
 forge script myScript/SetupManager.s.sol --rpc-url $RPC_URL_ORDERLY -vvvv  --via-ir --broadcast
 ```
-
 later view payload status on layerzeroscan to check whether test succeed.
