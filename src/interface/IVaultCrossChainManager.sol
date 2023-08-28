@@ -15,7 +15,7 @@ interface IVaultCrossChainManager {
      * @notice deposit to vault
      * @param _data deposit data
      */
-    function deposit(VaultTypes.VaultDeposit memory _data) external;
+    function deposit(VaultTypes.VaultDeposit memory _data) external payable;
 
     /**
      * @notice get deposit fee
