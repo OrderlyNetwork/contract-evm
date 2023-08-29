@@ -19,7 +19,7 @@ contract FeeManager is IFeeManager, LedgerComponent {
 
     function initialize() public override initializer {
         __Ownable_init();
-        // https://wootraders.atlassian.net/jira/software/c/projects/ORDOPS/boards/102?modal=detail&selectedIssue=ORDOPS-264
+        // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/346882377/System+Account+-+V2
         futuresFeeCollector = 0x9bbb758b076a7da7ca659696e5625b4d4c362f228e8351be705ef75e581aef9f;
         withdrawFeeCollector = 0xf2ceee2895558bc575e28fa342a9f708f929a8e99a4819aa9ef32d114b7924a5;
     }
