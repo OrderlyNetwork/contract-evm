@@ -18,6 +18,13 @@ interface IVaultCrossChainManager {
     function deposit(VaultTypes.VaultDeposit memory _data) external payable;
 
     /**
+     * @notice deposit to vault with native fee
+     * @param _data deposit data
+     * @param _amount fee amount
+     */
+    function depositWithFee(VaultTypes.VaultDeposit memory _data, uint256 _amount) external payable;
+
+    /**
      * @notice get deposit fee
      * @param _data deposit data
      * @return fee
