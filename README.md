@@ -26,6 +26,48 @@ Test
 forge test -vvvv
 ```
 
+# Contract overview
+
+## Layout
+
+see standard [foundry project layout](https://book.getfoundry.sh/projects/project-layout)
+
+## Src
+
+1. dataLayout
+
+   Complicated dataLayout, or slot storage for contract.
+
+2. interface
+
+   Interface defines for all contracts
+
+3. library
+
+   Libraries defines data structure and inline functions
+
+   1. types
+
+      Define data structure for other contracts
+
+   2. typesHelper
+
+      Helper functions for types, the contract use this with: `using typesHelper for types`
+
+   3. other libraries
+
+      Libraries of inline functions
+
+4. vaultSide
+
+   Contracts for `Vault`
+
+5. other contracts
+
+   Main contracts for `settlement layer, or in another word, Ledger`
+
+   Check [conflunce here](https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/279838766/Solidity+Contract+Overview) for more info
+
 ## CrossChain Setup
 
 ## CrossChainRelay Vault Side 43113
