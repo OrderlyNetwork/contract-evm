@@ -58,30 +58,6 @@ contract MarketManager is IMarketManager, LedgerComponent, OperatorManagerCompon
         return perpMarketCfg[_pairSymbol];
     }
 
-    function setBaseMaintenanceMargin(bytes32 _pairSymbol, uint32 _baseMaintenanceMargin) external override onlyOwner {
-        perpMarketCfg[_pairSymbol].setBaseMaintenanceMargin(_baseMaintenanceMargin);
-    }
-
-    function setBaseInitialMargin(bytes32 _pairSymbol, uint32 _baseInitialMargin) external override onlyOwner {
-        perpMarketCfg[_pairSymbol].setBaseInitialMargin(_baseInitialMargin);
-    }
-
-    function setLiquidationFeeMax(bytes32 _pairSymbol, uint128 _liquidationFeeMax) external override onlyOwner {
-        perpMarketCfg[_pairSymbol].setLiquidationFeeMax(_liquidationFeeMax);
-    }
-
-    function setMarkPrice(bytes32 _pairSymbol, uint128 _markPrice) external override onlyOwner {
-        perpMarketCfg[_pairSymbol].setMarkPrice(_markPrice);
-    }
-
-    function setIndexPriceOrderly(bytes32 _pairSymbol, uint128 _indexPriceOrderly) external override onlyOwner {
-        perpMarketCfg[_pairSymbol].setIndexPriceOrderly(_indexPriceOrderly);
-    }
-
-    function setSumUnitaryFundings(bytes32 _pairSymbol, int128 _sumUnitaryFundings) external override onlyOwner {
-        perpMarketCfg[_pairSymbol].setSumUnitaryFundings(_sumUnitaryFundings);
-    }
-
     function setLastMarkPriceUpdated(bytes32 _pairSymbol, uint64 _lastMarkPriceUpdated) external override onlyOwner {
         perpMarketCfg[_pairSymbol].setLastMarkPriceUpdated(_lastMarkPriceUpdated);
     }
