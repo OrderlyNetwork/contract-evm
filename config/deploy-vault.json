@@ -1,0 +1,16 @@
+{
+  "dev": {
+    "arbitrumgoerli": {
+      "proxyAdmin": "0x93A5486E16553eb112Ec1Fa41f5B8b9E24102B6e",
+      "tUSDC": "0x004d88aa993fd2100d6c8beb6cdb6bc04f565b44",
+      "vault": "0x0C554dDb6a9010Ed1FD7e50d92559A06655dA482"
+    }
+  },
+  "qa": {
+    "arbitrumgoerli": {
+      "proxyAdmin": "0xCaE33d6D72cd2c01b71d6Be3CE2E62b4B7297961",
+      "tUSDC": "0x6aAd876244E7A1Ad44Ec4824Ce813729E5B6C291",
+      "vault": "0x22b10472d3Da206aaA85D3f19E91A8da15E0F56A"
+    }
+  }
+}
