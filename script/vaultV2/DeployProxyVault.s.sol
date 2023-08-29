@@ -4,8 +4,8 @@ pragma solidity ^0.8.18;
 import "forge-std/Script.sol";
 import "openzeppelin-contracts/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import "openzeppelin-contracts/contracts/proxy/transparent/ProxyAdmin.sol";
-import "../../src/Vault.sol";
-import "../../src/testUSDC/tUSDC.sol";
+import "../../src/vaultSide/Vault.sol";
+import "../../src/vaultSide/tUSDC.sol";
 import "../utils/BaseScript.s.sol";
 import "../utils/ConfigHelper.s.sol";
 

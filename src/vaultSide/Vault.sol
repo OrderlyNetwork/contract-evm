@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
-import "./interface/IVault.sol";
-import "./interface/IVaultCrossChainManager.sol";
-import "./library/Utils.sol";
+import "../interface/IVault.sol";
+import "../interface/IVaultCrossChainManager.sol";
+import "../library/Utils.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeable.sol";
 import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
