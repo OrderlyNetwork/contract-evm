@@ -1,0 +1,22 @@
+{
+  "dev": {
+    "orderlyop": {
+      "feeManager": "0x835E970110E4a46BCA21A7551FEaA5F532F72701",
+      "ledger": "0x8794E7260517B1766fc7b55cAfcd56e6bf08600e",
+      "marketManager": "0x3ac2Ba11Ca2f9f109d50fb1a46d4C23fCadbbef6",
+      "operatorManager": "0xe34614EB781C5838C78B7f913b89A05e7a5b97e2",
+      "proxyAdmin": "0x8910A067473C1800b371183124AEdC95684244DE",
+      "vaultManager": "0x4922872C26Befa37AdcA287fF68106013C82FeeD"
+    }
+  },
+  "qa": {
+    "orderlyop": {
+      "feeManager": "0x8A929891DE9a648B6A3D05d21362418f756cf728",
+      "ledger": "0x50F59504D3623Ad99302835da367676d1f7E3D44",
+      "marketManager": "0x1AFE8286eD1b365671870A735f7deb4dcc9DB16D",
+      "operatorManager": "0x7Cd1FBdA284997Be499D3294C9a50352Dd682155",
+      "proxyAdmin": "0x0EaC556c0C2321BA25b9DC01e4e3c95aD5CDCd2f",
+      "vaultManager": "0x3B092aEe40Cb99174E8C73eF90935F9F35943B22"
+    }
+  }
+}
