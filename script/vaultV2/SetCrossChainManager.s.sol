@@ -2,15 +2,14 @@
 pragma solidity ^0.8.18;
 
 import "forge-std/Script.sol";
-import "openzeppelin-contracts/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
-import "openzeppelin-contracts/contracts/proxy/transparent/ProxyAdmin.sol";
 import "../../src/vaultSide/Vault.sol";
 import "../utils/BaseScript.s.sol";
 import "../utils/ConfigHelper.s.sol";
 
-contract UpgradeVault is BaseScript, ConfigHelper {
+contract VaultSetCrossChainManager is BaseScript, ConfigHelper {
     function run() external {
         uint256 orderlyPrivateKey = vm.envUint("ORDERLY_PRIVATE_KEY");
+        address vaultCrossChainManagerAddress = vm.envAddress("VAULT_CROSS_CHAIN_MANAGER_ADDRESS"); // FIXME
         Envs memory envs = getEnvs();
         string memory env = envs.env;
         string memory network = envs.vaultNetwork;
@@ -21,13 +20,10 @@ contract UpgradeVault is BaseScript, ConfigHelper {
         console.log("adminAddress: ", adminAddress);
         console.log("vaultAddress: ", vaultAddress);
 
-        ProxyAdmin admin = ProxyAdmin(adminAddress);
-        ITransparentUpgradeableProxy vaultProxy = ITransparentUpgradeableProxy(vaultAddress);
-
         vm.startBroadcast(orderlyPrivateKey);
 
-        IVault vaultImpl = new Vault();
-        admin.upgrade(vaultProxy, address(vaultImpl));
+        IVault vault = Vault(vaultAddress);
+        vault.setCrossChainManager(vaultCrossChainManagerAddress);
 
         vm.stopBroadcast();
     }

@@ -4,8 +4,8 @@ pragma solidity ^0.8.19;
 import "forge-std/Test.sol";
 import "openzeppelin-contracts/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import "openzeppelin-contracts/contracts/proxy/transparent/ProxyAdmin.sol";
-import "../src/Vault.sol";
-import "../src/testUSDC/tUSDC.sol";
+import "../src/vaultSide/Vault.sol";
+import "../src/vaultSide/tUSDC.sol";
 import "./mock/VaultCrossChainManagerMock.sol";
 
 contract VaultTest is Test {
