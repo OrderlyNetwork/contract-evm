@@ -18,5 +18,15 @@
       "proxyAdmin": "0x0EaC556c0C2321BA25b9DC01e4e3c95aD5CDCd2f",
       "vaultManager": "0x3B092aEe40Cb99174E8C73eF90935F9F35943B22"
     }
+  },
+  "staging": {
+    "orderlyop": {
+      "feeManager": "0x0B98ba78DDb29937d895c718ED167DD8f5B2972d",
+      "ledger": "0x1826B75e2ef249173FC735149AE4B8e9ea10abff",
+      "marketManager": "0x523Ab490B15803d6Ba60dC95F1579536F95edD4e",
+      "operatorManager": "0x1A46be28AB241F5A64F82ddFc384911520E3d557",
+      "proxyAdmin": "0x24ea35cCD9d8c7aA5D35BDdc140A5f97D89289F8",
+      "vaultManager": "0x873c120b42C80D528389d85cEA9d4dC0197974aD"
+    }
   }
 }

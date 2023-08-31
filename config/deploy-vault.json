@@ -12,5 +12,12 @@
       "tUSDC": "0x6aAd876244E7A1Ad44Ec4824Ce813729E5B6C291",
       "vault": "0x22b10472d3Da206aaA85D3f19E91A8da15E0F56A"
     }
+  },
+  "staging": {
+    "arbitrumgoerli": {
+      "proxyAdmin": "",
+      "tUSDC": "0x6aAd876244E7A1Ad44Ec4824Ce813729E5B6C291",
+      "vault": ""
+    }
   }
 }
