@@ -20,8 +20,8 @@ contract FeeManager is IFeeManager, LedgerComponent {
     function initialize() public override initializer {
         __Ownable_init();
         // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/346882377/System+Account+-+V2
-        futuresFeeCollector = 0x9bbb758b076a7da7ca659696e5625b4d4c362f228e8351be705ef75e581aef9f;
-        withdrawFeeCollector = 0xf2ceee2895558bc575e28fa342a9f708f929a8e99a4819aa9ef32d114b7924a5;
+        futuresFeeCollector = 0x0ded76d9b80cba463c51e8d556fda7ae63458e8fc1d912ae87ecae5ceb4f5d03;
+        withdrawFeeCollector = 0xd24181b51223b8998dba9fd230a053034dd7d0140c3a50c57c806def77992663;
     }
 
     // get_fee_collector
