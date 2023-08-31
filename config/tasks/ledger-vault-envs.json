@@ -1,5 +1,5 @@
 {
-    "env": "qa",
+    "env": "staging",
     "ledgerNetwork": "orderlyop",
     "vaultNetwork": "arbitrumgoerli"
 }
