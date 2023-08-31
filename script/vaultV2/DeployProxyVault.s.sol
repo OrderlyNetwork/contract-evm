@@ -19,10 +19,13 @@ contract DeployVault is BaseScript, ConfigHelper {
         string memory env = envs.env;
         string memory network = envs.vaultNetwork;
 
+        VaultDepolyData memory config = getVaultDeployData(env, network);
+        address usdcAddress = config.tUSDC;
+        console.log("usdcAddress: ", usdcAddress);
+
         vm.startBroadcast(orderlyPrivateKey);
 
         ProxyAdmin admin = new ProxyAdmin();
-        TestUSDC tUSDC = new TestUSDC();
 
         IVault vaultImpl = new Vault();
         TransparentUpgradeableProxy vaultProxy =
@@ -32,16 +35,13 @@ contract DeployVault is BaseScript, ConfigHelper {
         // avoid stack too deep error
         {
             console.log("deployed proxyAdmin address: ", address(admin));
-            console.log("deployed tUSDC address: ", address(tUSDC));
             console.log("deployed vault proxy address: ", address(vaultProxy));
             writeVaultDeployData(env, network, "proxyAdmin", vm.toString(address(admin)));
-            writeVaultDeployData(env, network, "tUSDC", vm.toString(address(tUSDC)));
             writeVaultDeployData(env, network, "vault", vm.toString(address(vaultProxy)));
         }
 
-        vault.changeTokenAddressAndAllow(USDC, address(tUSDC));
+        vault.changeTokenAddressAndAllow(USDC, usdcAddress);
         vault.setAllowedBroker(BROKER_HASH, true);
-        // vault.setCrossChainManager(address(vaultCrossChainManager));
 
         vm.stopBroadcast();
     }

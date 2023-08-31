@@ -14,9 +14,9 @@ contract VaultManagerTest is Test {
     TransparentUpgradeableProxy vaultManagerProxy;
     TransparentUpgradeableProxy ledgerManagerProxy;
     uint256 constant CHAIN_ID = 0xabcd;
-    bytes32 constant TOKEN_HASH = 0x61fc29e9a6b4b52b423e75ca44734454f94ea60ddff3dc47af01a2a646fe9572;
-    bytes32 constant BROKER_HASH = 0x083098c593f395bea1de45dda552d9f14e8fcb0be3faaa7a1903c5477d7ba7fd;
-    bytes32 constant SYMBOL_HASH = 0xa2adc016e890b4fbbf161c7eaeb615b893e4fbeceae918fa7bf16cc40d46610b;
+    bytes32 constant TOKEN_HASH = 0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa;
+    bytes32 constant BROKER_HASH = 0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb;
+    bytes32 constant SYMBOL_HASH = 0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc;
 
     function setUp() public {
         admin = new ProxyAdmin();
@@ -107,13 +107,16 @@ contract VaultManagerTest is Test {
     }
 
     function test_getAllWhitelistSet() public {
+        uint256 brokerLength = vaultManager.getAllAllowedBroker().length;
+        uint256 tokenLength = vaultManager.getAllAllowedToken().length;
+        uint256 symbolLength = vaultManager.getAllAllowedSymbol().length;
         vaultManager.setAllowedChainToken(TOKEN_HASH, CHAIN_ID, true);
         vaultManager.setAllowedToken(TOKEN_HASH, true);
         vaultManager.setAllowedBroker(BROKER_HASH, true);
         vaultManager.setAllowedSymbol(SYMBOL_HASH, true);
-        assertEq(vaultManager.getAllAllowedBroker().length, 1);
-        assertEq(vaultManager.getAllAllowedToken().length, 1);
-        assertEq(vaultManager.getAllAllowedSymbol().length, 1);
+        assertEq(vaultManager.getAllAllowedBroker().length, brokerLength + 1);
+        assertEq(vaultManager.getAllAllowedToken().length, tokenLength + 1);
+        assertEq(vaultManager.getAllAllowedSymbol().length, symbolLength + 1);
     }
 
     function test_setThenUnsetWhitelist() public {

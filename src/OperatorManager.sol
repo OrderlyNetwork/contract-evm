@@ -59,12 +59,13 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         futuresUploadBatchId = 1;
         eventUploadBatchId = 1;
         lastOperatorInteraction = block.timestamp;
-        // TODO init all cefi sign address
+        // init all cefi sign address
         // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/315785217/Orderly+V2+Keys+Smart+Contract
-        cefiSpotTradeUploadAddress = 0x8E98B99DdB8e268A0B180A4F5A497f6dE5dCDb01;
-        cefiPerpTradeUploadAddress = 0xBDaBeB0BB6CCfcE37bfba46cD7989a27b44F77a1;
-        cefiEventUploadAddress = 0xC6A61277DE13f0e13e4687D0c979267E3Ab37343;
-        cefiMarketUploadAddress = 0x7481F9F1B3f59685fD98ce210967bB6935f4b9Cc;
+        cefiSpotTradeUploadAddress = 0x54c8D36aBE8dd1B32a70fCe6c9afFE470b208601;
+        cefiPerpTradeUploadAddress = 0x4d26aE249503716b6e7540f04434D9F0e54F87A7;
+        cefiEventUploadAddress = 0x475a5dA10eb6dE8A18Bd4c1131Ab90a78b19b915;
+        cefiMarketUploadAddress = 0x5E045a8bE39572Ce02cF076B35750034Cd9a431D;
+        operatorAddress = 0x2d4e9C592b9f42557DAE7B103F3fCA47448DC0BD;
     }
 
     // operator ping
