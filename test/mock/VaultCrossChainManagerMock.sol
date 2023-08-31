@@ -20,4 +20,6 @@ contract VaultCrossChainManagerMock is IOrderlyCrossChainReceiver, IVaultCrossCh
     function setVault(address _vault) external override {}
 
     function setCrossChainRelay(address _crossChainRelay) external override {}
+
+    function depositWithFee(VaultTypes.VaultDeposit memory _data, uint256 _amount) external payable override {}
 }
