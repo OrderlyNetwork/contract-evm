@@ -11,11 +11,11 @@ import "./ILedgerEvent.sol";
 interface ILedger is ILedgerError, ILedgerEvent {
     function initialize() external;
 
-    // called by cross chain manager
+    // Functions called by cross chain manager on Ledger side
     function accountDeposit(AccountTypes.AccountDeposit calldata accountDeposit) external;
     function accountWithDrawFinish(AccountTypes.AccountWithdraw calldata withdraw) external;
 
-    // called by operator manager
+    // Functions called by operator manager to executre actions
     function executeProcessValidatedFutures(PerpTypes.FuturesTradeUpload calldata trade) external;
     function executeWithdrawAction(EventTypes.WithdrawData calldata withdraw, uint64 eventId) external;
     function executeSettlement(EventTypes.Settlement calldata ledger, uint64 eventId) external;

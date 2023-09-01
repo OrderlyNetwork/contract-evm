@@ -6,26 +6,26 @@ import "../interface/ILedger.sol";
 import "../interface/IMarketManager.sol";
 
 contract OperatorManagerDataLayout {
-    // operator address
+    // An EOA operator address
     address public operatorAddress;
-    // ledger Interface
+    // The ledger Interface
     ILedger public ledger;
-    // futuresUploadBatchId
+    // An increasing Id for the batch of perpetual futures trading upload from Operator
     uint64 public futuresUploadBatchId;
-    // market manager Interface
+    // The market manager Interface
     IMarketManager public marketManager;
-    // eventUploadBatchId
+    // An increasing Id for the event upload from Operator
     uint64 public eventUploadBatchId;
 
-    // last operator interaction timestamp
+    // The last operator interaction timestamp
     uint256 public lastOperatorInteraction;
 
-    // cefi sign address
+    // The signature addresses of CeFi
     address public cefiSpotTradeUploadAddress;
     address public cefiPerpTradeUploadAddress;
     address public cefiEventUploadAddress;
     address public cefiMarketUploadAddress;
 
-    // gap
+    // The storage gap to prevent overwriting by proxy
     uint256[42] private __gap;
 }

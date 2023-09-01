@@ -13,39 +13,43 @@ import "./library/Signature.sol";
  * This contract should only have one in main-chain
  */
 contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManagerDataLayout {
-    // only operator
+    // Require only operator can call
     modifier onlyOperator() {
         if (msg.sender != operatorAddress) revert OnlyOperatorCanCall();
         _;
     }
 
-    // set operator
+    // Set the operator address
     function setOperator(address _operatorAddress) public override onlyOwner {
         operatorAddress = _operatorAddress;
     }
 
-    // set cefi sign address
+    // Set cefi signature address for spot trade upload
     function setCefiSpotTradeUploadAddress(address _cefiSpotTradeUploadAddress) public override onlyOwner {
         cefiSpotTradeUploadAddress = _cefiSpotTradeUploadAddress;
     }
 
+    // Set cefi signature address for perpetual future trade upload
     function setCefiPerpTradeUploadAddress(address _cefiPerpTradeUploadAddress) public override onlyOwner {
         cefiPerpTradeUploadAddress = _cefiPerpTradeUploadAddress;
     }
 
+    // Set cefi signature address for event upload
     function setCefiEventUploadAddress(address _cefiEventUploadAddress) public override onlyOwner {
         cefiEventUploadAddress = _cefiEventUploadAddress;
     }
 
+    // Set cefi signature address for market information upload
     function setCefiMarketUploadAddress(address _cefiMarketUploadAddress) public override onlyOwner {
         cefiMarketUploadAddress = _cefiMarketUploadAddress;
     }
 
-    // set ledger
+    // Set the address of ledger contract
     function setLedger(address _ledger) public override onlyOwner {
         ledger = ILedger(_ledger);
     }
 
+    // Set the address of market manager contract
     function setMarketManager(address _marketManagerAddress) public override onlyOwner {
         marketManager = IMarketManager(_marketManagerAddress);
     }
@@ -68,12 +72,12 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         operatorAddress = 0x2d4e9C592b9f42557DAE7B103F3fCA47448DC0BD;
     }
 
-    // operator ping
+    // Operator ping to update last operator interaction timestamp
     function operatorPing() public onlyOperator {
         _innerPing();
     }
 
-    // futuresTradeUpload
+    // Function for perpetual futures trade upload
     function futuresTradeUpload(PerpTypes.FuturesTradeUploadData calldata data) public override onlyOperator {
         if (data.batchId != futuresUploadBatchId) revert BatchIdNotMatch(data.batchId, futuresUploadBatchId);
         _innerPing();
@@ -84,7 +88,7 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         futuresUploadBatchId += 1;
     }
 
-    // eventUpload
+    // Function for event upload
     function eventUpload(EventTypes.EventUpload calldata data) public override onlyOperator {
         if (data.batchId != eventUploadBatchId) revert BatchIdNotMatch(data.batchId, eventUploadBatchId);
         _innerPing();
@@ -95,12 +99,13 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         eventUploadBatchId += 1;
     }
 
-    // PerpMarketInfo
+    // Function for perpetual futures price upload
     function perpPriceUpload(MarketTypes.UploadPerpPrice calldata data) public override onlyOperator {
         _innerPing();
         _perpMarketInfo(data);
     }
 
+    // Function for sum unitary fundings upload
     function sumUnitaryFundingsUpload(MarketTypes.UploadSumUnitaryFundings calldata data)
         public
         override
@@ -110,7 +115,7 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         _perpMarketInfo(data);
     }
 
-    // futures trade upload data
+    // Function to verify CeFi signature for futures trade upload data, if validated then Ledger contract will be called to execute the trade process
     function _futuresTradeUploadData(PerpTypes.FuturesTradeUploadData calldata data) internal {
         PerpTypes.FuturesTradeUpload[] calldata trades = data.trades;
         if (trades.length != data.count) revert CountNotMatch(trades.length, data.count);
@@ -125,12 +130,12 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         }
     }
 
-    // process each validated perp trades
+    // Cross-Contract call to Ledger contract to process each validated perp future trades
     function _processValidatedFutures(PerpTypes.FuturesTradeUpload calldata trade) internal {
         ledger.executeProcessValidatedFutures(trade);
     }
 
-    // event upload data
+    // Function to verify CeFi signature for event upload data, if validated then Ledger contract will be called to execute the event process
     function _eventUploadData(EventTypes.EventUpload calldata data) internal {
         EventTypes.EventUploadData[] calldata events = data.events; // gas saving
         if (events.length != data.count) revert CountNotMatch(events.length, data.count);
@@ -145,7 +150,7 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         }
     }
 
-    // process each event upload
+    // Cross-Contract call to Ledger contract to process each event upload according to the event type
     function _processEventUpload(EventTypes.EventUploadData calldata data) internal {
         uint8 bizType = data.bizType;
         if (bizType == 1) {
@@ -165,7 +170,7 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         }
     }
 
-    // perp market info
+    // Function to verify CeFi signature for perpetual future price data, if validated then MarketManager contract will be called to execute the market process
     function _perpMarketInfo(MarketTypes.UploadPerpPrice calldata data) internal {
         // check cefi signature
         bool succ = Signature.marketUploadEncodeHashVerify(data, cefiMarketUploadAddress);
@@ -174,6 +179,7 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         marketManager.updateMarketUpload(data);
     }
 
+    // Function to verify CeFi signature for sum unitary fundings data, if validated then MarketManager contract will be called to execute the market process
     function _perpMarketInfo(MarketTypes.UploadSumUnitaryFundings calldata data) internal {
         // check cefi signature
         bool succ = Signature.marketUploadEncodeHashVerify(data, cefiMarketUploadAddress);
@@ -182,10 +188,12 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         marketManager.updateMarketUpload(data);
     }
 
+    // Function to update last operator interaction timestamp
     function _innerPing() internal {
         lastOperatorInteraction = block.timestamp;
     }
 
+    // Function to check if the last operator interaction timestamp is over 3 days
     function checkCefiDown() public view override returns (bool) {
         return (lastOperatorInteraction + 3 days < block.timestamp);
     }
