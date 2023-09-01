@@ -15,9 +15,9 @@
   },
   "staging": {
     "arbitrumgoerli": {
-      "proxyAdmin": "",
+      "proxyAdmin": "0x3ec2259a0e208867CD812b3b1e7A980Bab5FB38D",
       "tUSDC": "0x6aAd876244E7A1Ad44Ec4824Ce813729E5B6C291",
-      "vault": ""
+      "vault": "0xd64AeB281f3E8cd70e668b6cb24De7e532dC214D"
     }
   }
 }
