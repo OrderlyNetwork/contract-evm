@@ -47,32 +47,32 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         __Ownable_init();
     }
 
-    // set operatorManagerAddress
+    // Set the address of operatorManager contract
     function setOperatorManagerAddress(address _operatorManagerAddress) public override onlyOwner {
         operatorManagerAddress = _operatorManagerAddress;
     }
 
-    // set crossChainManager & Address
+    // Set the address of  crossChainManager on Ledger side
     function setCrossChainManager(address _crossChainManagerAddress) public override onlyOwner {
         crossChainManagerAddress = _crossChainManagerAddress;
     }
 
-    // set vaultManager
+    // Set the address of vaultManager contract
     function setVaultManager(address _vaultManagerAddress) public override onlyOwner {
         vaultManager = IVaultManager(_vaultManagerAddress);
     }
 
-    // set marketManager
+    // Set the address of marketManager contract
     function setMarketManager(address _marketManagerAddress) public override onlyOwner {
         marketManager = IMarketManager(_marketManagerAddress);
     }
 
-    // set feeManager
+    // Set the address of feeManager contract
     function setFeeManager(address _feeManagerAddress) public override onlyOwner {
         feeManager = IFeeManager(_feeManagerAddress);
     }
 
-    // get frozen withdrawNonce balance
+    // Get the amount of a token frozen balance for a given account and the corresponding withdrawNonce
     function getFrozenWithdrawNonce(bytes32 accountId, uint64 withdrawNonce, bytes32 tokenHash)
         public
         view
@@ -147,7 +147,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
     }
 
     // Interface implementation
-
+    // The cross chain manager will call this function to notify the deposit event to the Ledger contract
     function accountDeposit(AccountTypes.AccountDeposit calldata data) external override onlyCrossChainManager {
         // validate data first
         if (!vaultManager.getAllowedBroker(data.brokerHash)) revert BrokerNotAllowed();
