@@ -20,18 +20,19 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     using EnumerableSet for EnumerableSet.Bytes32Set;
     using SafeERC20 for IERC20;
 
-    // cross-chain operator address
+    // The cross-chain manager address on Vault side
     address public crossChainManagerAddress;
-    // deposit id / nonce
+    // An incrasing deposit id / nonce on Vault side
     uint64 public depositId;
 
-    // list to record the hash value of allowed brokerIds
+    // A set to record the hash value of all allowed brokerIds  // brokerHash = keccak256(abi.encodePacked(brokerId))
     EnumerableSet.Bytes32Set private allowedBrokerSet;
-    // tokenHash to token contract address mapping
+    // A set to record the hash value of all allowed tokens  // tokenHash = keccak256(abi.encodePacked(tokenSymbol))
     EnumerableSet.Bytes32Set private allowedTokenSet;
+    // A mapping from tokenHash to token contract address
     mapping(bytes32 => address) public allowedToken;
 
-    // only cross-chain manager can call
+    // Require only cross-chain manager can call
     modifier onlyCrossChainManager() {
         if (msg.sender != crossChainManagerAddress) revert OnlyCrossChainManagerCanCall();
         _;
@@ -46,12 +47,12 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         __Pausable_init();
     }
 
-    // change crossChainManager
+    // Change crossChainManager address
     function setCrossChainManager(address _crossChainManagerAddress) public override onlyOwner {
         crossChainManagerAddress = _crossChainManagerAddress;
     }
 
-    // add contract address for an allowed token
+    // Add contract address for an allowed token given the tokenHash
     function setAllowedToken(bytes32 _tokenHash, bool _allowed) public override onlyOwner {
         if (_allowed) {
             allowedTokenSet.add(_tokenHash);
@@ -61,7 +62,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         emit SetAllowedToken(_tokenHash, _allowed);
     }
 
-    // add the hash value for an allowed brokerId
+    // Add the hash value for an allowed brokerId
     function setAllowedBroker(bytes32 _brokerHash, bool _allowed) public override onlyOwner {
         if (_allowed) {
             allowedBrokerSet.add(_brokerHash);
@@ -71,14 +72,14 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         emit SetAllowedBroker(_brokerHash, _allowed);
     }
 
-    // change the token address for an allowed token
+    // Change the token address for an allowed token, unusual case on Mainnet, but possible on Testnet
     function changeTokenAddressAndAllow(bytes32 _tokenHash, address _tokenAddress) public override onlyOwner {
         allowedToken[_tokenHash] = _tokenAddress;
         allowedTokenSet.add(_tokenHash);
         emit ChangeTokenAddressAndAllow(_tokenHash, _tokenAddress);
     }
 
-    // check if the tokenHash is allowed
+    // Check if the given tokenHash is allowed on this Vault
     function getAllowedToken(bytes32 _tokenHash) public view override returns (address) {
         if (allowedTokenSet.contains(_tokenHash)) {
             return allowedToken[_tokenHash];
@@ -87,22 +88,22 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         }
     }
 
-    // check if the brokerHash is allowed
+    // Check if the brokerHash is allowed on this Vault
     function getAllowedBroker(bytes32 _brokerHash) public view override returns (bool) {
         return allowedBrokerSet.contains(_brokerHash);
     }
 
-    // get all allowed tokenHash
+    // Get all allowed tokenHash from this Vault
     function getAllAllowedToken() public view override returns (bytes32[] memory) {
         return allowedTokenSet.values();
     }
 
-    // get all allowed brokerIds
+    // Get all allowed brokerIds hash from this Vault
     function getAllAllowedBroker() public view override returns (bytes32[] memory) {
         return allowedBrokerSet.values();
     }
 
-    // user deposit
+    // The function to receive user deposit, VaultDepositFE type is defined in VaultTypes.sol
     function deposit(VaultTypes.VaultDepositFE calldata data) public override whenNotPaused {
         // require tokenAddress exist
         if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
@@ -120,6 +121,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         emit AccountDeposit(data.accountId, msg.sender, depositId, data.tokenHash, data.tokenAmount);
     }
 
+    // The function to allow users to deposit on behalf of another user, the receiver is the user who will receive the deposit
     function depositTo(address receiver, VaultTypes.VaultDepositFE calldata data) public whenNotPaused {
         if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
@@ -163,6 +165,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         );
     }
 
+    // Update the depositId
     function _newDepositId() internal returns (uint64) {
         return ++depositId;
     }

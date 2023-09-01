@@ -24,7 +24,7 @@ contract FeeManager is IFeeManager, LedgerComponent {
         withdrawFeeCollector = 0xd24181b51223b8998dba9fd230a053034dd7d0140c3a50c57c806def77992663;
     }
 
-    // get_fee_collector
+    // Get the fee collector account id according to the fee collector type
     function getFeeCollector(FeeCollectorType feeCollectorType) public view override returns (bytes32) {
         if (feeCollectorType == FeeCollectorType.WithdrawFeeCollector) {
             return withdrawFeeCollector;
@@ -34,7 +34,7 @@ contract FeeManager is IFeeManager, LedgerComponent {
         revert InvalidFeeCollectorType();
     }
 
-    // change_fee_collector
+    // Change the fee collector account id according to the fee collector type
     function changeFeeCollector(FeeCollectorType feeCollectorType, bytes32 _newCollector) public override onlyOwner {
         if (feeCollectorType == FeeCollectorType.WithdrawFeeCollector) {
             emit ChangeFeeCollector(feeCollectorType, withdrawFeeCollector, _newCollector);

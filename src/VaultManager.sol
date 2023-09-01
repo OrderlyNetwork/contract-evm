@@ -12,13 +12,18 @@ import "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 contract VaultManager is IVaultManager, LedgerComponent {
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
-    // valut balance, used for check if withdraw is valid
+    // A mapping to record how much balance each token has on each chain: tokenHash => chainId => balance
     mapping(bytes32 => mapping(uint256 => uint128)) private tokenBalanceOnchain;
+    // A mapping to record how much balance each token has been frozen on each chain: tokenHash => chainId => frozenBalance
     mapping(bytes32 => mapping(uint256 => uint128)) private tokenFrozenBalanceOnchain;
+    // A mapping to record which token has been allowed on each chain: tokenHash => chainId => allowed
     mapping(bytes32 => mapping(uint256 => bool)) private allowedChainToken; // supported token on each chain
 
+    // A set to record supported tokenHash
     EnumerableSet.Bytes32Set private allowedTokenSet; // supported token
+    // A set to record supported brokerHash
     EnumerableSet.Bytes32Set private allowedBrokerSet; // supported broker
+    // A set to record supported symbolHash, this symbol means the trading pair, such BTC_USDC_PERP
     EnumerableSet.Bytes32Set private allowedSymbolSet; // supported symbol
 
     mapping(bytes32 => uint128) private maxWithdrawFee; // default = unlimited
@@ -52,26 +57,27 @@ contract VaultManager is IVaultManager, LedgerComponent {
         tokenFrozenBalanceOnchain[_tokenHash][_chainId] -= _deltaBalance;
     }
 
-    // get balance
+    // Get the token balance on the Vault contract given the tokenHash and chainId
     function getBalance(bytes32 _tokenHash, uint256 _chainId) public view override returns (uint128) {
         return tokenBalanceOnchain[_tokenHash][_chainId];
     }
 
-    // add balance
+    // Increase the token balance on the Vault contract given the tokenHash and chainId
     function addBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) external override onlyLedger {
         tokenBalanceOnchain[_tokenHash][_chainId] += _deltaBalance;
     }
 
-    // sub balance
+    // Decrease the token balance on the Vault contract given the tokenHash and chainId
     function subBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) external override onlyLedger {
         tokenBalanceOnchain[_tokenHash][_chainId] -= _deltaBalance;
     }
 
-    // get frozen balance
+    // Get the frozen token balance on the Vault contract given the tokenHash and chainId
     function getFrozenBalance(bytes32 _tokenHash, uint256 _chainId) public view override returns (uint128) {
         return tokenFrozenBalanceOnchain[_tokenHash][_chainId];
     }
 
+    // Set the status for a broker given the brokerHash
     function setAllowedBroker(bytes32 _brokerHash, bool _allowed) public override onlyOwner {
         if (_allowed) {
             allowedBrokerSet.add(_brokerHash);
@@ -81,19 +87,23 @@ contract VaultManager is IVaultManager, LedgerComponent {
         emit SetAllowedBroker(_brokerHash, _allowed);
     }
 
+    // Get the status for a broker given the brokerHash
     function getAllowedBroker(bytes32 _brokerHash) public view override returns (bool) {
         return allowedBrokerSet.contains(_brokerHash);
     }
 
+    // Set the status for a token given the tokenHash and chainId
     function setAllowedChainToken(bytes32 _tokenHash, uint256 _chainId, bool _allowed) public override onlyOwner {
         allowedChainToken[_tokenHash][_chainId] = _allowed;
         emit SetAllowedChainToken(_tokenHash, _chainId, _allowed);
     }
 
+    // Get the status for a token given the tokenHash and chainId
     function getAllowedChainToken(bytes32 _tokenHash, uint256 _chainId) public view override returns (bool) {
         return allowedTokenSet.contains(_tokenHash) && allowedChainToken[_tokenHash][_chainId];
     }
 
+    // Set the status for a symbol given the symbolHash
     function setAllowedSymbol(bytes32 _symbolHash, bool _allowed) public override onlyOwner {
         if (_allowed) {
             allowedSymbolSet.add(_symbolHash);
@@ -103,25 +113,27 @@ contract VaultManager is IVaultManager, LedgerComponent {
         emit SetAllowedSymbol(_symbolHash, _allowed);
     }
 
+    // Get the status for a symbol given the symbolHash
     function getAllowedSymbol(bytes32 _symbolHash) public view override returns (bool) {
         return allowedSymbolSet.contains(_symbolHash);
     }
 
-    // get all allowed tokenHash
+    // Get all allowed tokenHash
     function getAllAllowedToken() public view override returns (bytes32[] memory) {
         return allowedTokenSet.values();
     }
 
-    // get all allowed brokerIds
+    // Get all allowed brokerHash
     function getAllAllowedBroker() public view override returns (bytes32[] memory) {
         return allowedBrokerSet.values();
     }
 
-    // get all allowed symbolHash
+    // Get all allowed symbolHash
     function getAllAllowedSymbol() public view override returns (bytes32[] memory) {
         return allowedSymbolSet.values();
     }
 
+    // Set the status for a token given the tokenHash
     function setAllowedToken(bytes32 _tokenHash, bool _allowed) public override onlyOwner {
         if (_allowed) {
             allowedTokenSet.add(_tokenHash);
@@ -131,16 +143,18 @@ contract VaultManager is IVaultManager, LedgerComponent {
         emit SetAllowedToken(_tokenHash, _allowed);
     }
 
+    // Get the status for a token given the tokenHash
     function getAllowedToken(bytes32 _tokenHash) public view override returns (bool) {
         return allowedTokenSet.contains(_tokenHash);
     }
 
-    // maxWithdrawFee
+    // Set maxWithdrawFee
     function setMaxWithdrawFee(bytes32 _tokenHash, uint128 _maxWithdrawFee) public override onlyOwner {
         maxWithdrawFee[_tokenHash] = _maxWithdrawFee;
         emit SetMaxWithdrawFee(_tokenHash, _maxWithdrawFee);
     }
 
+    // Get maxWithdrawFee
     function getMaxWithdrawFee(bytes32 _tokenHash) public view override returns (uint128) {
         return maxWithdrawFee[_tokenHash];
     }
