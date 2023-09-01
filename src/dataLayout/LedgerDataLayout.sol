@@ -9,25 +9,25 @@ import "../interface/IMarketManager.sol";
 import "../interface/IFeeManager.sol";
 
 contract LedgerDataLayout {
-    // userLedger accountId -> Account
+    // A mapping from accountId to Orderly Account
     mapping(bytes32 => AccountTypes.Account) internal userLedger;
-    // OperatorManager contract address
+    // The OperatorManager contract address
     address public operatorManagerAddress;
-    // crossChainManagerAddress contract address
+    // The crossChainManagerAddress contract address
     address public crossChainManagerAddress;
-    // VaultManager contract
+    // The interface for VaultManager contract
     IVaultManager public vaultManager;
     // operatorTradesBatchId
     uint64 public operatorTradesBatchId;
-    // MarketManager contract
+    // The interface for MarketManager contract
     IMarketManager public marketManager;
-    // globalEventId, for event trade upload
+    // An increasing global event Id, for event trade upload
     uint64 public globalEventId;
-    // FeeManager contract
+    // The interface for FeeManager contract
     IFeeManager public feeManager;
-    // globalDepositId
+    // An incresing global deposit Id for cross chain deposit
     uint64 public globalDepositId;
 
-    // gap
+    // The storage gap to prevent overwriting by proxy
     uint256[44] private __gap;
 }

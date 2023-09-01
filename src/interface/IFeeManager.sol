@@ -6,13 +6,14 @@ import "./ILedgerComponent.sol";
 interface IFeeManager is ILedgerComponent {
     error InvalidFeeCollectorType();
 
+    // Fee collector type definition
     enum FeeCollectorType {
         None,
         WithdrawFeeCollector,
         FuturesFeeCollector
     }
 
-    // event
+    // Event for fee collector change
     event ChangeFeeCollector(
         FeeCollectorType indexed feeCollectorType, bytes32 oldFeeCollector, bytes32 newFeeCollector
     );
