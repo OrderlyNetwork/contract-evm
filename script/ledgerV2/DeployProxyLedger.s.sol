@@ -13,11 +13,14 @@ import "../utils/BaseScript.s.sol";
 import "../utils/ConfigHelper.s.sol";
 
 contract DeployLedger is BaseScript, ConfigHelper {
+    string env;
+    string network;
+
     function run() external {
         uint256 orderlyPrivateKey = vm.envUint("ORDERLY_PRIVATE_KEY");
         Envs memory envs = getEnvs();
-        string memory env = envs.env;
-        string memory network = envs.ledgerNetwork;
+        env = envs.env;
+        network = envs.ledgerNetwork;
 
         vm.startBroadcast(orderlyPrivateKey);
 
@@ -72,12 +75,11 @@ contract DeployLedger is BaseScript, ConfigHelper {
 
         // avoid stack too deep error
         {
-            address operatorAdminAddress = vm.envAddress("OPERATOR_ADMIN_ADDRESS");
-            // address ledgerCrossChainManagerAddress = vm.envAddress("LEDGER_CROSS_CHAIN_MANAGER_ADDRESS");
-            // ILedgerCrossChainManager ledgerCrossChainManager = ILedgerCrossChainManager(ledgerCrossChainManagerAddress);
+            LedgerDepolyData memory config = getLedgerDeployData(env, network);
+            address operatorAdminAddress = config.operatorAddress;
+            console.log("operatorAdminAddress: ", operatorAdminAddress);
 
             ledger.setOperatorManagerAddress(address(operatorManager));
-            // ledger.setCrossChainManager(address(ledgerCrossChainManager));
             ledger.setVaultManager(address(vaultManager));
             ledger.setFeeManager(address(feeManager));
             ledger.setMarketManager(address(marketManager));
@@ -94,5 +96,7 @@ contract DeployLedger is BaseScript, ConfigHelper {
             marketManager.setLedgerAddress(address(ledger));
         }
         vm.stopBroadcast();
+
+        console.log("All done!");
     }
 }
