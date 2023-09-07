@@ -167,13 +167,13 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         }
         account.addBalance(data.tokenHash, data.tokenAmount);
         vaultManager.addBalance(data.tokenHash, data.srcChainId, data.tokenAmount);
-        uint64 tmpGlobalDepositId = _newGlobalDepositId(); // gas saving
-        account.lastDepositEventId = tmpGlobalDepositId;
+        uint64 tmpGlobalEventId = _newGlobalEventId(); // gas saving
+        account.lastDepositEventId = tmpGlobalEventId;
         // emit deposit event
         emit AccountDeposit(
             data.accountId,
-            tmpGlobalDepositId,
-            _newGlobalEventId(),
+            _newGlobalDepositId(),
+            tmpGlobalEventId,
             data.userAddress,
             data.tokenHash,
             data.tokenAmount,
