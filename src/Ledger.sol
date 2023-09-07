@@ -353,11 +353,10 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         for (uint256 i = 0; i < length; ++i) {
             EventTypes.SettlementExecution calldata ledgerExecution = settlementExecutions[i];
             AccountTypes.PerpPosition storage position = account.perpPositions[ledgerExecution.symbolHash];
-            if (position.positionQty != 0) {
-                position.chargeFundingFee(ledgerExecution.sumUnitaryFundings);
-                position.costPosition += ledgerExecution.settledAmount;
-                position.lastExecutedPrice = ledgerExecution.markPrice;
-            }
+            position.chargeFundingFee(ledgerExecution.sumUnitaryFundings);
+            position.costPosition += ledgerExecution.settledAmount;
+            position.lastExecutedPrice = ledgerExecution.markPrice;
+            position.lastSettledPrice = ledgerExecution.markPrice;
             // check balance + settledAmount >= 0, where balance should cast to int128 first
             uint128 balance = account.balances[settlement.settledAssetHash];
             if (balance.toInt128() + ledgerExecution.settledAmount < 0) {
