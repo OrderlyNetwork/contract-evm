@@ -30,5 +30,6 @@ contract UpgradeFeeManager is BaseScript, ConfigHelper {
         admin.upgrade(feeManagerProxy, address(feeManagerImpl));
 
         vm.stopBroadcast();
+        console.log("upgrade done");
     }
 }

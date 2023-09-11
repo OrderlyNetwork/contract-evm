@@ -30,5 +30,6 @@ contract UpgradeMarketManager is BaseScript, ConfigHelper {
         admin.upgrade(marketManagerProxy, address(marketManagerImpl));
 
         vm.stopBroadcast();
+        console.log("upgrade done");
     }
 }
