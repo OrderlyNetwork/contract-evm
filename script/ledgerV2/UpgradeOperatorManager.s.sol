@@ -28,10 +28,8 @@ contract UpgradeOperatorManager is BaseScript, ConfigHelper {
 
         IOperatorManager operatorManagerImpl = new OperatorManager();
         admin.upgrade(operatorManagerProxy, address(operatorManagerImpl));
-        // admin.upgradeAndCall(
-        //     operatorManagerProxy, address(operatorManagerImpl), abi.encodeWithSignature("initialize()")
-        // );
 
         vm.stopBroadcast();
+        console.log("upgrade done");
     }
 }

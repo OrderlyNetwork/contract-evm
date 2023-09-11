@@ -30,5 +30,6 @@ contract UpgradeVaultManager is BaseScript, ConfigHelper {
         admin.upgrade(vaultManagerProxy, address(vaultManagerImpl));
 
         vm.stopBroadcast();
+        console.log("upgrade done");
     }
 }
