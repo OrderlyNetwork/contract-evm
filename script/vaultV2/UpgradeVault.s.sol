@@ -30,5 +30,6 @@ contract UpgradeVault is BaseScript, ConfigHelper {
         admin.upgrade(vaultProxy, address(vaultImpl));
 
         vm.stopBroadcast();
+        console.log("upgrade done");
     }
 }

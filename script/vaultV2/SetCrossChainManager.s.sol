@@ -26,5 +26,6 @@ contract VaultSetCrossChainManager is BaseScript, ConfigHelper {
         vault.setCrossChainManager(vaultCrossChainManagerAddress);
 
         vm.stopBroadcast();
+        console.log("setCrossChainManager done");
     }
 }

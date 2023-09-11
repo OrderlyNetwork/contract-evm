@@ -44,5 +44,6 @@ contract DeployVault is BaseScript, ConfigHelper {
         vault.setAllowedBroker(BROKER_HASH, true);
 
         vm.stopBroadcast();
+        console.log("All done!");
     }
 }

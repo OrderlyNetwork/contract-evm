@@ -31,5 +31,6 @@ contract UpdateSymbol is BaseScript, ConfigHelper {
         vaultManager.setAllowedSymbol(0x5d0471b083610a6f3b572fc8b0f759c5628e74159816681fb7d927b9263de60b, true); // PERP_WOO_USDC
 
         vm.stopBroadcast();
+        console.log("update done");
     }
 }
