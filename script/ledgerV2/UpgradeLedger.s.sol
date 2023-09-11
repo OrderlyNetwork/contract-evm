@@ -28,7 +28,9 @@ contract UpgradeLedger is BaseScript, ConfigHelper {
 
         ILedger ledgerImpl = new Ledger();
         admin.upgrade(ledgerProxy, address(ledgerImpl));
+        // admin.upgradeAndCall(ledgerProxy, address(ledgerImpl), abi.encodeWithSignature("upgradeCall()"));
 
         vm.stopBroadcast();
+        console.log("upgrade done");
     }
 }

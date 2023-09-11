@@ -26,5 +26,6 @@ contract SetCrossChainManager is BaseScript, ConfigHelper {
         ledger.setCrossChainManager(ledgerCrossChainManagerAddress);
 
         vm.stopBroadcast();
+        console.log("setCrossChainManager done");
     }
 }
