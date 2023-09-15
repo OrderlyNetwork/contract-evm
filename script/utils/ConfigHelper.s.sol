@@ -8,6 +8,7 @@ struct LedgerDepolyData {
     address feeManager;
     address ledger;
     address marketManager;
+    address multiSig;
     address operatorAddress;
     address operatorManager;
     address proxyAdmin;
@@ -15,6 +16,7 @@ struct LedgerDepolyData {
 }
 
 struct VaultDepolyData {
+    address multiSig;
     address proxyAdmin;
     address tUSDC;
     address vault;
