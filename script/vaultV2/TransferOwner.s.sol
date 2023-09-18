@@ -27,15 +27,14 @@ contract TransferOwner is BaseScript, ConfigHelper {
 
         {
             // first change the owner of the impls
-            Vault operatorManager = Vault(vaultAddress);
-            operatorManager.transferOwnership(multiSigAddress);
+            Vault vault = Vault(vaultAddress);
+            vault.transferOwnership(multiSigAddress);
         }
 
         {
-            // second change the owner of the proxys
+            // second change the owner of the ProxyAdmin
             ProxyAdmin admin = ProxyAdmin(adminAddress);
-            ITransparentUpgradeableProxy vaultProxy = ITransparentUpgradeableProxy(vaultAddress);
-            admin.changeProxyAdmin(vaultProxy, multiSigAddress);
+            admin.transferOwnership(multiSigAddress);
         }
 
         vm.stopBroadcast();
