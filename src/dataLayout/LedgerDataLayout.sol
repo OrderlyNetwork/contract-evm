@@ -8,6 +8,7 @@ import "../interface/ILedgerCrossChainManager.sol";
 import "../interface/IMarketManager.sol";
 import "../interface/IFeeManager.sol";
 
+// DataLayout for Ledger contract, align with 50 slots
 contract LedgerDataLayout {
     // A mapping from accountId to Orderly Account
     mapping(bytes32 => AccountTypes.Account) internal userLedger;
