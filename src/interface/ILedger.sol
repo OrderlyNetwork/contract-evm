@@ -8,6 +8,8 @@ import "../library/types/MarketTypes.sol";
 import "./ILedgerError.sol";
 import "./ILedgerEvent.sol";
 
+// Defines the error, event and ABI.
+// Data should be stored in LedgerDataLayout, NOT in this contract.
 interface ILedger is ILedgerError, ILedgerEvent {
     function initialize() external;
 
