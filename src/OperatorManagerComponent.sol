@@ -4,21 +4,23 @@ pragma solidity ^0.8.18;
 import "./interface/IOperatorManagerComponent.sol";
 import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 
-/**
- * OperatorManagerComponent is an component which can only be called by operatorManager (setter)
- */
+/// @title A component of OperatorManager
+/// @author Orderly_Rubick
+/// @notice OperatorManagerComponent is an component which can only be called by operatorManager (setter)
 abstract contract OperatorManagerComponent is IOperatorManagerComponent, OwnableUpgradeable {
     // OperatorManager address
     address public operatorManagerAddress;
 
-    // only operatorManager
+    /// @notice only operatorManager
     modifier onlyOperatorManager() {
         if (msg.sender != operatorManagerAddress) revert OnlyOperatorManagerCanCall();
         _;
     }
 
-    // set operatorManagerAddress
+    /// @notice set operatorManagerAddress
     function setOperatorManagerAddress(address _operatorManagerAddress) public override onlyOwner {
+        if (_operatorManagerAddress == address(0)) revert OperatorManagerAddressZero();
+        emit ChangeOperatorManager(operatorManagerAddress, _operatorManagerAddress);
         operatorManagerAddress = _operatorManagerAddress;
     }
 }

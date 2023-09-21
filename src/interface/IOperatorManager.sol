@@ -17,6 +17,10 @@ interface IOperatorManager is ILedgerError {
 
     event FuturesTradeUpload(uint64 indexed batchId, uint256 blocktime);
     event EventUpload(uint64 indexed batchId, uint256 blocktime);
+    event ChangeCefiUpload(uint8 indexed types, address oldAddress, address newAddress);
+    event ChangeOperator(uint8 indexed types, address oldAddress, address newAddress);
+    event ChangeMarketManager(address oldAddress, address newAddress);
+    event ChangeLedger(address oldAddress, address newAddress);
 
     function initialize() external;
 
