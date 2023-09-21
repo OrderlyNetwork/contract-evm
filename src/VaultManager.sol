@@ -79,11 +79,13 @@ contract VaultManager is IVaultManager, LedgerComponent {
 
     /// @notice Set the status for a broker given the brokerHash
     function setAllowedBroker(bytes32 _brokerHash, bool _allowed) public override onlyOwner {
+        bool succ = false;
         if (_allowed) {
-            allowedBrokerSet.add(_brokerHash);
+            succ = allowedBrokerSet.add(_brokerHash);
         } else {
-            allowedBrokerSet.remove(_brokerHash);
+            succ = allowedBrokerSet.remove(_brokerHash);
         }
+        if (!succ) revert EnumerableSetError();
         emit SetAllowedBroker(_brokerHash, _allowed);
     }
 
@@ -105,11 +107,13 @@ contract VaultManager is IVaultManager, LedgerComponent {
 
     /// @notice Set the status for a symbol given the symbolHash
     function setAllowedSymbol(bytes32 _symbolHash, bool _allowed) public override onlyOwner {
+        bool succ = false;
         if (_allowed) {
-            allowedSymbolSet.add(_symbolHash);
+            succ = allowedSymbolSet.add(_symbolHash);
         } else {
-            allowedSymbolSet.remove(_symbolHash);
+            succ = allowedSymbolSet.remove(_symbolHash);
         }
+        if (!succ) revert EnumerableSetError();
         emit SetAllowedSymbol(_symbolHash, _allowed);
     }
 
@@ -135,11 +139,13 @@ contract VaultManager is IVaultManager, LedgerComponent {
 
     /// @notice Set the status for a token given the tokenHash
     function setAllowedToken(bytes32 _tokenHash, bool _allowed) public override onlyOwner {
+        bool succ = false;
         if (_allowed) {
-            allowedTokenSet.add(_tokenHash);
+            succ = allowedTokenSet.add(_tokenHash);
         } else {
-            allowedTokenSet.remove(_tokenHash);
+            succ = allowedTokenSet.remove(_tokenHash);
         }
+        if (!succ) revert EnumerableSetError();
         emit SetAllowedToken(_tokenHash, _allowed);
     }
 
