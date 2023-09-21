@@ -3,7 +3,10 @@ pragma solidity ^0.8.18;
 
 interface IOperatorManagerComponent {
     error OnlyOperatorManagerCanCall();
+    error OperatorManagerAddressZero();
 
-    // set ledgerAddress
-    function setOperatorManagerAddress(address _ledgerAddress) external;
+    event ChangeOperatorManager(address oldAddress, address newAddress);
+
+    // set operatorManagerAddress
+    function setOperatorManagerAddress(address _operatorManagerAddress) external;
 }

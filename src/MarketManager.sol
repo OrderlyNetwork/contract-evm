@@ -6,9 +6,9 @@ import "./library/typesHelper/MarketTypeHelper.sol";
 import "./LedgerComponent.sol";
 import "./OperatorManagerComponent.sol";
 
-/**
- * MarketManager saves perpMarketCfg
- */
+/// @title A component of Ledger, saves market data
+/// @author Orderly_Rubick
+/// @notice MarketManager saves perpMarketCfg
 contract MarketManager is IMarketManager, LedgerComponent, OperatorManagerComponent {
     using MarketTypeHelper for MarketTypes.PerpMarketCfg;
 
@@ -19,7 +19,7 @@ contract MarketManager is IMarketManager, LedgerComponent, OperatorManagerCompon
         _disableInitializers();
     }
 
-    function initialize() public override initializer {
+    function initialize() external override initializer {
         __Ownable_init();
     }
 
