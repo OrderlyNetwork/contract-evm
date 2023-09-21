@@ -56,28 +56,33 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
 
     /// @notice Add contract address for an allowed token given the tokenHash
     function setAllowedToken(bytes32 _tokenHash, bool _allowed) public override onlyOwner {
+        bool succ = false;
         if (_allowed) {
-            allowedTokenSet.add(_tokenHash);
+            succ = allowedTokenSet.add(_tokenHash);
         } else {
-            allowedTokenSet.remove(_tokenHash);
+            succ = allowedTokenSet.remove(_tokenHash);
         }
+        if (!succ) revert EnumerableSetError();
         emit SetAllowedToken(_tokenHash, _allowed);
     }
 
     /// @notice Add the hash value for an allowed brokerId
     function setAllowedBroker(bytes32 _brokerHash, bool _allowed) public override onlyOwner {
+        bool succ = false;
         if (_allowed) {
-            allowedBrokerSet.add(_brokerHash);
+            succ = allowedBrokerSet.add(_brokerHash);
         } else {
-            allowedBrokerSet.remove(_brokerHash);
+            succ = allowedBrokerSet.remove(_brokerHash);
         }
+        if (!succ) revert EnumerableSetError();
         emit SetAllowedBroker(_brokerHash, _allowed);
     }
 
     /// @notice Change the token address for an allowed token, unusual case on Mainnet, but possible on Testnet
     function changeTokenAddressAndAllow(bytes32 _tokenHash, address _tokenAddress) public override onlyOwner {
+        if (_tokenAddress == address(0)) revert AddressZero();
         allowedToken[_tokenHash] = _tokenAddress;
-        allowedTokenSet.add(_tokenHash);
+        allowedTokenSet.add(_tokenHash); // ignore returns here
         emit ChangeTokenAddressAndAllow(_tokenHash, _tokenAddress);
     }
 

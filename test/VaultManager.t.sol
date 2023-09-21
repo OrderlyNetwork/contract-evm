@@ -142,7 +142,6 @@ contract VaultManagerTest is Test {
         assertTrue(vaultManager.getAllowedChainToken(TOKEN_HASH, CHAIN_ID));
         assertTrue(vaultManager.getAllowedToken(TOKEN_HASH));
         vaultManager.setAllowedChainToken(TOKEN_HASH, CHAIN_ID, false);
-        vaultManager.setAllowedToken(TOKEN_HASH, true);
         assertFalse(vaultManager.getAllowedChainToken(TOKEN_HASH, CHAIN_ID));
         assertTrue(vaultManager.getAllowedToken(TOKEN_HASH));
         vaultManager.setAllowedChainToken(TOKEN_HASH, CHAIN_ID, true);
