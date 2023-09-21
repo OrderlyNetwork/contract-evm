@@ -73,8 +73,12 @@ contract PerpTradeUploadTest is Test {
         operatorManager.setLedger(address(ledger));
 
         vaultManager.setLedgerAddress(address(ledger));
-        vaultManager.setAllowedBroker(BROKER_HASH, true);
-        vaultManager.setAllowedToken(TOKEN_HASH, true);
+        if (!vaultManager.getAllowedToken(TOKEN_HASH)) {
+            vaultManager.setAllowedToken(TOKEN_HASH, true);
+        }
+        if (!vaultManager.getAllowedBroker(BROKER_HASH)) {
+            vaultManager.setAllowedBroker(BROKER_HASH, true);
+        }
         vaultManager.setAllowedChainToken(TOKEN_HASH, CHAIN_ID, true);
         vaultManager.setAllowedSymbol(SYMBOL_HASH_ETH_USDC, true);
 

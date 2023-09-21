@@ -10,6 +10,7 @@ interface IVault {
     error BrokerNotAllowed();
     error BalanceNotEnough(uint256 balance, uint128 amount);
     error AddressZero();
+    error EnumerableSetError();
 
     event AccountDeposit(
         bytes32 indexed accountId,
