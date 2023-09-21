@@ -8,7 +8,9 @@ import "../interface/ILedgerCrossChainManager.sol";
 import "../interface/IMarketManager.sol";
 import "../interface/IFeeManager.sol";
 
-// DataLayout for Ledger contract, align with 50 slots
+/// @title Ledger contract data layout
+/// @author Orderly_Rubick
+/// @notice DataLayout for Ledger contract, align with 50 slots
 contract LedgerDataLayout {
     // A mapping from accountId to Orderly Account
     mapping(bytes32 => AccountTypes.Account) internal userLedger;
@@ -18,8 +20,6 @@ contract LedgerDataLayout {
     address public crossChainManagerAddress;
     // The interface for VaultManager contract
     IVaultManager public vaultManager;
-    // operatorTradesBatchId
-    uint64 public operatorTradesBatchId;
     // The interface for MarketManager contract
     IMarketManager public marketManager;
     // An increasing global event Id, for event trade upload

@@ -14,7 +14,7 @@ interface ILedger is ILedgerError, ILedgerEvent {
     function initialize() external;
 
     // Functions called by cross chain manager on Ledger side
-    function accountDeposit(AccountTypes.AccountDeposit calldata accountDeposit) external;
+    function accountDeposit(AccountTypes.AccountDeposit calldata data) external;
     function accountWithDrawFinish(AccountTypes.AccountWithdraw calldata withdraw) external;
 
     // Functions called by operator manager to executre actions

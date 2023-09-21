@@ -5,6 +5,8 @@ import "./types/PerpTypes.sol";
 import "./types/EventTypes.sol";
 import "./types/MarketTypes.sol";
 
+/// @title Signature library
+/// @author Orderly_Rubick
 library Signature {
     function verifyWithdraw(address sender, EventTypes.WithdrawData memory data) internal view returns (bool) {
         bytes32 typeHash =
