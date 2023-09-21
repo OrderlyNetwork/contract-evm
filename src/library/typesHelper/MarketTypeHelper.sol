@@ -3,6 +3,8 @@ pragma solidity ^0.8.18;
 
 import "../types/MarketTypes.sol";
 
+/// @title MarketTypeHelper library
+/// @author Orderly_Rubick
 library MarketTypeHelper {
     function setBaseMaintenanceMargin(MarketTypes.PerpMarketCfg storage _perpMarketCfg, uint32 _baseMaintenanceMargin)
         internal

@@ -10,12 +10,12 @@ import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.s
 import "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 
-/**
- * Vault is responsible for saving user's erc20 token.
- * EACH CHAIN SHOULD HAVE ONE Vault CONTRACT.
- * User can deposit erc20 (USDC) from Vault.
- * Only crossChainManager can approve withdraw request.
- */
+/// @title Vault contract
+/// @author Orderly_Rubick
+/// @notice Vault is responsible for saving user's erc20 token.
+/// EACH CHAIN SHOULD HAVE ONE Vault CONTRACT.
+/// User can deposit erc20 (USDC) from Vault.
+/// Only crossChainManager can approve withdraw request.
 contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     using EnumerableSet for EnumerableSet.Bytes32Set;
     using SafeERC20 for IERC20;
@@ -32,7 +32,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     // A mapping from tokenHash to token contract address
     mapping(bytes32 => address) public allowedToken;
 
-    // Require only cross-chain manager can call
+    /// @notice Require only cross-chain manager can call
     modifier onlyCrossChainManager() {
         if (msg.sender != crossChainManagerAddress) revert OnlyCrossChainManagerCanCall();
         _;
@@ -42,17 +42,19 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         _disableInitializers();
     }
 
-    function initialize() public override initializer {
+    function initialize() external override initializer {
         __Ownable_init();
         __Pausable_init();
     }
 
-    // Change crossChainManager address
+    /// @notice Change crossChainManager address
     function setCrossChainManager(address _crossChainManagerAddress) public override onlyOwner {
+        if (_crossChainManagerAddress == address(0)) revert AddressZero();
+        emit ChangeCrossChainManager(crossChainManagerAddress, _crossChainManagerAddress);
         crossChainManagerAddress = _crossChainManagerAddress;
     }
 
-    // Add contract address for an allowed token given the tokenHash
+    /// @notice Add contract address for an allowed token given the tokenHash
     function setAllowedToken(bytes32 _tokenHash, bool _allowed) public override onlyOwner {
         if (_allowed) {
             allowedTokenSet.add(_tokenHash);
@@ -62,7 +64,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         emit SetAllowedToken(_tokenHash, _allowed);
     }
 
-    // Add the hash value for an allowed brokerId
+    /// @notice Add the hash value for an allowed brokerId
     function setAllowedBroker(bytes32 _brokerHash, bool _allowed) public override onlyOwner {
         if (_allowed) {
             allowedBrokerSet.add(_brokerHash);
@@ -72,14 +74,14 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         emit SetAllowedBroker(_brokerHash, _allowed);
     }
 
-    // Change the token address for an allowed token, unusual case on Mainnet, but possible on Testnet
+    /// @notice Change the token address for an allowed token, unusual case on Mainnet, but possible on Testnet
     function changeTokenAddressAndAllow(bytes32 _tokenHash, address _tokenAddress) public override onlyOwner {
         allowedToken[_tokenHash] = _tokenAddress;
         allowedTokenSet.add(_tokenHash);
         emit ChangeTokenAddressAndAllow(_tokenHash, _tokenAddress);
     }
 
-    // Check if the given tokenHash is allowed on this Vault
+    /// @notice Check if the given tokenHash is allowed on this Vault
     function getAllowedToken(bytes32 _tokenHash) public view override returns (address) {
         if (allowedTokenSet.contains(_tokenHash)) {
             return allowedToken[_tokenHash];
@@ -88,22 +90,22 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         }
     }
 
-    // Check if the brokerHash is allowed on this Vault
+    /// @notice Check if the brokerHash is allowed on this Vault
     function getAllowedBroker(bytes32 _brokerHash) public view override returns (bool) {
         return allowedBrokerSet.contains(_brokerHash);
     }
 
-    // Get all allowed tokenHash from this Vault
+    /// @notice Get all allowed tokenHash from this Vault
     function getAllAllowedToken() public view override returns (bytes32[] memory) {
         return allowedTokenSet.values();
     }
 
-    // Get all allowed brokerIds hash from this Vault
+    /// @notice Get all allowed brokerIds hash from this Vault
     function getAllAllowedBroker() public view override returns (bytes32[] memory) {
         return allowedBrokerSet.values();
     }
 
-    // The function to receive user deposit, VaultDepositFE type is defined in VaultTypes.sol
+    /// @notice The function to receive user deposit, VaultDepositFE type is defined in VaultTypes.sol
     function deposit(VaultTypes.VaultDepositFE calldata data) public override whenNotPaused {
         // require tokenAddress exist
         if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
@@ -121,7 +123,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         emit AccountDeposit(data.accountId, msg.sender, depositId, data.tokenHash, data.tokenAmount);
     }
 
-    // The function to allow users to deposit on behalf of another user, the receiver is the user who will receive the deposit
+    /// @notice The function to allow users to deposit on behalf of another user, the receiver is the user who will receive the deposit
     function depositTo(address receiver, VaultTypes.VaultDepositFE calldata data) public whenNotPaused {
         if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
@@ -138,7 +140,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         emit AccountDepositTo(data.accountId, receiver, depositId, data.tokenHash, data.tokenAmount);
     }
 
-    // user withdraw
+    /// @notice user withdraw
     function withdraw(VaultTypes.VaultWithdraw calldata data) public override onlyCrossChainManager whenNotPaused {
         IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
         uint128 amount = data.tokenAmount - data.fee;
@@ -165,7 +167,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         );
     }
 
-    // Update the depositId
+    /// @notice Update the depositId
     function _newDepositId() internal returns (uint64) {
         return ++depositId;
     }

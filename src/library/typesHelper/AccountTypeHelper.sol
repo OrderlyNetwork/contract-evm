@@ -3,22 +3,24 @@ pragma solidity ^0.8.18;
 
 import "../types/AccountTypes.sol";
 
+/// @title AccountTypeHelper library
+/// @author Orderly_Rubick
 library AccountTypeHelper {
     // ====================
     // part1: methods for get meta data
     // ====================
 
-    // get balance
+    /// @notice get balance
     function getBalance(AccountTypes.Account storage account, bytes32 tokenHash) internal view returns (uint128) {
         return account.balances[tokenHash];
     }
 
-    // get brokerHash
+    /// @notice get brokerHash
     function getBrokerHash(AccountTypes.Account storage account) internal view returns (bytes32) {
         return account.brokerHash;
     }
 
-    // get last cefi event id
+    /// @notice get last cefi event id
     function getLastCefiEventId(AccountTypes.Account storage account) internal view returns (uint64) {
         return account.lastCefiEventId;
     }
@@ -27,16 +29,17 @@ library AccountTypeHelper {
     // part2: methods for balance | frozen balance
     // ====================
 
-    // add balance
+    /// @notice add balance
     function addBalance(AccountTypes.Account storage account, bytes32 tokenHash, uint128 amount) internal {
         account.balances[tokenHash] += amount;
     }
 
+    /// @notice sub balance
     function subBalance(AccountTypes.Account storage account, bytes32 tokenHash, uint128 amount) internal {
         account.balances[tokenHash] -= amount;
     }
 
-    // frozen balance with a given withdrawNonce & amount
+    /// @notice frozen balance with a given withdrawNonce & amount
     function frozenBalance(
         AccountTypes.Account storage account,
         uint64 withdrawNonce,
@@ -49,7 +52,7 @@ library AccountTypeHelper {
         account.lastWithdrawNonce = withdrawNonce;
     }
 
-    // revert frozen balance
+    /// @notice revert frozen balance
     function unfrozenBalance(
         AccountTypes.Account storage account,
         uint64 withdrawNonce,
@@ -61,7 +64,7 @@ library AccountTypeHelper {
         account.frozenBalances[withdrawNonce][tokenHash] = 0;
     }
 
-    // transfer frozen balance out
+    /// @notice transfer frozen balance out
     function finishFrozenBalance(
         AccountTypes.Account storage account,
         uint64 withdrawNonce,
