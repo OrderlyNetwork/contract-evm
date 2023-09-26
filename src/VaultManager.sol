@@ -32,7 +32,7 @@ contract VaultManager is IVaultManager, LedgerComponent {
         _disableInitializers();
     }
 
-    function initialize() external override initializer {
+    function initialize() external override(IVaultManager, LedgerComponent) initializer {
         __Ownable_init();
         setAllowedBroker(0x083098c593f395bea1de45dda552d9f14e8fcb0be3faaa7a1903c5477d7ba7fd, true); // woofi_dex
         setAllowedToken(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa, true); // USDC

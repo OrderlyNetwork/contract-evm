@@ -11,6 +11,10 @@ abstract contract OperatorManagerComponent is IOperatorManagerComponent, Ownable
     // OperatorManager address
     address public operatorManagerAddress;
 
+    function initialize() external virtual override initializer {
+        __Ownable_init();
+    }
+
     /// @notice only operatorManager
     modifier onlyOperatorManager() {
         if (msg.sender != operatorManagerAddress) revert OnlyOperatorManagerCanCall();
