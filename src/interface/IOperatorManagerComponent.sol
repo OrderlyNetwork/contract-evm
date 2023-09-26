@@ -7,6 +7,8 @@ interface IOperatorManagerComponent {
 
     event ChangeOperatorManager(address oldAddress, address newAddress);
 
+    function initialize() external;
+
     // set operatorManagerAddress
     function setOperatorManagerAddress(address _operatorManagerAddress) external;
 }

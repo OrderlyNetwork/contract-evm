@@ -7,6 +7,8 @@ interface ILedgerComponent {
 
     event ChangeLedger(address oldAddress, address newAddress);
 
+    function initialize() external;
+
     // set ledgerAddress
     function setLedgerAddress(address _ledgerAddress) external;
 }

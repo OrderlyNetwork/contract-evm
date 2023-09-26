@@ -11,6 +11,10 @@ abstract contract LedgerComponent is ILedgerComponent, OwnableUpgradeable {
     // Ledger address
     address public ledgerAddress;
 
+    function initialize() external virtual override initializer {
+        __Ownable_init();
+    }
+
     /// @notice only ledger
     modifier onlyLedger() {
         if (msg.sender != ledgerAddress) revert OnlyLedgerCanCall();

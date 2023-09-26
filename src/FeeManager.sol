@@ -17,7 +17,7 @@ contract FeeManager is IFeeManager, LedgerComponent {
         _disableInitializers();
     }
 
-    function initialize() external override initializer {
+    function initialize() external override(IFeeManager, LedgerComponent) initializer {
         __Ownable_init();
         // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/346882377/System+Account+-+V2
         futuresFeeCollector = 0x0ded76d9b80cba463c51e8d556fda7ae63458e8fc1d912ae87ecae5ceb4f5d03;
