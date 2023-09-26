@@ -19,7 +19,7 @@ contract MarketManager is IMarketManager, LedgerComponent, OperatorManagerCompon
         _disableInitializers();
     }
 
-    function initialize() external override initializer {
+    function initialize() external override(IMarketManager, LedgerComponent, OperatorManagerComponent) initializer {
         __Ownable_init();
     }
 

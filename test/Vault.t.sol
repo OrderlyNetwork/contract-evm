@@ -133,7 +133,7 @@ contract VaultTest is Test {
         vm.stopPrank();
 
         vm.prank(address(vaultCrossChainManager));
-        vm.expectRevert(abi.encodeWithSelector(IVault.BalanceNotEnough.selector, AMOUNT - 1, AMOUNT));
+        vm.expectRevert();
         vault.withdraw(withdrawData);
     }
 

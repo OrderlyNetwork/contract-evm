@@ -149,10 +149,6 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     function withdraw(VaultTypes.VaultWithdraw calldata data) public override onlyCrossChainManager whenNotPaused {
         IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
         uint128 amount = data.tokenAmount - data.fee;
-        // check balane gt amount
-        if (tokenAddress.balanceOf(address(this)) < amount) {
-            revert BalanceNotEnough(tokenAddress.balanceOf(address(this)), amount);
-        }
         // transfer to user
         // avoid non-standard ERC20 tranfer bug
         tokenAddress.safeTransfer(data.receiver, amount);
@@ -177,11 +173,11 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         return ++depositId;
     }
 
-    function emergencyPause() public onlyOwner {
+    function emergencyPause() public whenNotPaused onlyOwner {
         _pause();
     }
 
-    function emergencyUnpause() public onlyOwner {
+    function emergencyUnpause() public whenPaused onlyOwner {
         _unpause();
     }
 }
