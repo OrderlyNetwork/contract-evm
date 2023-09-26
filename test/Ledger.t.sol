@@ -6,8 +6,8 @@ import "openzeppelin-contracts/contracts/proxy/transparent/TransparentUpgradeabl
 import "openzeppelin-contracts/contracts/proxy/transparent/ProxyAdmin.sol";
 import "../src/OperatorManager.sol";
 import "../src/VaultManager.sol";
-import "../src/marketManager.sol";
-import "../src/feeManager.sol";
+import "../src/MarketManager.sol";
+import "../src/FeeManager.sol";
 import "./mock/LedgerCrossChainManagerMock.sol";
 import "./cheater/LedgerCheater.sol";
 
