@@ -69,7 +69,9 @@ library AccountTypePositionHelper {
             position.openingCost = 0;
             return;
         }
-        int128 quoteDiff = liquidationQuoteDiff != 0 ? liquidationQuoteDiff * 1e8 : -qty * price;
+        // precision 16 = 6 + 10
+        int128 quoteDiff = liquidationQuoteDiff != 0 ? liquidationQuoteDiff * 1e10 : -qty * price;
+        // precision 16 = 8 + 8
         int128 openingCost = position.openingCost * 1e8;
         if (position.positionQty * currentHolding > 0) {
             if (qty * position.positionQty > 0) {
