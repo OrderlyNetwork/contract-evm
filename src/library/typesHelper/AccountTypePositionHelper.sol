@@ -120,8 +120,15 @@ library AccountTypePositionHelper {
         if (remainder.abs() * 2 >= divisor.abs()) {
             if (quotient > 0) {
                 quotient += 1;
-            } else {
+            } else if (quotient < 0) {
                 quotient -= 1;
+            } else {
+                // case quotient == 0
+                if (dividend > 0) {
+                    quotient = 1;
+                } else {
+                    quotient = -1;
+                }
             }
         }
         return quotient;
@@ -131,10 +138,17 @@ library AccountTypePositionHelper {
         int256 quotient = dividend / divisor;
         int256 remainder = dividend % divisor;
         if (remainder.abs_i256() * 2 >= divisor.abs()) {
-            if (quotient > 0) {
+            if (quotient >= 0) {
                 quotient += 1;
-            } else {
+            } else if (quotient < 0) {
                 quotient -= 1;
+            } else {
+                // case quotient == 0
+                if (dividend > 0) {
+                    quotient = 1;
+                } else {
+                    quotient = -1;
+                }
             }
         }
         return int128(quotient);
@@ -162,8 +176,15 @@ library AccountTypePositionHelper {
         if (remainder.abs() * 2 > divisor.abs()) {
             if (quotient > 0) {
                 quotient += 1;
-            } else {
+            } else if (quotient < 0) {
                 quotient -= 1;
+            } else {
+                // case quotient == 0
+                if (dividend > 0) {
+                    quotient = 1;
+                } else {
+                    quotient = -1;
+                }
             }
         }
         return quotient;
