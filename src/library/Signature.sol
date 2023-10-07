@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
+import "openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
 import "./types/PerpTypes.sol";
 import "./types/EventTypes.sol";
 import "./types/MarketTypes.sol";
@@ -36,16 +37,8 @@ library Signature {
         return signer == sender && signer != address(0);
     }
 
-    function getEthSignedMessageHash(bytes32 _messageHash) internal pure returns (bytes32) {
-        /*
-        Signature is produced by signing a keccak256 hash with the following format:
-        "\x19Ethereum Signed Message\n" + len(msg) + msg
-        */
-        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _messageHash));
-    }
-
     function verify(bytes32 hash, bytes32 r, bytes32 s, uint8 v, address signer) internal pure returns (bool) {
-        return ecrecover(hash, v, r, s) == signer;
+        return ECDSA.recover(hash, v, r, s) == signer;
     }
 
     function perpUploadEncodeHashVerify(PerpTypes.FuturesTradeUploadData memory data, address signer)
@@ -54,7 +47,7 @@ library Signature {
         returns (bool)
     {
         bytes memory encoded = abi.encode(data.batchId, data.count, data.trades);
-        bytes32 h = getEthSignedMessageHash(keccak256(encoded));
+        bytes32 h = ECDSA.toEthSignedMessageHash(keccak256(encoded));
         return verify(h, data.r, data.s, data.v, signer);
     }
 
@@ -206,7 +199,7 @@ library Signature {
         pure
         returns (bool)
     {
-        bytes32 h = getEthSignedMessageHash(keccak256(eventsUploadEncodeHash(data)));
+        bytes32 h = ECDSA.toEthSignedMessageHash(keccak256(eventsUploadEncodeHash(data)));
         return verify(h, data.r, data.s, data.v, signer);
     }
 
@@ -216,7 +209,7 @@ library Signature {
         returns (bool)
     {
         bytes memory encoded = abi.encode(data.maxTimestamp, data.perpPrices);
-        bytes32 h = getEthSignedMessageHash(keccak256(encoded));
+        bytes32 h = ECDSA.toEthSignedMessageHash(keccak256(encoded));
         return verify(h, data.r, data.s, data.v, signer);
     }
 
@@ -226,7 +219,7 @@ library Signature {
         returns (bool)
     {
         bytes memory encoded = abi.encode(data.maxTimestamp, data.sumUnitaryFundings);
-        bytes32 h = getEthSignedMessageHash(keccak256(encoded));
+        bytes32 h = ECDSA.toEthSignedMessageHash(keccak256(encoded));
         return verify(h, data.r, data.s, data.v, signer);
     }
 }
