@@ -55,9 +55,12 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     }
 
     /// @notice Add contract address for an allowed token given the tokenHash
+    /// @dev This function is only called when changing allow status for a token, not for initializing
     function setAllowedToken(bytes32 _tokenHash, bool _allowed) public override onlyOwner {
         bool succ = false;
         if (_allowed) {
+            // require tokenAddress exist
+            if (allowedToken[_tokenHash] == address(0)) revert AddressZero();
             succ = allowedTokenSet.add(_tokenHash);
         } else {
             succ = allowedTokenSet.remove(_tokenHash);
@@ -78,7 +81,8 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         emit SetAllowedBroker(_brokerHash, _allowed);
     }
 
-    /// @notice Change the token address for an allowed token, unusual case on Mainnet, but possible on Testnet
+    /// @notice Change the token address for an allowed token, used when a new token is added
+    /// @dev maybe should called `addTokenAddressAndAllow`, because it's for initializing
     function changeTokenAddressAndAllow(bytes32 _tokenHash, address _tokenAddress) public override onlyOwner {
         if (_tokenAddress == address(0)) revert AddressZero();
         allowedToken[_tokenHash] = _tokenAddress;
