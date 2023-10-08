@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
+import "openzeppelin-contracts/contracts/utils/math/SafeCast.sol";
 import "../types/AccountTypes.sol";
 import "../Utils.sol";
 import "./SafeCastHelper.sol";
@@ -151,7 +152,7 @@ library AccountTypePositionHelper {
                 }
             }
         }
-        return int128(quotient);
+        return SafeCast.toInt128(quotient);
     }
 
     /// @notice HALF DOWN
