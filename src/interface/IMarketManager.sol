@@ -20,6 +20,6 @@ interface IMarketManager is ILedgerComponent, IOperatorManagerComponent {
     function getPerpMarketCfg(bytes32 _pairSymbol) external view returns (MarketTypes.PerpMarketCfg memory);
 
     // set functions
-    function setLastMarkPriceUpdated(bytes32 _pairSymbol, uint64 _lastMarkPriceUpdated) external;
-    function setLastFundingUpdated(bytes32 _pairSymbol, uint64 _lastFundingUpdated) external;
+    function setLastMarkPriceUpdated(bytes32 _pairSymbol, uint256 _lastMarkPriceUpdated) external;
+    function setLastFundingUpdated(bytes32 _pairSymbol, uint256 _lastFundingUpdated) external;
 }
