@@ -120,14 +120,15 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
         if (!Utils.validateAccountId(data.accountId, data.brokerHash, msg.sender)) revert AccountIdInvalid();
-        IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
-        // avoid non-standard ERC20 tranferFrom bug
-        tokenAddress.safeTransferFrom(msg.sender, address(this), data.tokenAmount);
         // cross-chain tx to ledger
         VaultTypes.VaultDeposit memory depositData = VaultTypes.VaultDeposit(
             data.accountId, msg.sender, data.brokerHash, data.tokenHash, data.tokenAmount, _newDepositId()
         );
         IVaultCrossChainManager(crossChainManagerAddress).deposit(depositData);
+        // avoid reentrancy, so transfer token at the end
+        IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
+        // avoid non-standard ERC20 tranferFrom bug
+        tokenAddress.safeTransferFrom(msg.sender, address(this), data.tokenAmount);
         // emit deposit event
         emit AccountDeposit(data.accountId, msg.sender, depositId, data.tokenHash, data.tokenAmount);
     }
@@ -137,27 +138,28 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
         if (!Utils.validateAccountId(data.accountId, data.brokerHash, receiver)) revert AccountIdInvalid();
-        IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
-        // avoid non-standard ERC20 tranferFrom bug
-        tokenAddress.safeTransferFrom(msg.sender, address(this), data.tokenAmount);
         // cross-chain tx to ledger
         VaultTypes.VaultDeposit memory depositData = VaultTypes.VaultDeposit(
             data.accountId, receiver, data.brokerHash, data.tokenHash, data.tokenAmount, _newDepositId()
         );
         IVaultCrossChainManager(crossChainManagerAddress).deposit(depositData);
+        // avoid reentrancy, so transfer token at the end
+        IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
+        // avoid non-standard ERC20 tranferFrom bug
+        tokenAddress.safeTransferFrom(msg.sender, address(this), data.tokenAmount);
         // emit deposit event
         emit AccountDepositTo(data.accountId, receiver, depositId, data.tokenHash, data.tokenAmount);
     }
 
     /// @notice user withdraw
     function withdraw(VaultTypes.VaultWithdraw calldata data) public override onlyCrossChainManager whenNotPaused {
-        IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
-        uint128 amount = data.tokenAmount - data.fee;
-        // transfer to user
-        // avoid non-standard ERC20 tranfer bug
-        tokenAddress.safeTransfer(data.receiver, amount);
         // send cross-chain tx to ledger
         IVaultCrossChainManager(crossChainManagerAddress).withdraw(data);
+        // avoid reentrancy, so transfer token at the end
+        IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
+        uint128 amount = data.tokenAmount - data.fee;
+        // avoid non-standard ERC20 tranfer bug
+        tokenAddress.safeTransfer(data.receiver, amount);
         // emit withdraw event
         emit AccountWithdraw(
             data.accountId,
