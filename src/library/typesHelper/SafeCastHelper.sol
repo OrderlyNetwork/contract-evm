@@ -6,6 +6,7 @@ pragma solidity ^0.8.18;
 /// @notice For safe cast uint types
 library SafeCastHelper {
     error SafeCastOverflow();
+    error SafeCastUnderflow();
 
     /// @notice cast uint128 to int128
     function toInt128(uint128 y) internal pure returns (int128 z) {
@@ -15,7 +16,7 @@ library SafeCastHelper {
 
     /// @notice cast int128 to uint128
     function toUint128(int128 y) internal pure returns (uint128 z) {
-        if (y < 0) revert SafeCastOverflow();
+        if (y < 0) revert SafeCastUnderflow();
         z = uint128(y);
     }
 
