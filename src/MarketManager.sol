@@ -30,7 +30,7 @@ contract MarketManager is IMarketManager, LedgerComponent, OperatorManagerCompon
             MarketTypes.PerpMarketCfg storage cfg = perpMarketCfg[perpPrice.symbolHash];
             cfg.setIndexPriceOrderly(perpPrice.indexPrice);
             cfg.setMarkPrice(perpPrice.markPrice);
-            cfg.setLastMarkPriceUpdated(block.timestamp);
+            cfg.setLastMarkPriceUpdated(perpPrice.timestamp);
         }
         emit MarketData(data.maxTimestamp);
     }
@@ -41,7 +41,7 @@ contract MarketManager is IMarketManager, LedgerComponent, OperatorManagerCompon
             MarketTypes.SumUnitaryFunding calldata sumUnitaryFunding = data.sumUnitaryFundings[i];
             MarketTypes.PerpMarketCfg storage cfg = perpMarketCfg[sumUnitaryFunding.symbolHash];
             cfg.setSumUnitaryFundings(sumUnitaryFunding.sumUnitaryFunding);
-            cfg.setLastMarkPriceUpdated(block.timestamp);
+            cfg.setLastMarkPriceUpdated(sumUnitaryFunding.timestamp);
         }
         emit FundingData(data.maxTimestamp);
     }
@@ -58,11 +58,11 @@ contract MarketManager is IMarketManager, LedgerComponent, OperatorManagerCompon
         return perpMarketCfg[_pairSymbol];
     }
 
-    function setLastMarkPriceUpdated(bytes32 _pairSymbol, uint256 _lastMarkPriceUpdated) external override onlyOwner {
+    function setLastMarkPriceUpdated(bytes32 _pairSymbol, uint64 _lastMarkPriceUpdated) external override onlyOwner {
         perpMarketCfg[_pairSymbol].setLastMarkPriceUpdated(_lastMarkPriceUpdated);
     }
 
-    function setLastFundingUpdated(bytes32 _pairSymbol, uint256 _lastFundingUpdated) external override onlyLedger {
+    function setLastFundingUpdated(bytes32 _pairSymbol, uint64 _lastFundingUpdated) external override onlyLedger {
         perpMarketCfg[_pairSymbol].setLastFundingUpdated(_lastFundingUpdated);
     }
 }
