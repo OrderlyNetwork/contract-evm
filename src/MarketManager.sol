@@ -6,9 +6,9 @@ import "./library/typesHelper/MarketTypeHelper.sol";
 import "./LedgerComponent.sol";
 import "./OperatorManagerComponent.sol";
 
-/**
- * MarketManager saves perpMarketCfg
- */
+/// @title A component of Ledger, saves market data
+/// @author Orderly_Rubick
+/// @notice MarketManager saves perpMarketCfg
 contract MarketManager is IMarketManager, LedgerComponent, OperatorManagerComponent {
     using MarketTypeHelper for MarketTypes.PerpMarketCfg;
 
@@ -19,7 +19,7 @@ contract MarketManager is IMarketManager, LedgerComponent, OperatorManagerCompon
         _disableInitializers();
     }
 
-    function initialize() public override initializer {
+    function initialize() external override(IMarketManager, LedgerComponent, OperatorManagerComponent) initializer {
         __Ownable_init();
     }
 
@@ -30,7 +30,7 @@ contract MarketManager is IMarketManager, LedgerComponent, OperatorManagerCompon
             MarketTypes.PerpMarketCfg storage cfg = perpMarketCfg[perpPrice.symbolHash];
             cfg.setIndexPriceOrderly(perpPrice.indexPrice);
             cfg.setMarkPrice(perpPrice.markPrice);
-            cfg.setLastMarkPriceUpdated(block.timestamp);
+            cfg.setLastMarkPriceUpdated(perpPrice.timestamp);
         }
         emit MarketData(data.maxTimestamp);
     }
@@ -41,7 +41,7 @@ contract MarketManager is IMarketManager, LedgerComponent, OperatorManagerCompon
             MarketTypes.SumUnitaryFunding calldata sumUnitaryFunding = data.sumUnitaryFundings[i];
             MarketTypes.PerpMarketCfg storage cfg = perpMarketCfg[sumUnitaryFunding.symbolHash];
             cfg.setSumUnitaryFundings(sumUnitaryFunding.sumUnitaryFunding);
-            cfg.setLastFundingUpdated(block.timestamp);
+            cfg.setLastMarkPriceUpdated(sumUnitaryFunding.timestamp);
         }
         emit FundingData(data.maxTimestamp);
     }

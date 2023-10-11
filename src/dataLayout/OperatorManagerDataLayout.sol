@@ -5,6 +5,9 @@ import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.s
 import "../interface/ILedger.sol";
 import "../interface/IMarketManager.sol";
 
+/// @title OperatorManager contract data layout
+/// @author Orderly_Rubick
+/// @notice DataLayout for OperatorManager contract, align with 50 slots
 contract OperatorManagerDataLayout {
     // An EOA operator address
     address public operatorAddress;

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
+/// @title AccountTypes library
+/// @author Orderly_Rubick
 library AccountTypes {
     struct PerpPosition {
         int128 positionQty;

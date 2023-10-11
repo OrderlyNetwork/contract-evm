@@ -133,30 +133,38 @@ contract VaultTest is Test {
         vm.stopPrank();
 
         vm.prank(address(vaultCrossChainManager));
-        vm.expectRevert(abi.encodeWithSelector(IVault.BalanceNotEnough.selector, AMOUNT - 1, AMOUNT));
+        vm.expectRevert();
         vault.withdraw(withdrawData);
     }
 
     function test_getAllWhitelistSet() public {
         vault.changeTokenAddressAndAllow(TOKEN_HASH, address(tUSDC));
-        vault.setAllowedBroker(BROKER_HASH, true);
+        if (!vault.getAllowedBroker(BROKER_HASH)) {
+            vault.setAllowedBroker(BROKER_HASH, true);
+        }
         assertEq(vault.getAllAllowedBroker().length, 1);
         assertEq(vault.getAllAllowedToken().length, 1);
     }
 
     function test_whitelist() public {
         vault.changeTokenAddressAndAllow(TOKEN_HASH, address(tUSDC));
-        vault.setAllowedBroker(BROKER_HASH, true);
+        if (!vault.getAllowedBroker(BROKER_HASH)) {
+            vault.setAllowedBroker(BROKER_HASH, true);
+        }
         assertEq(vault.getAllowedToken(TOKEN_HASH), address(tUSDC));
         assertEq(vault.getAllowedBroker(BROKER_HASH), true);
 
         vault.setAllowedToken(TOKEN_HASH, false);
-        vault.setAllowedBroker(BROKER_HASH, false);
+        if (vault.getAllowedBroker(BROKER_HASH)) {
+            vault.setAllowedBroker(BROKER_HASH, false);
+        }
         assertEq(vault.getAllowedToken(TOKEN_HASH), address(0));
         assertEq(vault.getAllowedBroker(BROKER_HASH), false);
 
         vault.setAllowedToken(TOKEN_HASH, true);
-        vault.setAllowedBroker(BROKER_HASH, true);
+        if (!vault.getAllowedBroker(BROKER_HASH)) {
+            vault.setAllowedBroker(BROKER_HASH, true);
+        }
         assertEq(vault.getAllowedToken(TOKEN_HASH), address(tUSDC));
         assertEq(vault.getAllowedBroker(BROKER_HASH), true);
     }

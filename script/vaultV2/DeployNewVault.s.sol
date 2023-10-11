@@ -8,7 +8,7 @@ import "../../src/vaultSide/Vault.sol";
 import "../utils/BaseScript.s.sol";
 import "../utils/ConfigHelper.s.sol";
 
-contract TransferOwner is BaseScript, ConfigHelper {
+contract DeployNewVault is BaseScript, ConfigHelper {
     function run() external {
         uint256 orderlyPrivateKey = vm.envUint("ORDERLY_PRIVATE_KEY");
         Envs memory envs = getEnvs();
@@ -16,28 +16,13 @@ contract TransferOwner is BaseScript, ConfigHelper {
         string memory network = envs.vaultNetwork;
 
         VaultDepolyData memory config = getVaultDeployData(env, network);
-        address adminAddress = config.proxyAdmin;
         address vaultAddress = config.vault;
-        address multiSigAddress = config.multiSig;
-        console.log("adminAddress: ", adminAddress);
         console.log("vaultAddress: ", vaultAddress);
-        console.log("multiSigAddress: ", multiSigAddress);
 
         vm.startBroadcast(orderlyPrivateKey);
-
-        {
-            // first change the owner of the impls
-            Vault vault = Vault(vaultAddress);
-            vault.transferOwnership(multiSigAddress);
-        }
-
-        {
-            // second change the owner of the ProxyAdmin
-            ProxyAdmin admin = ProxyAdmin(adminAddress);
-            admin.transferOwnership(multiSigAddress);
-        }
-
+        IVault vaultImpl = new Vault();
+        console.log("new vaultImplAddress: ", address(vaultImpl));
         vm.stopBroadcast();
-        console.log("transfer owner done");
+        console.log("deploy done");
     }
 }
