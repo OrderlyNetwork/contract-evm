@@ -228,7 +228,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         _feeSwapPosition(perpPosition, trade.symbolHash, trade.fee, trade.tradeId, trade.sumUnitaryFundings);
         account.lastPerpTradeId = trade.tradeId;
         // update last funding update timestamp
-        marketManager.setLastFundingUpdated(trade.symbolHash, block.timestamp);
+        marketManager.setLastFundingUpdated(trade.symbolHash, trade.timestamp);
     }
 
     function executeWithdrawAction(EventTypes.WithdrawData calldata withdraw, uint64 eventId)
