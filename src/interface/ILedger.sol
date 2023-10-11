@@ -8,11 +8,13 @@ import "../library/types/MarketTypes.sol";
 import "./ILedgerError.sol";
 import "./ILedgerEvent.sol";
 
+// Defines the error, event and ABI.
+// Data should be stored in LedgerDataLayout, NOT in this contract.
 interface ILedger is ILedgerError, ILedgerEvent {
     function initialize() external;
 
     // Functions called by cross chain manager on Ledger side
-    function accountDeposit(AccountTypes.AccountDeposit calldata accountDeposit) external;
+    function accountDeposit(AccountTypes.AccountDeposit calldata data) external;
     function accountWithDrawFinish(AccountTypes.AccountWithdraw calldata withdraw) external;
 
     // Functions called by operator manager to executre actions

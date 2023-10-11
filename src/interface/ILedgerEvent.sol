@@ -89,4 +89,10 @@ interface ILedgerEvent {
         uint128 insuranceTransferAmount,
         uint64 lastCefiEventId
     );
+
+    event ChangeOperatorManager(address oldAddress, address newAddress);
+    event ChangeCrossChainManager(address oldAddress, address newAddress);
+    event ChangeVaultManager(address oldAddress, address newAddress);
+    event ChangeMarketManager(address oldAddress, address newAddress);
+    event ChangeFeeManager(address oldAddress, address newAddress);
 }

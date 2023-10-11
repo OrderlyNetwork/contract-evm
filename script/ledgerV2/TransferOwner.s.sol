@@ -53,19 +53,9 @@ contract TransferOwner is BaseScript, ConfigHelper {
         }
 
         {
-            // second change the owner of the proxys
+            // second change the owner of the ProxyAdmin
             ProxyAdmin admin = ProxyAdmin(adminAddress);
-            ITransparentUpgradeableProxy feeManagerProxy = ITransparentUpgradeableProxy(feeManagerAddress);
-            ITransparentUpgradeableProxy marketManagerProxy = ITransparentUpgradeableProxy(marketManagerAddress);
-            ITransparentUpgradeableProxy operatorManagerProxy = ITransparentUpgradeableProxy(operatorManagerAddress);
-            ITransparentUpgradeableProxy vaultManagerProxy = ITransparentUpgradeableProxy(vaultManagerAddress);
-            ITransparentUpgradeableProxy ledgerProxy = ITransparentUpgradeableProxy(ledgerAddress);
-
-            admin.changeProxyAdmin(feeManagerProxy, multiSigAddress);
-            admin.changeProxyAdmin(marketManagerProxy, multiSigAddress);
-            admin.changeProxyAdmin(operatorManagerProxy, multiSigAddress);
-            admin.changeProxyAdmin(vaultManagerProxy, multiSigAddress);
-            admin.changeProxyAdmin(ledgerProxy, multiSigAddress);
+            admin.transferOwnership(multiSigAddress);
         }
 
         vm.stopBroadcast();

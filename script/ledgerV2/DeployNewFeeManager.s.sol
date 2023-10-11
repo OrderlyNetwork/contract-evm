@@ -8,7 +8,7 @@ import "../../src/FeeManager.sol";
 import "../utils/BaseScript.s.sol";
 import "../utils/ConfigHelper.s.sol";
 
-contract UpgradeFeeManager is BaseScript, ConfigHelper {
+contract DeployNewFeeManager is BaseScript, ConfigHelper {
     function run() external {
         uint256 orderlyPrivateKey = vm.envUint("ORDERLY_PRIVATE_KEY");
         Envs memory envs = getEnvs();
@@ -16,20 +16,13 @@ contract UpgradeFeeManager is BaseScript, ConfigHelper {
         string memory network = envs.ledgerNetwork;
 
         LedgerDepolyData memory config = getLedgerDeployData(env, network);
-        address adminAddress = config.proxyAdmin;
         address feeManagerAddress = config.feeManager;
-        console.log("adminAddress: ", adminAddress);
         console.log("feeManagerAddress: ", feeManagerAddress);
 
-        ProxyAdmin admin = ProxyAdmin(adminAddress);
-        ITransparentUpgradeableProxy feeManagerProxy = ITransparentUpgradeableProxy(feeManagerAddress);
-
         vm.startBroadcast(orderlyPrivateKey);
-
         IFeeManager feeManagerImpl = new FeeManager();
-        admin.upgrade(feeManagerProxy, address(feeManagerImpl));
-
+        console.log("new feeManagerImplAddress: ", address(feeManagerImpl));
         vm.stopBroadcast();
-        console.log("upgrade done");
+        console.log("deply done");
     }
 }
