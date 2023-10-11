@@ -32,7 +32,7 @@ contract SafeCastHelperTest is Test {
 
     function testRevert_cast_minus_int() public {
         int128 y = -1;
-        vm.expectRevert(abi.encodeWithSelector(SafeCastHelper.SafeCastOverflow.selector));
+        vm.expectRevert(abi.encodeWithSelector(SafeCastHelper.SafeCastUnderflow.selector));
         uint128 z = y.toUint128();
         z = z; // avoid warning, never reach here
     }
