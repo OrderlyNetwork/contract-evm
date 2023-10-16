@@ -351,11 +351,6 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         // gas saving
         uint256 length = settlement.settlementExecutions.length;
         EventTypes.SettlementExecution[] calldata settlementExecutions = settlement.settlementExecutions;
-        for (uint256 i = 0; i < length; ++i) {
-            totalSettleAmount += settlementExecutions[i].settledAmount;
-        }
-        if (totalSettleAmount != settlement.settledAmount) revert TotalSettleAmountNotMatch(totalSettleAmount);
-
         AccountTypes.Account storage account = userLedger[settlement.accountId];
         if (settlement.insuranceTransferAmount != 0) {
             if (settlement.accountId == settlement.insuranceAccountId) revert InsuranceTransferToSelf();
@@ -377,6 +372,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         // for-loop ledger execution
         for (uint256 i = 0; i < length; ++i) {
             EventTypes.SettlementExecution calldata ledgerExecution = settlementExecutions[i];
+            totalSettleAmount += ledgerExecution.settledAmount;
             AccountTypes.PerpPosition storage position = account.perpPositions[ledgerExecution.symbolHash];
             position.chargeFundingFee(ledgerExecution.sumUnitaryFundings);
             position.costPosition += ledgerExecution.settledAmount;
@@ -390,6 +386,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             account.balances[settlement.settledAssetHash] =
                 (balance.toInt128() + ledgerExecution.settledAmount).toUint128();
         }
+        if (totalSettleAmount != settlement.settledAmount) revert TotalSettleAmountNotMatch(totalSettleAmount);
         account.lastCefiEventId = eventId;
         // emit event
         emit SettlementResult(
