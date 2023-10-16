@@ -17,9 +17,9 @@ library AccountTypePositionHelper {
 
     /// @notice charge funding fee
     function chargeFundingFee(AccountTypes.PerpPosition storage position, int128 sumUnitaryFundings) internal {
-        int128 accruedFeeUncoverted = position.positionQty * (sumUnitaryFundings - position.lastSumUnitaryFundings);
-        int128 accruedFee = accruedFeeUncoverted / FUNDING_MOVE_RIGHT_PRECISIONS;
-        int128 remainder = accruedFeeUncoverted - (accruedFee * FUNDING_MOVE_RIGHT_PRECISIONS);
+        int128 accruedFeeUnconverted = position.positionQty * (sumUnitaryFundings - position.lastSumUnitaryFundings);
+        int128 accruedFee = accruedFeeUnconverted / FUNDING_MOVE_RIGHT_PRECISIONS;
+        int128 remainder = accruedFeeUnconverted - (accruedFee * FUNDING_MOVE_RIGHT_PRECISIONS);
         if (remainder > 0) {
             accruedFee += 1;
         }
