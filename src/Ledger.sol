@@ -366,8 +366,8 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
                 );
             }
             AccountTypes.Account storage insuranceFund = userLedger[settlement.insuranceAccountId];
-            insuranceFund.balances[settlement.settledAssetHash] -= settlement.insuranceTransferAmount;
-            account.balances[settlement.settledAssetHash] += settlement.insuranceTransferAmount;
+            insuranceFund.subBalance(settlement.settledAssetHash, settlement.insuranceTransferAmount);
+            account.addBalance(settlement.settledAssetHash, settlement.insuranceTransferAmount);
         }
         // for-loop ledger execution
         for (uint256 i = 0; i < length; ++i) {
