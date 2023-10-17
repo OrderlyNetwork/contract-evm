@@ -84,7 +84,11 @@ library AccountTypePositionHelper {
         } else {
             openingCost = halfUp24_8_i256(int256(quoteDiff) * int256(currentHolding), qty);
         }
-        position.averageEntryPrice = halfDown16_8(-openingCost, currentHolding).toUint128();
+        if (currentHolding > 0) {
+            position.averageEntryPrice = halfDown16_8(-openingCost, currentHolding).toUint128();
+        } else {
+            position.averageEntryPrice = halfUp16_8(-openingCost, currentHolding).toUint128();
+        }
         position.openingCost = halfUp16_8(openingCost, 1e8);
     }
 
