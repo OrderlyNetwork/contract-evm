@@ -2,6 +2,8 @@
 pragma solidity ^0.8.18;
 
 interface ILedgerEvent {
+    // TODO @Rubick
+    // All events with blocktime will be deprecated in next version
     event AccountRegister(
         bytes32 indexed accountId, bytes32 indexed brokerId, address indexed userAddress, uint256 blocktime
     );
@@ -55,6 +57,55 @@ interface ILedgerEvent {
         uint128 tokenAmount,
         uint128 fee,
         uint256 blocktime,
+        uint8 failReson
+    );
+    event AccountRegister(bytes32 indexed accountId, bytes32 indexed brokerId, address indexed userAddress);
+    event AccountDeposit(
+        bytes32 indexed accountId,
+        uint64 indexed depositNonce,
+        uint64 indexed eventId,
+        address userAddress,
+        bytes32 tokenHash,
+        uint128 tokenAmount,
+        uint256 srcChainId,
+        uint64 srcChainDepositNonce,
+        bytes32 brokerHash
+    );
+    event AccountWithdrawApprove(
+        bytes32 indexed accountId,
+        uint64 indexed withdrawNonce,
+        uint64 indexed eventId,
+        bytes32 brokerHash,
+        address sender,
+        address receiver,
+        uint256 chainId,
+        bytes32 tokenHash,
+        uint128 tokenAmount,
+        uint128 fee
+    );
+    event AccountWithdrawFinish(
+        bytes32 indexed accountId,
+        uint64 indexed withdrawNonce,
+        uint64 indexed eventId,
+        bytes32 brokerHash,
+        address sender,
+        address receiver,
+        uint256 chainId,
+        bytes32 tokenHash,
+        uint128 tokenAmount,
+        uint128 fee
+    );
+    event AccountWithdrawFail(
+        bytes32 indexed accountId,
+        uint64 indexed withdrawNonce,
+        uint64 indexed eventId,
+        bytes32 brokerHash,
+        address sender,
+        address receiver,
+        uint256 chainId,
+        bytes32 tokenHash,
+        uint128 tokenAmount,
+        uint128 fee,
         uint8 failReson
     );
 
