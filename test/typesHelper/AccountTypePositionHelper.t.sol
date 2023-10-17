@@ -206,6 +206,7 @@ contract AccountTypePositionHelperTest is Test {
         assertEq(position.averageEntryPrice, 3e11);
     }
 
+    // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/250052731/CeFi+avg+open+price+calculation#Corner-cases
     function test_average_entry_price_corner_case() public {
         position = AccountTypes.PerpPosition({
             positionQty: 0,
@@ -234,6 +235,12 @@ contract AccountTypePositionHelperTest is Test {
         position.calAverageEntryPrice(-156_789_000, 288_888_000, 0);
         assertEq(position.openingCost, 167_621_484);
         assertEq(position.averageEntryPrice, 288_888_000);
+
+        // sell 1.98765 @ 2.22222
+        position.positionQty = -58_023_000;
+        position.calAverageEntryPrice(-198_765_000, 222_222_000, 0);
+        assertEq(position.openingCost, 609_321_042);
+        assertEq(position.averageEntryPrice, 237_285_637);
     }
 
     function test_half_down_up_boundary() public {
