@@ -8,14 +8,6 @@ library Utils {
         return keccak256(abi.encode(_userAddr, keccak256(abi.encodePacked(_brokerId))));
     }
 
-    function getBrokerHash(string memory _brokerId) internal pure returns (bytes32) {
-        return calculateStringHash(_brokerId);
-    }
-
-    function getTokenHash(string memory _tokenSymbol) internal pure returns (bytes32) {
-        return calculateStringHash(_tokenSymbol);
-    }
-
     function calculateStringHash(string memory _str) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(_str));
     }
