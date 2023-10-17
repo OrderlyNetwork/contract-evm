@@ -385,6 +385,9 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             }
             account.balances[settlement.settledAssetHash] =
                 (balance.toInt128() + ledgerExecution.settledAmount).toUint128();
+            if (position.isFullSettled()) {
+                delete account.perpPositions[ledgerExecution.symbolHash];
+            }
         }
         if (totalSettleAmount != settlement.settledAmount) revert TotalSettleAmountNotMatch(totalSettleAmount);
         account.lastCefiEventId = eventId;
