@@ -169,8 +169,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
             data.receiver,
             data.tokenHash,
             data.tokenAmount,
-            data.fee,
-            block.timestamp
+            data.fee
         );
     }
 
