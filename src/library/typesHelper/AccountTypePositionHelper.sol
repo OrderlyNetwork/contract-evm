@@ -38,8 +38,8 @@ library AccountTypePositionHelper {
         int128 markPrice,
         int128 baseMaintenanceMargin
     ) internal view returns (int128) {
-        return position.positionQty.abs().toInt128() * markPrice / PRICE_QTY_MOVE_RIGHT_PRECISIONS
-            * baseMaintenanceMargin / int128(MARGIN_100PERCENT);
+        return position.positionQty.abs().toInt128() * markPrice * baseMaintenanceMargin
+            / (int128(MARGIN_100PERCENT) * PRICE_QTY_MOVE_RIGHT_PRECISIONS);
     }
 
     /// @notice is full settled
