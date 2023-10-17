@@ -236,8 +236,8 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         override
         onlyOperatorManager
     {
-        bytes32 brokerHash = Utils.getBrokerHash(withdraw.brokerId);
-        bytes32 tokenHash = Utils.getTokenHash(withdraw.tokenSymbol);
+        bytes32 brokerHash = Utils.calculateStringHash(withdraw.brokerId);
+        bytes32 tokenHash = Utils.calculateStringHash(withdraw.tokenSymbol);
         if (!vaultManager.getAllowedBroker(brokerHash)) revert BrokerNotAllowed();
         if (!vaultManager.getAllowedChainToken(tokenHash, withdraw.chainId)) {
             revert TokenNotAllowed(tokenHash, withdraw.chainId);
