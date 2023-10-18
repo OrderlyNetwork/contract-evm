@@ -188,7 +188,6 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             account.userAddress = data.userAddress;
             account.brokerHash = data.brokerHash;
             // emit register event
-            emit AccountRegister(data.accountId, data.brokerHash, data.userAddress, block.timestamp); // will be deprecated in next version
             emit AccountRegister(data.accountId, data.brokerHash, data.userAddress);
         }
         account.addBalance(data.tokenHash, data.tokenAmount);
@@ -207,18 +206,6 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             data.srcChainDepositNonce,
             data.brokerHash
         );
-        emit AccountDeposit(
-            data.accountId,
-            globalDepositId,
-            tmpGlobalEventId,
-            data.userAddress,
-            data.tokenHash,
-            data.tokenAmount,
-            data.srcChainId,
-            data.srcChainDepositNonce,
-            data.brokerHash,
-            block.timestamp
-        ); // will be deprecated in next version
     }
 
     function executeProcessValidatedFutures(PerpTypes.FuturesTradeUpload calldata trade)
@@ -293,20 +280,6 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
                 withdraw.fee,
                 state
             );
-            emit AccountWithdrawFail(
-                withdraw.accountId,
-                withdraw.withdrawNonce,
-                globalDepositId,
-                brokerHash,
-                withdraw.sender,
-                withdraw.receiver,
-                withdraw.chainId,
-                tokenHash,
-                withdraw.tokenAmount,
-                withdraw.fee,
-                block.timestamp,
-                state
-            ); // will be deprecated in next version
             return;
         }
         // update status, should never fail
@@ -328,19 +301,6 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             withdraw.tokenAmount,
             withdraw.fee
         );
-        emit AccountWithdrawApprove(
-            withdraw.accountId,
-            withdraw.withdrawNonce,
-            globalDepositId,
-            brokerHash,
-            withdraw.sender,
-            withdraw.receiver,
-            withdraw.chainId,
-            tokenHash,
-            withdraw.tokenAmount,
-            withdraw.fee,
-            block.timestamp
-        ); // will be deprecated in next version
         // send cross-chain tx
         ILedgerCrossChainManager(crossChainManagerAddress).withdraw(withdraw);
     }
@@ -375,19 +335,6 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             withdraw.tokenAmount,
             withdraw.fee
         );
-        emit AccountWithdrawFinish(
-            withdraw.accountId,
-            withdraw.withdrawNonce,
-            globalDepositId,
-            withdraw.brokerHash,
-            withdraw.sender,
-            withdraw.receiver,
-            withdraw.chainId,
-            withdraw.tokenHash,
-            withdraw.tokenAmount,
-            withdraw.fee,
-            block.timestamp
-        ); // will be deprecated in next version
     }
 
     function executeSettlement(EventTypes.Settlement calldata settlement, uint64 eventId)
