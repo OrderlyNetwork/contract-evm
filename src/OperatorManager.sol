@@ -97,7 +97,6 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         _innerPing();
         _futuresTradeUploadData(data);
         // emit event
-        emit FuturesTradeUpload(data.batchId, block.timestamp); // will be deprecated in next version
         emit FuturesTradeUpload(data.batchId);
         // next wanted futuresUploadBatchId
         futuresUploadBatchId += 1;
@@ -109,7 +108,6 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         _innerPing();
         _eventUploadData(data);
         // emit event
-        emit EventUpload(data.batchId, block.timestamp); // will be deprecated in next version
         emit EventUpload(data.batchId);
         // next wanted eventUploadBatchId
         eventUploadBatchId += 1;
