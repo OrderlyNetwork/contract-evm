@@ -2,9 +2,7 @@
 pragma solidity ^0.8.18;
 
 interface ILedgerEvent {
-    event AccountRegister(
-        bytes32 indexed accountId, bytes32 indexed brokerId, address indexed userAddress, uint256 blocktime
-    );
+    event AccountRegister(bytes32 indexed accountId, bytes32 indexed brokerId, address indexed userAddress);
     event AccountDeposit(
         bytes32 indexed accountId,
         uint64 indexed depositNonce,
@@ -14,8 +12,7 @@ interface ILedgerEvent {
         uint128 tokenAmount,
         uint256 srcChainId,
         uint64 srcChainDepositNonce,
-        bytes32 brokerHash,
-        uint256 blocktime
+        bytes32 brokerHash
     );
     event AccountWithdrawApprove(
         bytes32 indexed accountId,
@@ -27,8 +24,7 @@ interface ILedgerEvent {
         uint256 chainId,
         bytes32 tokenHash,
         uint128 tokenAmount,
-        uint128 fee,
-        uint256 blocktime
+        uint128 fee
     );
     event AccountWithdrawFinish(
         bytes32 indexed accountId,
@@ -40,8 +36,7 @@ interface ILedgerEvent {
         uint256 chainId,
         bytes32 tokenHash,
         uint128 tokenAmount,
-        uint128 fee,
-        uint256 blocktime
+        uint128 fee
     );
     event AccountWithdrawFail(
         bytes32 indexed accountId,
@@ -54,7 +49,6 @@ interface ILedgerEvent {
         bytes32 tokenHash,
         uint128 tokenAmount,
         uint128 fee,
-        uint256 blocktime,
         uint8 failReson
     );
 

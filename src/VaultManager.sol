@@ -34,9 +34,9 @@ contract VaultManager is IVaultManager, LedgerComponent {
 
     function initialize() external override(IVaultManager, LedgerComponent) initializer {
         __Ownable_init();
-        setAllowedBroker(0x083098c593f395bea1de45dda552d9f14e8fcb0be3faaa7a1903c5477d7ba7fd, true); // woofi_dex
+        setAllowedBroker(0x6ca2f644ef7bd6d75953318c7f2580014941e753b3c6d54da56b3bf75dd14dfc, true); // woofi_pro
         setAllowedToken(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa, true); // USDC
-        setAllowedChainToken(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa, 421613, true); // Arbitrum Goerli
+        setAllowedChainToken(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa, 42161, true); // Arbitrum
         setAllowedSymbol(0xa2adc016e890b4fbbf161c7eaeb615b893e4fbeceae918fa7bf16cc40d46610b, true); // PERP_NEAR_USDC
         setAllowedSymbol(0x7e83089239db756ee233fa8972addfea16ae653db0f692e4851aed546b21caeb, true); // PERP_ETH_USDC
         setAllowedSymbol(0x5a8133e52befca724670dbf2cade550c522c2410dd5b1189df675e99388f509d, true); // PERP_BTC_USDC
