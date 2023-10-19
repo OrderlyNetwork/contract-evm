@@ -6,6 +6,9 @@ import "./ILedgerComponent.sol";
 interface IVaultManager is ILedgerComponent {
     function initialize() external;
 
+    // error
+    error EnumerableSetError();
+
     // event
     event SetAllowedBroker(bytes32 indexed _brokerHash, bool _allowed);
     event SetAllowedSymbol(bytes32 indexed _symbolHash, bool _allowed);

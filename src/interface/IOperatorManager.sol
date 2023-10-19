@@ -7,14 +7,20 @@ import "../library/types/EventTypes.sol";
 import "../library/types/MarketTypes.sol";
 import "./ILedgerError.sol";
 
+// IOperatorManager is ILedgerError because OperatorManager call Ledger, and may revert Ledger's error at operator side.
+// So, the operator can get the human-readable error message from ILedgerError.
 interface IOperatorManager is ILedgerError {
     error InvalidBizType(uint8 bizType);
     error BatchIdNotMatch(uint64 batchId, uint64 futuresUploadBatchId);
     error CountNotMatch(uint256 length, uint256 count);
     error SignatureNotMatch();
 
-    event FuturesTradeUpload(uint64 indexed batchId, uint256 blocktime);
-    event EventUpload(uint64 indexed batchId, uint256 blocktime);
+    event FuturesTradeUpload(uint64 indexed batchId);
+    event EventUpload(uint64 indexed batchId);
+    event ChangeCefiUpload(uint8 indexed types, address oldAddress, address newAddress);
+    event ChangeOperator(uint8 indexed types, address oldAddress, address newAddress);
+    event ChangeMarketManager(address oldAddress, address newAddress);
+    event ChangeLedger(address oldAddress, address newAddress);
 
     function initialize() external;
 

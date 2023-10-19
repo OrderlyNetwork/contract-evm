@@ -2,8 +2,8 @@
 pragma solidity ^0.8.18;
 
 import "forge-std/Script.sol";
-import "../../src/Vault.sol";
-import "../../src/testUSDC/tUSDC.sol";
+import "../../src/vaultSide/Vault.sol";
+import "../../src/vaultSide/tUSDC.sol";
 
 contract StartDeposit is Script {
     address constant userAddress = 0x4FDDB51ADe1fa66952de254bE7E1a84EEB153331;

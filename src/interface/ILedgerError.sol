@@ -14,4 +14,5 @@ interface ILedgerError {
     error TokenNotAllowed(bytes32 tokenHash, uint256 chainId);
     error BrokerNotAllowed();
     error SymbolNotAllowed();
+    error AddressZero();
 }

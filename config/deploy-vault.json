@@ -1,0 +1,34 @@
+{
+  "dev": {
+    "arbitrumgoerli": {
+      "multiSig": "0xFae9CAF31EeD9f6480262808920dA03eb7f76E7E",
+      "proxyAdmin": "0x93A5486E16553eb112Ec1Fa41f5B8b9E24102B6e",
+      "tUSDC": "0x004d88aa993fd2100d6c8beb6cdb6bc04f565b44",
+      "vault": "0x0C554dDb6a9010Ed1FD7e50d92559A06655dA482"
+    }
+  },
+  "qa": {
+    "arbitrumgoerli": {
+      "multiSig": "0xFae9CAF31EeD9f6480262808920dA03eb7f76E7E",
+      "proxyAdmin": "0xCaE33d6D72cd2c01b71d6Be3CE2E62b4B7297961",
+      "tUSDC": "0x6aAd876244E7A1Ad44Ec4824Ce813729E5B6C291",
+      "vault": "0x22b10472d3Da206aaA85D3f19E91A8da15E0F56A"
+    }
+  },
+  "staging": {
+    "arbitrumgoerli": {
+      "multiSig": "0x7D1e7BeAd9fBb72e35Dc8E6d1966c2e57DbDA3F0",
+      "proxyAdmin": "0x3ec2259a0e208867CD812b3b1e7A980Bab5FB38D",
+      "tUSDC": "0x6aAd876244E7A1Ad44Ec4824Ce813729E5B6C291",
+      "vault": "0xd64AeB281f3E8cd70e668b6cb24De7e532dC214D"
+    }
+  },
+  "mainnet": {
+    "arbitrumgoerli": {
+      "multiSig": "0x7D1e7BeAd9fBb72e35Dc8E6d1966c2e57DbDA3F0",
+      "proxyAdmin": "0xA2eA0a58b083c492AdC91A687FAc8B53AdB7c0Fd",
+      "tUSDC": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+      "vault": "0x816f722424B49Cf1275cc86DA9840Fbd5a6167e9"
+    }
+  }
+}

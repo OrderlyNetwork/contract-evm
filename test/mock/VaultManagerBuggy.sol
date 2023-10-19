@@ -16,7 +16,7 @@ contract VaultManagerBuggy is IVaultManager, LedgerComponent {
         _disableInitializers();
     }
 
-    function initialize() public override initializer {
+    function initialize() external override(IVaultManager, LedgerComponent) initializer {
         __Ownable_init();
     }
 

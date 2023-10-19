@@ -1,5 +1,7 @@
 crosschain/=lib/crosschain/contracts/
+cc-relay/=lib/cross-chain-relay/
 ds-test/=lib/forge-std/lib/ds-test/src/
 forge-std/=lib/forge-std/src/
 openzeppelin-contracts/=lib/openzeppelin-contracts/
 openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/
+contract-evm/=./

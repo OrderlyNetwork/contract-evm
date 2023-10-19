@@ -6,8 +6,8 @@ import "openzeppelin-contracts/contracts/proxy/transparent/TransparentUpgradeabl
 import "openzeppelin-contracts/contracts/proxy/transparent/ProxyAdmin.sol";
 import "../../src/OperatorManager.sol";
 import "../../src/VaultManager.sol";
-import "../../src/marketManager.sol";
-import "../../src/feeManager.sol";
+import "../../src/MarketManager.sol";
+import "../../src/FeeManager.sol";
 import "../mock/LedgerCrossChainManagerMock.sol";
 import "../cheater/LedgerCheater.sol";
 
@@ -73,8 +73,12 @@ contract PerpTradeUploadTest is Test {
         operatorManager.setLedger(address(ledger));
 
         vaultManager.setLedgerAddress(address(ledger));
-        vaultManager.setAllowedBroker(BROKER_HASH, true);
-        vaultManager.setAllowedToken(TOKEN_HASH, true);
+        if (!vaultManager.getAllowedToken(TOKEN_HASH)) {
+            vaultManager.setAllowedToken(TOKEN_HASH, true);
+        }
+        if (!vaultManager.getAllowedBroker(BROKER_HASH)) {
+            vaultManager.setAllowedBroker(BROKER_HASH, true);
+        }
         vaultManager.setAllowedChainToken(TOKEN_HASH, CHAIN_ID, true);
         vaultManager.setAllowedSymbol(SYMBOL_HASH_ETH_USDC, true);
 

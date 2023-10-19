@@ -6,9 +6,9 @@ import "./library/typesHelper/MarketTypeHelper.sol";
 import "./LedgerComponent.sol";
 import "./OperatorManagerComponent.sol";
 
-/**
- * MarketManager saves perpMarketCfg
- */
+/// @title A component of Ledger, saves market data
+/// @author Orderly_Rubick
+/// @notice MarketManager saves perpMarketCfg
 contract MarketManager is IMarketManager, LedgerComponent, OperatorManagerComponent {
     using MarketTypeHelper for MarketTypes.PerpMarketCfg;
 
@@ -19,7 +19,7 @@ contract MarketManager is IMarketManager, LedgerComponent, OperatorManagerCompon
         _disableInitializers();
     }
 
-    function initialize() public override initializer {
+    function initialize() external override(IMarketManager, LedgerComponent, OperatorManagerComponent) initializer {
         __Ownable_init();
     }
 
@@ -30,7 +30,7 @@ contract MarketManager is IMarketManager, LedgerComponent, OperatorManagerCompon
             MarketTypes.PerpMarketCfg storage cfg = perpMarketCfg[perpPrice.symbolHash];
             cfg.setIndexPriceOrderly(perpPrice.indexPrice);
             cfg.setMarkPrice(perpPrice.markPrice);
-            cfg.setLastMarkPriceUpdated(block.timestamp);
+            cfg.setLastMarkPriceUpdated(perpPrice.timestamp);
         }
         emit MarketData(data.maxTimestamp);
     }
@@ -41,7 +41,7 @@ contract MarketManager is IMarketManager, LedgerComponent, OperatorManagerCompon
             MarketTypes.SumUnitaryFunding calldata sumUnitaryFunding = data.sumUnitaryFundings[i];
             MarketTypes.PerpMarketCfg storage cfg = perpMarketCfg[sumUnitaryFunding.symbolHash];
             cfg.setSumUnitaryFundings(sumUnitaryFunding.sumUnitaryFunding);
-            cfg.setLastFundingUpdated(block.timestamp);
+            cfg.setLastMarkPriceUpdated(sumUnitaryFunding.timestamp);
         }
         emit FundingData(data.maxTimestamp);
     }
@@ -56,30 +56,6 @@ contract MarketManager is IMarketManager, LedgerComponent, OperatorManagerCompon
 
     function getPerpMarketCfg(bytes32 _pairSymbol) public view override returns (MarketTypes.PerpMarketCfg memory) {
         return perpMarketCfg[_pairSymbol];
-    }
-
-    function setBaseMaintenanceMargin(bytes32 _pairSymbol, uint32 _baseMaintenanceMargin) external override onlyOwner {
-        perpMarketCfg[_pairSymbol].setBaseMaintenanceMargin(_baseMaintenanceMargin);
-    }
-
-    function setBaseInitialMargin(bytes32 _pairSymbol, uint32 _baseInitialMargin) external override onlyOwner {
-        perpMarketCfg[_pairSymbol].setBaseInitialMargin(_baseInitialMargin);
-    }
-
-    function setLiquidationFeeMax(bytes32 _pairSymbol, uint128 _liquidationFeeMax) external override onlyOwner {
-        perpMarketCfg[_pairSymbol].setLiquidationFeeMax(_liquidationFeeMax);
-    }
-
-    function setMarkPrice(bytes32 _pairSymbol, uint128 _markPrice) external override onlyOwner {
-        perpMarketCfg[_pairSymbol].setMarkPrice(_markPrice);
-    }
-
-    function setIndexPriceOrderly(bytes32 _pairSymbol, uint128 _indexPriceOrderly) external override onlyOwner {
-        perpMarketCfg[_pairSymbol].setIndexPriceOrderly(_indexPriceOrderly);
-    }
-
-    function setSumUnitaryFundings(bytes32 _pairSymbol, int128 _sumUnitaryFundings) external override onlyOwner {
-        perpMarketCfg[_pairSymbol].setSumUnitaryFundings(_sumUnitaryFundings);
     }
 
     function setLastMarkPriceUpdated(bytes32 _pairSymbol, uint64 _lastMarkPriceUpdated) external override onlyOwner {

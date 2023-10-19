@@ -4,7 +4,7 @@ pragma solidity ^0.8.18;
 import "forge-std/Script.sol";
 import "openzeppelin-contracts/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import "openzeppelin-contracts/contracts/proxy/transparent/ProxyAdmin.sol";
-import "../../src/feeManager.sol";
+import "../../src/FeeManager.sol";
 
 contract UpgradeFeeManager is Script {
     function run() external {
