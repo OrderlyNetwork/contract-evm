@@ -188,7 +188,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             account.userAddress = data.userAddress;
             account.brokerHash = data.brokerHash;
             // emit register event
-            emit AccountRegister(data.accountId, data.brokerHash, data.userAddress, block.timestamp);
+            emit AccountRegister(data.accountId, data.brokerHash, data.userAddress);
         }
         account.addBalance(data.tokenHash, data.tokenAmount);
         vaultManager.addBalance(data.tokenHash, data.srcChainId, data.tokenAmount);
@@ -204,8 +204,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             data.tokenAmount,
             data.srcChainId,
             data.srcChainDepositNonce,
-            data.brokerHash,
-            block.timestamp
+            data.brokerHash
         );
     }
 
@@ -236,8 +235,8 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         override
         onlyOperatorManager
     {
-        bytes32 brokerHash = Utils.getBrokerHash(withdraw.brokerId);
-        bytes32 tokenHash = Utils.getTokenHash(withdraw.tokenSymbol);
+        bytes32 brokerHash = Utils.calculateStringHash(withdraw.brokerId);
+        bytes32 tokenHash = Utils.calculateStringHash(withdraw.tokenSymbol);
         if (!vaultManager.getAllowedBroker(brokerHash)) revert BrokerNotAllowed();
         if (!vaultManager.getAllowedChainToken(tokenHash, withdraw.chainId)) {
             revert TokenNotAllowed(tokenHash, withdraw.chainId);
@@ -279,7 +278,6 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
                 tokenHash,
                 withdraw.tokenAmount,
                 withdraw.fee,
-                block.timestamp,
                 state
             );
             return;
@@ -301,8 +299,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             withdraw.chainId,
             tokenHash,
             withdraw.tokenAmount,
-            withdraw.fee,
-            block.timestamp
+            withdraw.fee
         );
         // send cross-chain tx
         ILedgerCrossChainManager(crossChainManagerAddress).withdraw(withdraw);
@@ -336,8 +333,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             withdraw.chainId,
             withdraw.tokenHash,
             withdraw.tokenAmount,
-            withdraw.fee,
-            block.timestamp
+            withdraw.fee
         );
     }
 
@@ -351,11 +347,6 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         // gas saving
         uint256 length = settlement.settlementExecutions.length;
         EventTypes.SettlementExecution[] calldata settlementExecutions = settlement.settlementExecutions;
-        for (uint256 i = 0; i < length; ++i) {
-            totalSettleAmount += settlementExecutions[i].settledAmount;
-        }
-        if (totalSettleAmount != settlement.settledAmount) revert TotalSettleAmountNotMatch(totalSettleAmount);
-
         AccountTypes.Account storage account = userLedger[settlement.accountId];
         if (settlement.insuranceTransferAmount != 0) {
             if (settlement.accountId == settlement.insuranceAccountId) revert InsuranceTransferToSelf();
@@ -371,12 +362,13 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
                 );
             }
             AccountTypes.Account storage insuranceFund = userLedger[settlement.insuranceAccountId];
-            insuranceFund.balances[settlement.settledAssetHash] -= settlement.insuranceTransferAmount;
-            account.balances[settlement.settledAssetHash] += settlement.insuranceTransferAmount;
+            insuranceFund.subBalance(settlement.settledAssetHash, settlement.insuranceTransferAmount);
+            account.addBalance(settlement.settledAssetHash, settlement.insuranceTransferAmount);
         }
         // for-loop ledger execution
         for (uint256 i = 0; i < length; ++i) {
             EventTypes.SettlementExecution calldata ledgerExecution = settlementExecutions[i];
+            totalSettleAmount += ledgerExecution.settledAmount;
             AccountTypes.PerpPosition storage position = account.perpPositions[ledgerExecution.symbolHash];
             position.chargeFundingFee(ledgerExecution.sumUnitaryFundings);
             position.costPosition += ledgerExecution.settledAmount;
@@ -389,7 +381,11 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             }
             account.balances[settlement.settledAssetHash] =
                 (balance.toInt128() + ledgerExecution.settledAmount).toUint128();
+            if (position.isFullSettled()) {
+                delete account.perpPositions[ledgerExecution.symbolHash];
+            }
         }
+        if (totalSettleAmount != settlement.settledAmount) revert TotalSettleAmountNotMatch(totalSettleAmount);
         account.lastCefiEventId = eventId;
         // emit event
         emit SettlementResult(

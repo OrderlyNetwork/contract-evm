@@ -36,8 +36,7 @@ interface IVault {
         address receiver,
         bytes32 tokenHash,
         uint128 tokenAmount,
-        uint128 fee,
-        uint256 blocktime
+        uint128 fee
     );
 
     event SetAllowedToken(bytes32 indexed _tokenHash, bool _allowed);

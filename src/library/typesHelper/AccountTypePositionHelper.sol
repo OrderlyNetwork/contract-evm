@@ -17,9 +17,9 @@ library AccountTypePositionHelper {
 
     /// @notice charge funding fee
     function chargeFundingFee(AccountTypes.PerpPosition storage position, int128 sumUnitaryFundings) internal {
-        int128 accruedFeeUncoverted = position.positionQty * (sumUnitaryFundings - position.lastSumUnitaryFundings);
-        int128 accruedFee = accruedFeeUncoverted / FUNDING_MOVE_RIGHT_PRECISIONS;
-        int128 remainder = accruedFeeUncoverted - (accruedFee * FUNDING_MOVE_RIGHT_PRECISIONS);
+        int128 accruedFeeUnconverted = position.positionQty * (sumUnitaryFundings - position.lastSumUnitaryFundings);
+        int128 accruedFee = accruedFeeUnconverted / FUNDING_MOVE_RIGHT_PRECISIONS;
+        int128 remainder = accruedFeeUnconverted - (accruedFee * FUNDING_MOVE_RIGHT_PRECISIONS);
         if (remainder > 0) {
             accruedFee += 1;
         }
@@ -38,8 +38,8 @@ library AccountTypePositionHelper {
         int128 markPrice,
         int128 baseMaintenanceMargin
     ) internal view returns (int128) {
-        return position.positionQty.abs().toInt128() * markPrice / PRICE_QTY_MOVE_RIGHT_PRECISIONS
-            * baseMaintenanceMargin / int128(MARGIN_100PERCENT);
+        return position.positionQty.abs().toInt128() * markPrice * baseMaintenanceMargin
+            / (int128(MARGIN_100PERCENT) * PRICE_QTY_MOVE_RIGHT_PRECISIONS);
     }
 
     /// @notice is full settled
@@ -84,7 +84,11 @@ library AccountTypePositionHelper {
         } else {
             openingCost = halfUp24_8_i256(int256(quoteDiff) * int256(currentHolding), qty);
         }
-        position.averageEntryPrice = halfDown16_8(-openingCost, currentHolding).toUint128();
+        if (currentHolding > 0) {
+            position.averageEntryPrice = halfDown16_8(-openingCost, currentHolding).toUint128();
+        } else {
+            position.averageEntryPrice = halfUp16_8(-openingCost, currentHolding).toUint128();
+        }
         position.openingCost = halfUp16_8(openingCost, 1e8);
     }
 
