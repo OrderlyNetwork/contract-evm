@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
+/// @title MarketTypes library
+/// @author Orderly_Rubick
 library MarketTypes {
     struct PerpMarketCfg {
         uint32 baseMaintenanceMargin;

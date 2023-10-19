@@ -25,6 +25,11 @@ contract SetupManager is BaseScript {
             if (currentSide.compare("ledger")) {
                 address operatorAddress = getOperatorManagerAddress(network);
                 address ledgerAddress = getLedgerAddress(network);
+                console.log("ledgerAddress: ", ledgerAddress);
+                console.log("operatorAddress: ", operatorAddress);
+                console.log("relayAddress: ", relayAddress);
+                console.log("managerAddress: ", managerAddress);
+                console.log("chainId: ", chainId);
                 ledgerSetup(managerAddress, relayAddress, operatorAddress, ledgerAddress, chainId);
             } else if (currentSide.compare("vault")) {
                 string memory ledgerNetwork = vm.envString("LEDGER_NETWORK");
@@ -74,18 +79,26 @@ contract SetupManager is BaseScript {
         address ledgerAddress,
         uint256 chainId
     ) internal {
+        console.log("managerAddress: ", managerAddress);
+        console.log("start ledger setup");
         LedgerCrossChainManagerUpgradeable manager = LedgerCrossChainManagerUpgradeable(payable(managerAddress));
         manager.setChainId(chainId);
+        console.log("chainId: ", chainId);
         manager.setCrossChainRelay(relayAddress);
+        console.log("relayAddress: ", relayAddress);
         manager.setOperatorManager(operatorAddress);
+        console.log("operatorAddress: ", operatorAddress);
         manager.setLedger(ledgerAddress);
+        console.log("ledgerAddress: ", ledgerAddress);
 
         // subnet USDC decimal
-        manager.setTokenDecimal(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa, 4460, 6);
+        manager.setTokenDecimal(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa, 986532, 6);
+        manager.setTokenDecimal(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa, 43113, 4);
+        // manager.setTokenDecimal(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa, 4460, 6);
         // manager.setTokenDecimal(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa, 986533, 4);
         // manager.setTokenDecimal(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa, 986534, 6);
         // fuji USDC decimal
-        manager.setTokenDecimal(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa, 421613, 6);
+        // manager.setTokenDecimal(0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa, 421613, 6);
     }
 
     function addVaultManagerToLedgerManager(

@@ -9,6 +9,8 @@ interface IVault {
     error TokenNotAllowed();
     error BrokerNotAllowed();
     error BalanceNotEnough(uint256 balance, uint128 amount);
+    error AddressZero();
+    error EnumerableSetError();
 
     event AccountDeposit(
         bytes32 indexed accountId,
@@ -34,13 +36,13 @@ interface IVault {
         address receiver,
         bytes32 tokenHash,
         uint128 tokenAmount,
-        uint128 fee,
-        uint256 blocktime
+        uint128 fee
     );
 
     event SetAllowedToken(bytes32 indexed _tokenHash, bool _allowed);
     event SetAllowedBroker(bytes32 indexed _brokerHash, bool _allowed);
     event ChangeTokenAddressAndAllow(bytes32 indexed _tokenHash, address _tokenAddress);
+    event ChangeCrossChainManager(address oldAddress, address newAddress);
 
     function initialize() external;
 

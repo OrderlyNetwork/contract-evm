@@ -14,11 +14,11 @@ import "./library/typesHelper/AccountTypeHelper.sol";
 import "./library/typesHelper/AccountTypePositionHelper.sol";
 import "./library/typesHelper/SafeCastHelper.sol";
 
-/**
- * Ledger is responsible for saving traders' Account (balance, perpPosition, and other meta)
- * and global state (e.g. futuresUploadBatchId)
- * This contract should only have one in main-chain (e.g. OP orderly L2)
- */
+/// @title Ledger contract
+/// @author Orderly_Rubick
+/// @notice Ledger is responsible for saving traders' Account (balance, perpPosition, and other meta)
+/// and global state (e.g. futuresUploadBatchId)
+/// This contract should only have one in main-chain (e.g. OP orderly L2)
 contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
     using AccountTypeHelper for AccountTypes.Account;
     using AccountTypePositionHelper for AccountTypes.PerpPosition;
@@ -27,13 +27,13 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
     // TODO ledgerImpl1, LedgerImpl2 addresses start here
     // usage: `ledgerImpl1.delegatecall(abi.encodeWithSelector(ILedger.accountDeposit.selector, data));`
 
-    // require operator
+    /// @notice require operator
     modifier onlyOperatorManager() {
         if (msg.sender != operatorManagerAddress) revert OnlyOperatorCanCall();
         _;
     }
 
-    // require crossChainManager
+    /// @notice require crossChainManager
     modifier onlyCrossChainManager() {
         if (msg.sender != crossChainManagerAddress) revert OnlyCrossChainManagerCanCall();
         _;
@@ -43,36 +43,55 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         _disableInitializers();
     }
 
-    function initialize() public override initializer {
+    function initialize() external override initializer {
         __Ownable_init();
     }
 
-    // set operatorManagerAddress
+    /// @notice Set the address of operatorManager contract
+    /// @param _operatorManagerAddress new operatorManagerAddress
     function setOperatorManagerAddress(address _operatorManagerAddress) public override onlyOwner {
+        if (_operatorManagerAddress == address(0)) revert AddressZero();
+        emit ChangeOperatorManager(operatorManagerAddress, _operatorManagerAddress);
         operatorManagerAddress = _operatorManagerAddress;
     }
 
-    // set crossChainManager & Address
+    /// @notice Set the address of crossChainManager on Ledger side
+    /// @param _crossChainManagerAddress  new crossChainManagerAddress
     function setCrossChainManager(address _crossChainManagerAddress) public override onlyOwner {
+        if (_crossChainManagerAddress == address(0)) revert AddressZero();
+        emit ChangeCrossChainManager(crossChainManagerAddress, _crossChainManagerAddress);
         crossChainManagerAddress = _crossChainManagerAddress;
     }
 
-    // set vaultManager
+    /// @notice Set the address of vaultManager contract
+    /// @param _vaultManagerAddress new vaultManagerAddress
     function setVaultManager(address _vaultManagerAddress) public override onlyOwner {
+        if (_vaultManagerAddress == address(0)) revert AddressZero();
+        emit ChangeVaultManager(address(vaultManager), _vaultManagerAddress);
         vaultManager = IVaultManager(_vaultManagerAddress);
     }
 
-    // set marketManager
+    /// @notice Set the address of marketManager contract
+    /// @param _marketManagerAddress new marketManagerAddress
     function setMarketManager(address _marketManagerAddress) public override onlyOwner {
+        if (_marketManagerAddress == address(0)) revert AddressZero();
+        emit ChangeMarketManager(address(marketManager), _marketManagerAddress);
         marketManager = IMarketManager(_marketManagerAddress);
     }
 
-    // set feeManager
+    /// @notice Set the address of feeManager contract
+    /// @param _feeManagerAddress new feeManagerAddress
     function setFeeManager(address _feeManagerAddress) public override onlyOwner {
+        if (_feeManagerAddress == address(0)) revert AddressZero();
+        emit ChangeFeeManager(address(feeManager), _feeManagerAddress);
         feeManager = IFeeManager(_feeManagerAddress);
     }
 
-    // get frozen withdrawNonce balance
+    /// @notice Get the amount of a token frozen balance for a given account and the corresponding withdrawNonce
+    /// @param accountId accountId to query
+    /// @param withdrawNonce withdrawNonce to query
+    /// @param tokenHash tokenHash to query
+    /// @return uint128 frozen value
     function getFrozenWithdrawNonce(bytes32 accountId, uint64 withdrawNonce, bytes32 tokenHash)
         public
         view
@@ -82,7 +101,11 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         return userLedger[accountId].getFrozenWithdrawNonceBalance(withdrawNonce, tokenHash);
     }
 
-    // omni batch get
+    /// @notice omni batch get
+    /// @param accountIds accountId list to query
+    /// @param tokens token list to query
+    /// @param symbols symbol list to query
+    /// @return accountSnapshots account snapshot list for the given tokens and symbols
     function batchGetUserLedger(bytes32[] calldata accountIds, bytes32[] memory tokens, bytes32[] memory symbols)
         public
         view
@@ -146,8 +169,10 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         return batchGetUserLedger(accountIds, tokens, symbols);
     }
 
-    // Interface implementation
+    /// Interface implementation
 
+    /// @notice The cross chain manager will call this function to notify the deposit event to the Ledger contract
+    /// @param data account deposit data
     function accountDeposit(AccountTypes.AccountDeposit calldata data) external override onlyCrossChainManager {
         // validate data first
         if (!vaultManager.getAllowedBroker(data.brokerHash)) revert BrokerNotAllowed();
@@ -163,24 +188,23 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             account.userAddress = data.userAddress;
             account.brokerHash = data.brokerHash;
             // emit register event
-            emit AccountRegister(data.accountId, data.brokerHash, data.userAddress, block.timestamp);
+            emit AccountRegister(data.accountId, data.brokerHash, data.userAddress);
         }
         account.addBalance(data.tokenHash, data.tokenAmount);
         vaultManager.addBalance(data.tokenHash, data.srcChainId, data.tokenAmount);
-        uint64 tmpGlobalDepositId = _newGlobalDepositId(); // gas saving
-        account.lastDepositEventId = tmpGlobalDepositId;
+        uint64 tmpGlobalEventId = _newGlobalEventId(); // gas saving
+        account.lastDepositEventId = tmpGlobalEventId;
         // emit deposit event
         emit AccountDeposit(
             data.accountId,
-            tmpGlobalDepositId,
-            _newGlobalEventId(),
+            _newGlobalDepositId(),
+            tmpGlobalEventId,
             data.userAddress,
             data.tokenHash,
             data.tokenAmount,
             data.srcChainId,
             data.srcChainDepositNonce,
-            data.brokerHash,
-            block.timestamp
+            data.brokerHash
         );
     }
 
@@ -211,8 +235,8 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         override
         onlyOperatorManager
     {
-        bytes32 brokerHash = Utils.getBrokerHash(withdraw.brokerId);
-        bytes32 tokenHash = Utils.getTokenHash(withdraw.tokenSymbol);
+        bytes32 brokerHash = Utils.calculateStringHash(withdraw.brokerId);
+        bytes32 tokenHash = Utils.calculateStringHash(withdraw.tokenSymbol);
         if (!vaultManager.getAllowedBroker(brokerHash)) revert BrokerNotAllowed();
         if (!vaultManager.getAllowedChainToken(tokenHash, withdraw.chainId)) {
             revert TokenNotAllowed(tokenHash, withdraw.chainId);
@@ -254,7 +278,6 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
                 tokenHash,
                 withdraw.tokenAmount,
                 withdraw.fee,
-                block.timestamp,
                 state
             );
             return;
@@ -276,8 +299,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             withdraw.chainId,
             tokenHash,
             withdraw.tokenAmount,
-            withdraw.fee,
-            block.timestamp
+            withdraw.fee
         );
         // send cross-chain tx
         ILedgerCrossChainManager(crossChainManagerAddress).withdraw(withdraw);
@@ -311,8 +333,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             withdraw.chainId,
             withdraw.tokenHash,
             withdraw.tokenAmount,
-            withdraw.fee,
-            block.timestamp
+            withdraw.fee
         );
     }
 
@@ -326,11 +347,6 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         // gas saving
         uint256 length = settlement.settlementExecutions.length;
         EventTypes.SettlementExecution[] calldata settlementExecutions = settlement.settlementExecutions;
-        for (uint256 i = 0; i < length; ++i) {
-            totalSettleAmount += settlementExecutions[i].settledAmount;
-        }
-        if (totalSettleAmount != settlement.settledAmount) revert TotalSettleAmountNotMatch(totalSettleAmount);
-
         AccountTypes.Account storage account = userLedger[settlement.accountId];
         if (settlement.insuranceTransferAmount != 0) {
             if (settlement.accountId == settlement.insuranceAccountId) revert InsuranceTransferToSelf();
@@ -346,18 +362,18 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
                 );
             }
             AccountTypes.Account storage insuranceFund = userLedger[settlement.insuranceAccountId];
-            insuranceFund.balances[settlement.settledAssetHash] += settlement.insuranceTransferAmount;
-            account.balances[settlement.settledAssetHash] += settlement.insuranceTransferAmount;
+            insuranceFund.subBalance(settlement.settledAssetHash, settlement.insuranceTransferAmount);
+            account.addBalance(settlement.settledAssetHash, settlement.insuranceTransferAmount);
         }
         // for-loop ledger execution
         for (uint256 i = 0; i < length; ++i) {
             EventTypes.SettlementExecution calldata ledgerExecution = settlementExecutions[i];
+            totalSettleAmount += ledgerExecution.settledAmount;
             AccountTypes.PerpPosition storage position = account.perpPositions[ledgerExecution.symbolHash];
-            if (position.positionQty != 0) {
-                position.chargeFundingFee(ledgerExecution.sumUnitaryFundings);
-                position.costPosition += ledgerExecution.settledAmount;
-                position.lastExecutedPrice = ledgerExecution.markPrice;
-            }
+            position.chargeFundingFee(ledgerExecution.sumUnitaryFundings);
+            position.costPosition += ledgerExecution.settledAmount;
+            position.lastExecutedPrice = ledgerExecution.markPrice;
+            position.lastSettledPrice = ledgerExecution.markPrice;
             // check balance + settledAmount >= 0, where balance should cast to int128 first
             uint128 balance = account.balances[settlement.settledAssetHash];
             if (balance.toInt128() + ledgerExecution.settledAmount < 0) {
@@ -365,7 +381,11 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             }
             account.balances[settlement.settledAssetHash] =
                 (balance.toInt128() + ledgerExecution.settledAmount).toUint128();
+            if (position.isFullSettled()) {
+                delete account.perpPositions[ledgerExecution.symbolHash];
+            }
         }
+        if (totalSettleAmount != settlement.settledAmount) revert TotalSettleAmountNotMatch(totalSettleAmount);
         account.lastCefiEventId = eventId;
         // emit event
         emit SettlementResult(
@@ -539,8 +559,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
                 - (liquidationTransfer.liquidatorFee + liquidationTransfer.insuranceFee)
         );
         liquidatedPosition.positionQty -= liquidationTransfer.positionQtyTransfer;
-        // liquidatedPosition.costPosition = liquidatedPosition.costPosition - liquidationTransfer.costPositionTransfer
-        //     + liquidationTransfer.liquidationFee;
+
         liquidatedPosition.costPosition += liquidationTransfer.liquidationFee - liquidationTransfer.costPositionTransfer;
         liquidatedPosition.lastExecutedPrice = liquidationTransfer.markPrice;
         if (liquidatedPosition.isFullSettled()) {

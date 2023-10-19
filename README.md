@@ -1,4 +1,10 @@
-# poc
+# Introduction
+
+This repo is built with Foundry, including the scipts for test and deployment.
+
+The major content is about the contracts for Orderly V2, including the Ledger and Vault contracts.
+
+A submodule inside `lib` folder is used for the contracts of Cross-Chain, named **cross-chain-relay**. For the information of this submodule, please refer to [cross-chain-relay](https://gitlab.com/orderlynetwork/orderly-v2/evm-cross-chain)
 
 ## Usage
 
@@ -26,194 +32,141 @@ Test
 forge test -vvvv
 ```
 
-## CrossChain Setup
+# Contract overview
 
-## CrossChainRelay Vault Side 43113
+## Layout
 
-1. deploy 0xBfc0B179da8551C8cf62460B93e40071C5ef131D
-2. setSrcChainId
-3. addCaller(VaultCrossChainManager)
-4. addChainIdMapping: native ChianId to Layerzero ChainId
-5. setTrustedRemote
-6. transfer native token to Contract
+All source code for contracts are inside `src` folder, the script for test is inside `test` folder, the script for deployment is inside `script` folder.
 
-## CrossChainRelay Ledger Side 986532
+For more information of project structure, please see standard [foundry project layout](https://book.getfoundry.sh/projects/project-layout)
 
-1. deploy 0x2558B46b5a31d0C3d221d9f13f14275eD6C6FdCA
-2. setSrcChainId
-3. addCaller(LedgerCrossChainManager)
-4. addChainIdMapping: native ChianId to Layerzero ChainId
-5. setTrustedRemote
-6. transfer native token to Contract
+## Src
 
-### LedgerCrossChainManager
+1. dataLayout
 
-1. deploy 0x095d45c24687e87C6832E8d1C90fa755C16BA382
-2. setChainId
-3. setLedger
-4. setCrossChainRelay
-5. setVaultCrossChainManager(chainId, address)
+   Complicated dataLayout, or slot storage for contract. The most important data structure is the `userLedger` defined in `LedgerDataLayout.sol`, which is the mapping from accountId (`bytes32` type) to the type `AccountTypes.Account`.
 
-### VaultCrossChainManager
+2. interface
 
-1. deploy 0x4B4E25e461d8Cdc9333196Bc2A27527f3cFc3209
-2. setChainId
-3. setVault
-4. setCrossChainRelay
-5. setLedgerCrossChainManager(chainId, address)
+   Interface defines for all contracts, including the events, the errors, and the signature of functions.
+
+3. library
+
+   Libraries defines data structure and inline functions.
+
+   1. types
+
+      Define data structure for other contracts, the most import data structure including the `Account` type, `Event` type, `CrossChainMessage` type, etc.
+
+   2. typesHelper
+
+      Helper functions to do different operations on types, the contract use these helper functions with: `using typesHelper for types`
+
+   3. other libraries
+
+      Libraries of inline functions, the `Signature.sol` is used by Ledger contract for the verification of signature from CeFi for event upload and trades upload, the `Utils.sol` is used by Vault contract to compute the account id of an Orderly user.
+
+4. vaultSide
+
+   Contracts for `Vault`, including the Vault contract, and a test version of USDC contract. Vault contract is deployed on some EVM-compatiable chain that Orderly supported (e.g. Arbitrum-Goerli), it works as an vault for the user's assets. Users can deposit to or withdraw from Vault contract on some chain they choose.
+
+5. Remaining contracts
+
+   The most important contracts for `settlement layer`, or in another word, the Ledger side. They are `Ledger`, `OperatorManager`, `FeeManager`, `MarketManager`, `VaultManager`. All these contracts are deployed on the Orderly L2 based OP Stack to provide the settlement service for Orderly users.
+
+   On Ledger side, the `Ledger` contract is the main contract to store the user's account information and execute actions according to the function call from `OperatorManager`, and the `OperatorManager` contract is used to receive the operation request from CeFi, the `FeeManager` contract is used to manage the fee collector address, the `MarketManager` contract is used to manage the market information for trading context, the `VaultManager` contract is used to manage the token balance of the Vault contract on each EVM chain.
+
+   Check [conflunce here](https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/279838766/Solidity+Contract+Overview) for more info
+
+# Contract deploy
+
+To deploy/upgrade the contracts on Vault and Ledger side, the scripts version 2 under folder `script` is used. The scripts version 1 is deprecated.
+
+Before deployment/upgrading, a suitable `.env` file is needed to be created under the root folder of this repo. The `.env` file should contain the following information:
+
+- RPC URL for each chain, such as RPC_URL_ORDERLYOP, RPC_URL_ARBITRUMGOERLI, etc.
+- Private key for the deployer account, such as the ORDERLY_PRIVATE_KEY, ARBITRUM_PRIVATE_KEY, etc.
+- Related deployed contract address, such as VAULT_CROSS_CHAIN_MANAGER_ADDRESS, LEDGER_CROSS_CHAIN_MANAGER_ADDRESS, etc.
+
+## Contract information board
+
+The information about deployed contract adress and abi files for each environment is stored in the confluence page:
+https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/343441906/Orderly+V2+Contract+Information+Board
 
 ## Ledger scripts
 
 ### Deploy command:
 
-`forge script script/ledger/DeployProxyLedger.s.sol -f $ORDERLY_NETWORK --json --broadcast`
+The contracts on Ledger side is deployed on Orderly L2 based OP Stack, so the rpc is set as RPC_URL_ORDERLYOP. The deploy command is as follows:
+
+```shell
+forge script script/ledgerV2/DeployProxyLedger.s.sol -f $RPC_URL_ORDERLYOP --json --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
+```
+
+After executing the command, the deployed contracts are Ledger, OperatorManager, FeeManager, MarketManager, and VaultManager. The CrossChainManager is deployed through another repo as mentioned above.
+
+The addresses of the deployed contracts will be listed inside `config` folder, named as `deploy-ledger.json` file.
+
+### Set Cross-Chain Manager
+
+Once the contracts on Ledger side are deployed, the Cross-Chain Manager should be set for Leder contract. The command to set Cross-Chain Manager is as follows:
+
+```shell
+forge script script/ledgerV2/SetCrossChainManager.s.sol -f $RPC_URL_ORDERLYOP --json --broadcast
+```
 
 ### Upgrade command:
 
-`forge script script/ledger/UpgradeLedger.s.sol -f $ORDERLY_NETWORK --json --broadcast`
+Transparent upgrade pattern is used for contracts on Ledger side, to upgrade a specific contract, the corresponding upgrade script should be executed. The upgrade command is as follows:
 
-`forge script script/ledger/UpgradeOperatorManager.s.sol -f $ORDERLY_NETWORK --json --broadcast`
+```shell
+forge script script/ledgerV2/UpgradeLedger.s.sol -f $RPC_URL_ORDERLYOP --json --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
+forge script script/ledgerV2/UpgradeOperatorManager.s.sol -f $RPC_URL_ORDERLYOP --json --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
+forge script script/ledgerV2/UpgradeFeeManager.s.sol -f $RPC_URL_ORDERLYOP --json --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
+forge script script/ledgerV2/UpgradeVaultManager.s.sol -f $RPC_URL_ORDERLYOP --json --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
+forge script script/ledgerV2/UpgradeMarketManager.s.sol -f $RPC_URL_ORDERLYOP --json --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
+```
 
-`forge script script/ledger/UpgradeFeeManager.s.sol -f $ORDERLY_NETWORK --json --broadcast`
+### Deploy new implement command:
 
-`forge script script/ledger/UpgradeVaultManager.s.sol -f $ORDERLY_NETWORK --json --broadcast`
-
-`forge script script/ledger/UpgradeMarketManager.s.sol -f $ORDERLY_NETWORK --json --broadcast`
+```shell
+forge script script/ledgerV2/DeployNewLedger.s.sol -f $RPC_URL_ORDERLYOP --json --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
+forge script script/ledgerV2/DeployNewOperatorManager.s.sol -f $RPC_URL_ORDERLYOP --json --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
+forge script script/ledgerV2/DeployNewFeeManager.s.sol -f $RPC_URL_ORDERLYOP --json --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
+forge script script/ledgerV2/DeployNewVaultManager.s.sol -f $RPC_URL_ORDERLYOP --json --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
+forge script script/ledgerV2/DeployNewMarketManager.s.sol -f $RPC_URL_ORDERLYOP --json --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
+```
 
 ## Vault deploy
 
+The contracts on Vault side is deployed on EVM-compatiable chains, such as Arbitrum-Goerli, so the rpc is set as RPC_URL_ARBITRUMGOERLI.
+
 ### Deploy command:
 
-`forge script script/vault/DeployProxyVault.s.sol -f $VAULT_NETWORK --json --broadcast`
+Still the version 2 scripts is used for deployment. The deploy command is as follows:
+
+```shell
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_ARBITRUMGOERLI --json --verifier-url https://api-goerli.arbiscan.io/api --broadcast --verify [--etherscan-api-key=ETHERSCAN_API_KEY]
+```
+
+### Deploy new implement command:
+
+```shell
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_ARBITRUMGOERLI --json --verifier-url https://api-goerli.arbiscan.io/api --broadcast --verify [--etherscan-api-key=ETHERSCAN_API_KEY]
+```
+
+### Set Cross-Chain Manager
+
+Once the contracts on Vault side are deployed, the Cross-Chain Manager should be set for Vault contract. The command to set Cross-Chain Manager is as follows:
+
+```shell
+forge script script/ledgerV2/SetCrossChainManager.s.sol -f $RPC_URL_ARBITRUMGOERLI --json --broadcast
+```
 
 ### Upgrade command:
 
-`forge script script/vault/UpgradeVault.s.sol -f $VAULT_NETWORK --json --broadcast`
-
-### Deposit commond:
-
-`forge script script/vault/StartDeposit.s.sol -f $VAULT_NETWORK --json --broadcast`
-
-## Contract address
-
-### Vault address (Arb goerli testnet)
-
-#### Cross chain
-
-VAULT_CROSS_CHAIN_MANAGER_ADDRESS="0xbc9c21d0986fb7b5ef70caeb16e0abb7c36f1595"
-
-#### Vault
-
-VAULT_PROXY_ADMIN="0x93A5486E16553eb112Ec1Fa41f5B8b9E24102B6e"
-
-TEST_USDC_ADDRESS="0x004d88aa993fd2100d6c8beb6cdb6bc04f565b44"
-
-VAULT_ADDRESS="0x0C554dDb6a9010Ed1FD7e50d92559A06655dA482"
-
-### Ledger address (OP Orderly)
-
-#### Cross chain
-
-LEDGER_CROSS_CHAIN_MANAGER_ADDRESS="0xdecdf6f646d5cfaf16abf12222ccc84febae5934"
-
-#### Ledger
-
-LEDGER_PROXY_ADMIN="0x8910A067473C1800b371183124AEdC95684244DE"
-
-OPERATOR_MANAGER_ADDRESS="0xe34614EB781C5838C78B7f913b89A05e7a5b97e2"
-
-VAULT_MANAGER_ADDRESS="0x4922872C26Befa37AdcA287fF68106013C82FeeD"
-
-LEDGER_ADDRESS="0x8794E7260517B1766fc7b55cAfcd56e6bf08600e"
-
-FEE_MANAGER_ADDRESS="0x835E970110E4a46BCA21A7551FEaA5F532F72701"
-
-MARKET_MANAGER_ADDRESS="0x3ac2Ba11Ca2f9f109d50fb1a46d4C23fCadbbef6"
-
-# CrossChain Manager Upgradeable Deployment and Setup
-
-## prerequiste
-
-- cross-chain relay on target two chains are deployed, address of the relay proxy is put into `.env` file. env variables are `XXX_RELAY_PROXY`, where `XXX` denotes the network name
-
-## Workflow
-1. you need to set all common public env variables first
- - RPC urls for each network
- - chain ids for each network
- - private keys for each network
-2. set project related env variables
- - ledger address
- - vault address
- - operator manager address
- - vault relay address per network
- - ledger relay address per network
-2. deploy managers
-3. setup managers
-4. send test tx(ABA) for test manager cross-chain msg sending and receiving
-
-## Deployment or Upgrading
-
-set the following variables in `.env` accordingly:
+The upgrade model is the same as Ledger side, the upgrade command is as follows:
 
 ```shell
-# Script Parameters
-CURRENT_NETWORK="fuji" # or other network names
-CURRENT_SIDE="ledger" # or vault
-CALL_METHOD="deploy" # or upgrade
+forge script script/vaultV2/UpgradeVault.s.sol -f $RPC_URL_ARBITRUMGOERLI --json --broadcast --verifier-url https://api-goerli.arbiscan.io/api --broadcast --verify [--etherscan-api-key=ETHERSCAN_API_KEY]
 ```
-
-and then run the command:
-
-```shell
-source .env
-# call deploy with vault on the right network
-forge script myScript/DeployAndUpgradeManager.s.sol  --rpc-url $RPC_URL_FUJI -vvvv  --via-ir --broadcast
-# call deploy with ledger on the right network
-forge script myScript/DeployAndUpgradeManager.s.sol  --rpc-url $RPC_URL_ORDERLY -vvvv  --via-ir --broadcast
-```
-
-change the `--rpc-url` value to the one suits your instruction.
-
-## Setup
-
-### First setup basic information like chain IDs and other contract address
-
-here is some sample env variables:
-
-```shell
-# Script Parameters
-CURRENT_NETWORK="fuji" # or other networks
-CURRENT_SIDE="vault" # or vault
-CALL_METHOD="ledger" # or addVault
-LEDGER_NETWORK="orderly"
-ADD_VAULT_NETWORK="fuji"
-```
-
-then run the command:
-
-```shell
-source .env
-# call setup
-forge script myScript/SetupManager.s.sol --rpc-url $RPC_URL_FUJI -vvvv  --via-ir --broadcast
-# call setup
-forge script myScript/SetupManager.s.sol --rpc-url $RPC_URL_ORDERLY -vvvv  --via-ir --broadcast
-# call addVaultOnLedger
-forge script myScript/SetupManager.s.sol --rpc-url $RPC_URL_ORDERLY -vvvv  --via-ir --broadcast
-```
-
-## Test
-
-you can set the following variables in `.env` first:
-
-```shell
-CURRENT_NETWORK="orderly"
-CALL_METHOD="test"
-TARGET_NETWORK="fuji"
-```
-
-and call to send test withdraw message
-
-```shell
-forge script myScript/SetupManager.s.sol --rpc-url $RPC_URL_ORDERLY -vvvv  --via-ir --broadcast
-```
-later view payload status on layerzeroscan to check whether test succeed.

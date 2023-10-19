@@ -1,37 +1,38 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
-import "./interface/IVault.sol";
-import "./interface/IVaultCrossChainManager.sol";
-import "./library/Utils.sol";
+import "../interface/IVault.sol";
+import "../interface/IVaultCrossChainManager.sol";
+import "../library/Utils.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeable.sol";
 import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 import "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 
-/**
- * Vault is responsible for saving user's erc20 token.
- * EACH CHAIN SHOULD HAVE ONE Vault CONTRACT.
- * User can deposit erc20 (USDC) from Vault.
- * Only crossChainManager can approve withdraw request.
- */
+/// @title Vault contract
+/// @author Orderly_Rubick
+/// @notice Vault is responsible for saving user's erc20 token.
+/// EACH CHAIN SHOULD HAVE ONE Vault CONTRACT.
+/// User can deposit erc20 (USDC) from Vault.
+/// Only crossChainManager can approve withdraw request.
 contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     using EnumerableSet for EnumerableSet.Bytes32Set;
     using SafeERC20 for IERC20;
 
-    // cross-chain operator address
+    // The cross-chain manager address on Vault side
     address public crossChainManagerAddress;
-    // deposit id / nonce
+    // An incrasing deposit id / nonce on Vault side
     uint64 public depositId;
 
-    // list to record the hash value of allowed brokerIds
+    // A set to record the hash value of all allowed brokerIds  // brokerHash = keccak256(abi.encodePacked(brokerId))
     EnumerableSet.Bytes32Set private allowedBrokerSet;
-    // tokenHash to token contract address mapping
+    // A set to record the hash value of all allowed tokens  // tokenHash = keccak256(abi.encodePacked(tokenSymbol))
     EnumerableSet.Bytes32Set private allowedTokenSet;
+    // A mapping from tokenHash to token contract address
     mapping(bytes32 => address) public allowedToken;
 
-    // only cross-chain manager can call
+    /// @notice Require only cross-chain manager can call
     modifier onlyCrossChainManager() {
         if (msg.sender != crossChainManagerAddress) revert OnlyCrossChainManagerCanCall();
         _;
@@ -41,44 +42,55 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         _disableInitializers();
     }
 
-    function initialize() public override initializer {
+    function initialize() external override initializer {
         __Ownable_init();
         __Pausable_init();
     }
 
-    // change crossChainManager
+    /// @notice Change crossChainManager address
     function setCrossChainManager(address _crossChainManagerAddress) public override onlyOwner {
+        if (_crossChainManagerAddress == address(0)) revert AddressZero();
+        emit ChangeCrossChainManager(crossChainManagerAddress, _crossChainManagerAddress);
         crossChainManagerAddress = _crossChainManagerAddress;
     }
 
-    // add contract address for an allowed token
+    /// @notice Add contract address for an allowed token given the tokenHash
+    /// @dev This function is only called when changing allow status for a token, not for initializing
     function setAllowedToken(bytes32 _tokenHash, bool _allowed) public override onlyOwner {
+        bool succ = false;
         if (_allowed) {
-            allowedTokenSet.add(_tokenHash);
+            // require tokenAddress exist
+            if (allowedToken[_tokenHash] == address(0)) revert AddressZero();
+            succ = allowedTokenSet.add(_tokenHash);
         } else {
-            allowedTokenSet.remove(_tokenHash);
+            succ = allowedTokenSet.remove(_tokenHash);
         }
+        if (!succ) revert EnumerableSetError();
         emit SetAllowedToken(_tokenHash, _allowed);
     }
 
-    // add the hash value for an allowed brokerId
+    /// @notice Add the hash value for an allowed brokerId
     function setAllowedBroker(bytes32 _brokerHash, bool _allowed) public override onlyOwner {
+        bool succ = false;
         if (_allowed) {
-            allowedBrokerSet.add(_brokerHash);
+            succ = allowedBrokerSet.add(_brokerHash);
         } else {
-            allowedBrokerSet.remove(_brokerHash);
+            succ = allowedBrokerSet.remove(_brokerHash);
         }
+        if (!succ) revert EnumerableSetError();
         emit SetAllowedBroker(_brokerHash, _allowed);
     }
 
-    // change the token address for an allowed token
+    /// @notice Change the token address for an allowed token, used when a new token is added
+    /// @dev maybe should called `addTokenAddressAndAllow`, because it's for initializing
     function changeTokenAddressAndAllow(bytes32 _tokenHash, address _tokenAddress) public override onlyOwner {
+        if (_tokenAddress == address(0)) revert AddressZero();
         allowedToken[_tokenHash] = _tokenAddress;
-        allowedTokenSet.add(_tokenHash);
+        allowedTokenSet.add(_tokenHash); // ignore returns here
         emit ChangeTokenAddressAndAllow(_tokenHash, _tokenAddress);
     }
 
-    // check if the tokenHash is allowed
+    /// @notice Check if the given tokenHash is allowed on this Vault
     function getAllowedToken(bytes32 _tokenHash) public view override returns (address) {
         if (allowedTokenSet.contains(_tokenHash)) {
             return allowedToken[_tokenHash];
@@ -87,27 +99,28 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         }
     }
 
-    // check if the brokerHash is allowed
+    /// @notice Check if the brokerHash is allowed on this Vault
     function getAllowedBroker(bytes32 _brokerHash) public view override returns (bool) {
         return allowedBrokerSet.contains(_brokerHash);
     }
 
-    // get all allowed tokenHash
+    /// @notice Get all allowed tokenHash from this Vault
     function getAllAllowedToken() public view override returns (bytes32[] memory) {
         return allowedTokenSet.values();
     }
 
-    // get all allowed brokerIds
+    /// @notice Get all allowed brokerIds hash from this Vault
     function getAllAllowedBroker() public view override returns (bytes32[] memory) {
         return allowedBrokerSet.values();
     }
 
-    // user deposit
+    /// @notice The function to receive user deposit, VaultDepositFE type is defined in VaultTypes.sol
     function deposit(VaultTypes.VaultDepositFE calldata data) public override whenNotPaused {
         // require tokenAddress exist
         if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
         if (!Utils.validateAccountId(data.accountId, data.brokerHash, msg.sender)) revert AccountIdInvalid();
+        // avoid reentrancy, so `transferFrom` token at the beginning
         IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
         // avoid non-standard ERC20 tranferFrom bug
         tokenAddress.safeTransferFrom(msg.sender, address(this), data.tokenAmount);
@@ -120,10 +133,12 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         emit AccountDeposit(data.accountId, msg.sender, depositId, data.tokenHash, data.tokenAmount);
     }
 
+    /// @notice The function to allow users to deposit on behalf of another user, the receiver is the user who will receive the deposit
     function depositTo(address receiver, VaultTypes.VaultDepositFE calldata data) public whenNotPaused {
         if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
         if (!Utils.validateAccountId(data.accountId, data.brokerHash, receiver)) revert AccountIdInvalid();
+        // avoid reentrancy, so `transferFrom` token at the beginning
         IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
         // avoid non-standard ERC20 tranferFrom bug
         tokenAddress.safeTransferFrom(msg.sender, address(this), data.tokenAmount);
@@ -136,19 +151,15 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         emit AccountDepositTo(data.accountId, receiver, depositId, data.tokenHash, data.tokenAmount);
     }
 
-    // user withdraw
+    /// @notice user withdraw
     function withdraw(VaultTypes.VaultWithdraw calldata data) public override onlyCrossChainManager whenNotPaused {
-        IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
-        uint128 amount = data.tokenAmount - data.fee;
-        // check balane gt amount
-        if (tokenAddress.balanceOf(address(this)) < amount) {
-            revert BalanceNotEnough(tokenAddress.balanceOf(address(this)), amount);
-        }
-        // transfer to user
-        // avoid non-standard ERC20 tranfer bug
-        tokenAddress.safeTransfer(data.receiver, amount);
         // send cross-chain tx to ledger
         IVaultCrossChainManager(crossChainManagerAddress).withdraw(data);
+        // avoid reentrancy, so `transfer` token at the end
+        IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
+        uint128 amount = data.tokenAmount - data.fee;
+        // avoid non-standard ERC20 tranfer bug
+        tokenAddress.safeTransfer(data.receiver, amount);
         // emit withdraw event
         emit AccountWithdraw(
             data.accountId,
@@ -158,20 +169,20 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
             data.receiver,
             data.tokenHash,
             data.tokenAmount,
-            data.fee,
-            block.timestamp
+            data.fee
         );
     }
 
+    /// @notice Update the depositId
     function _newDepositId() internal returns (uint64) {
         return ++depositId;
     }
 
-    function emergencyPause() public onlyOwner {
+    function emergencyPause() public whenNotPaused onlyOwner {
         _pause();
     }
 
-    function emergencyUnpause() public onlyOwner {
+    function emergencyUnpause() public whenPaused onlyOwner {
         _unpause();
     }
 }
