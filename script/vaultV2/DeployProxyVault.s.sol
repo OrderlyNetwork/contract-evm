@@ -5,13 +5,12 @@ import "forge-std/Script.sol";
 import "openzeppelin-contracts/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import "openzeppelin-contracts/contracts/proxy/transparent/ProxyAdmin.sol";
 import "../../src/vaultSide/Vault.sol";
-import "../../src/vaultSide/tUSDC.sol";
 import "../utils/BaseScript.s.sol";
 import "../utils/ConfigHelper.s.sol";
 
 contract DeployVault is BaseScript, ConfigHelper {
     bytes32 constant USDC = 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa;
-    bytes32 constant BROKER_HASH = 0x083098c593f395bea1de45dda552d9f14e8fcb0be3faaa7a1903c5477d7ba7fd; // woofi_dex
+    bytes32 constant BROKER_HASH = 0x6ca2f644ef7bd6d75953318c7f2580014941e753b3c6d54da56b3bf75dd14dfc; // woofi_pro
 
     function run() external {
         uint256 orderlyPrivateKey = vm.envUint("ORDERLY_PRIVATE_KEY");
