@@ -11,6 +11,7 @@ interface IVault {
     error BalanceNotEnough(uint256 balance, uint128 amount);
     error AddressZero();
     error EnumerableSetError();
+    error ZeroDepositFee();
 
     event AccountDeposit(
         bytes32 indexed accountId,
@@ -46,8 +47,10 @@ interface IVault {
 
     function initialize() external;
 
-    function deposit(VaultTypes.VaultDepositFE calldata data) external;
-    function depositTo(address receiver, VaultTypes.VaultDepositFE calldata data) external;
+    function deposit(VaultTypes.VaultDepositFE calldata data) external payable;
+    function depositTo(address receiver, VaultTypes.VaultDepositFE calldata data) external payable;
+    function getDepositFee(VaultTypes.VaultDepositFE calldata data, address recevier) external view returns (uint256);
+    function enableDepositFee(bool _enabled) external;
     function withdraw(VaultTypes.VaultWithdraw calldata data) external;
 
     // admin call
