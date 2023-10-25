@@ -25,7 +25,7 @@
   },
   "mainnet": {
     "arbitrumgoerli": {
-      "multiSig": "0x7D1e7BeAd9fBb72e35Dc8E6d1966c2e57DbDA3F0",
+      "multiSig": "0x4e834Ca9310d7710a409638A7aa70CB22F141Df3",
       "proxyAdmin": "0xA2eA0a58b083c492AdC91A687FAc8B53AdB7c0Fd",
       "tUSDC": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
       "vault": "0x816f722424B49Cf1275cc86DA9840Fbd5a6167e9"
