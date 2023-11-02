@@ -3,7 +3,7 @@ pragma solidity ^0.8.18;
 
 import "../../src/interface/ILedgerCrossChainManager.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
-import "crosschain/interface/IOrderlyCrossChain.sol";
+import "cross-chain-relay/contracts/interface/IOrderlyCrossChain.sol";
 import "../../src/interface/ILedger.sol";
 
 contract LedgerCrossChainManagerMock is IOrderlyCrossChainReceiver, ILedgerCrossChainManager, Ownable {
