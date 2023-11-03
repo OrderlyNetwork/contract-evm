@@ -22,6 +22,12 @@ interface IOperatorManager is ILedgerError {
     event ChangeMarketManager(address oldAddress, address newAddress);
     event ChangeLedger(address oldAddress, address newAddress);
 
+    // @depreacted
+    // All events below are deprecated
+    // Keep them for indexer backward compatibility
+    event FuturesTradeUpload(uint64 indexed batchId, uint256 blocktime);
+    event EventUpload(uint64 indexed batchId, uint256 blocktime);
+
     function initialize() external;
 
     // operator call futures trade upload

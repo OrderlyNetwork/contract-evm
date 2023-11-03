@@ -89,4 +89,68 @@ interface ILedgerEvent {
     event ChangeVaultManager(address oldAddress, address newAddress);
     event ChangeMarketManager(address oldAddress, address newAddress);
     event ChangeFeeManager(address oldAddress, address newAddress);
+
+    // All events below are deprecated
+    // Keep them for indexer backward compatibility
+
+    // @deprecated
+    event AccountRegister(
+        bytes32 indexed accountId, bytes32 indexed brokerId, address indexed userAddress, uint256 blocktime
+    );
+    // @deprecated
+    event AccountDeposit(
+        bytes32 indexed accountId,
+        uint64 indexed depositNonce,
+        uint64 indexed eventId,
+        address userAddress,
+        bytes32 tokenHash,
+        uint128 tokenAmount,
+        uint256 srcChainId,
+        uint64 srcChainDepositNonce,
+        bytes32 brokerHash,
+        uint256 blocktime
+    );
+    // @deprecated
+    event AccountWithdrawApprove(
+        bytes32 indexed accountId,
+        uint64 indexed withdrawNonce,
+        uint64 indexed eventId,
+        bytes32 brokerHash,
+        address sender,
+        address receiver,
+        uint256 chainId,
+        bytes32 tokenHash,
+        uint128 tokenAmount,
+        uint128 fee,
+        uint256 blocktime
+    );
+    // @deprecated
+    event AccountWithdrawFinish(
+        bytes32 indexed accountId,
+        uint64 indexed withdrawNonce,
+        uint64 indexed eventId,
+        bytes32 brokerHash,
+        address sender,
+        address receiver,
+        uint256 chainId,
+        bytes32 tokenHash,
+        uint128 tokenAmount,
+        uint128 fee,
+        uint256 blocktime
+    );
+    // @deprecated
+    event AccountWithdrawFail(
+        bytes32 indexed accountId,
+        uint64 indexed withdrawNonce,
+        uint64 indexed eventId,
+        bytes32 brokerHash,
+        address sender,
+        address receiver,
+        uint256 chainId,
+        bytes32 tokenHash,
+        uint128 tokenAmount,
+        uint128 fee,
+        uint256 blocktime,
+        uint8 failReson
+    );
 }
