@@ -3,7 +3,7 @@ pragma solidity ^0.8.18;
 
 import "../../src/interface/IVaultCrossChainManager.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
-import "cross-chain-relay/contracts/interface/IOrderlyCrossChain.sol";
+import "evm-cross-chain/contracts/interface/IOrderlyCrossChain.sol";
 
 contract VaultCrossChainManagerMock is IOrderlyCrossChainReceiver, IVaultCrossChainManager, Ownable {
     function receiveMessage(OrderlyCrossChainMessage.MessageV1 memory message, bytes memory payload)
