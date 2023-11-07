@@ -1,5 +1,4 @@
-crosschain/=lib/crosschain/contracts/
-cc-relay/=lib/cross-chain-relay/
+evm-cross-chain=lib/evm-cross-chain/
 ds-test/=lib/forge-std/lib/ds-test/src/
 forge-std/=lib/forge-std/src/
 openzeppelin-contracts/=lib/openzeppelin-contracts/
