@@ -24,10 +24,10 @@ contract OperatorManagerDataLayout {
     uint256 public lastOperatorInteraction;
 
     // The signature addresses of CeFi
-    address public cefiSpotTradeUploadAddress;
-    address public cefiPerpTradeUploadAddress;
-    address public cefiEventUploadAddress;
-    address public cefiMarketUploadAddress;
+    address public engineSpotTradeUploadAddress;
+    address public enginePerpTradeUploadAddress;
+    address public engineEventUploadAddress;
+    address public engineMarketUploadAddress;
 
     // The storage gap to prevent overwriting by proxy
     uint256[42] private __gap;

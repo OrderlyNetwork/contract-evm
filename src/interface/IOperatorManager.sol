@@ -17,7 +17,7 @@ interface IOperatorManager is ILedgerError {
 
     event FuturesTradeUpload(uint64 indexed batchId);
     event EventUpload(uint64 indexed batchId);
-    event ChangeCefiUpload(uint8 indexed types, address oldAddress, address newAddress);
+    event ChangeEngineUpload(uint8 indexed types, address oldAddress, address newAddress);
     event ChangeOperator(uint8 indexed types, address oldAddress, address newAddress);
     event ChangeMarketManager(address oldAddress, address newAddress);
     event ChangeLedger(address oldAddress, address newAddress);
@@ -40,15 +40,15 @@ interface IOperatorManager is ILedgerError {
     // operator call ping
     function operatorPing() external;
 
-    // check if cefi down
-    function checkCefiDown() external returns (bool);
+    // check if engine down
+    function checkEngineDown() external returns (bool);
 
     // admin call
     function setOperator(address _operatorAddress) external;
     function setLedger(address _ledger) external;
     function setMarketManager(address _marketManagerAddress) external;
-    function setCefiSpotTradeUploadAddress(address _cefiSpotTradeUploadAddress) external;
-    function setCefiPerpTradeUploadAddress(address _cefiPerpTradeUploadAddress) external;
-    function setCefiEventUploadAddress(address _cefiEventUploadAddress) external;
-    function setCefiMarketUploadAddress(address _cefiMarketUploadAddress) external;
+    function setEngineSpotTradeUploadAddress(address _engineSpotTradeUploadAddress) external;
+    function setEnginePerpTradeUploadAddress(address _enginePerpTradeUploadAddress) external;
+    function setEngineEventUploadAddress(address _engineEventUploadAddress) external;
+    function setEngineMarketUploadAddress(address _engineMarketUploadAddress) external;
 }
