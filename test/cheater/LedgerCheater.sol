@@ -27,9 +27,9 @@ contract LedgerCheater is Ledger {
         return userLedger[accountId].getBalance(tokenHash);
     }
 
-    // get userLedger lastCefiEventId
-    function getUserLedgerLastCefiEventId(bytes32 accountId) public view returns (uint64) {
-        return userLedger[accountId].getLastCefiEventId();
+    // get userLedger lastEngineEventId
+    function getUserLedgerLastEngineEventId(bytes32 accountId) public view returns (uint64) {
+        return userLedger[accountId].getLastEngineEventId();
     }
 
     // get frozen total balance

@@ -151,7 +151,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
                 userAddress: account.userAddress,
                 lastWithdrawNonce: account.lastWithdrawNonce,
                 lastPerpTradeId: account.lastPerpTradeId,
-                lastCefiEventId: account.lastCefiEventId,
+                lastEngineEventId: account.lastEngineEventId,
                 lastDepositEventId: account.lastDepositEventId,
                 tokenBalances: tokenInner,
                 perpPositions: symbolInner
@@ -287,7 +287,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         // account should frozen `tokenAmount`, and vault should frozen `tokenAmount - fee`, because vault will payout `tokenAmount - fee`
         account.frozenBalance(withdraw.withdrawNonce, tokenHash, withdraw.tokenAmount);
         vaultManager.frozenBalance(tokenHash, withdraw.chainId, withdraw.tokenAmount - withdraw.fee);
-        account.lastCefiEventId = eventId;
+        account.lastEngineEventId = eventId;
         // emit withdraw approve event
         emit AccountWithdrawApprove(
             withdraw.accountId,
@@ -386,7 +386,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             }
         }
         if (totalSettleAmount != settlement.settledAmount) revert TotalSettleAmountNotMatch(totalSettleAmount);
-        account.lastCefiEventId = eventId;
+        account.lastEngineEventId = eventId;
         // emit event
         emit SettlementResult(
             _newGlobalEventId(),
@@ -424,7 +424,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             _liquidatedAccountLiquidate(liquidatedAccount, liquidationTransfer);
             _insuranceLiquidateAndUpdateEventId(liquidation.insuranceAccountId, liquidationTransfer, eventId);
         }
-        liquidatedAccount.lastCefiEventId = eventId;
+        liquidatedAccount.lastEngineEventId = eventId;
         emit LiquidationResult(
             _newGlobalEventId(),
             liquidation.liquidatedAccountId,
@@ -460,8 +460,8 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         insurancePosition.lastExecutedPrice = adl.adlPrice;
         insurancePosition.lastAdlPrice = adl.adlPrice;
 
-        account.lastCefiEventId = eventId;
-        insuranceFund.lastCefiEventId = eventId;
+        account.lastEngineEventId = eventId;
+        insuranceFund.lastEngineEventId = eventId;
         emit AdlResult(
             _newGlobalEventId(),
             adl.accountId,
@@ -542,7 +542,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         liquidatorPosition.positionQty += liquidationTransfer.positionQtyTransfer;
         liquidatorPosition.costPosition += liquidationTransfer.costPositionTransfer - liquidationTransfer.liquidatorFee;
         liquidatorPosition.lastExecutedPrice = liquidationTransfer.markPrice;
-        liquidatorAccount.lastCefiEventId = eventId;
+        liquidatorAccount.lastEngineEventId = eventId;
     }
 
     function _liquidatedAccountLiquidate(
@@ -578,6 +578,6 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         insurancePosition.chargeFundingFee(liquidationTransfer.sumUnitaryFundings);
         insurancePosition.costPosition -= liquidationTransfer.insuranceFee;
         insurancePosition.lastExecutedPrice = liquidationTransfer.markPrice;
-        insuranceFund.lastCefiEventId = eventId;
+        insuranceFund.lastEngineEventId = eventId;
     }
 }
