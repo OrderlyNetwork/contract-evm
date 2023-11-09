@@ -20,9 +20,9 @@ library AccountTypeHelper {
         return account.brokerHash;
     }
 
-    /// @notice get last cefi event id
-    function getLastCefiEventId(AccountTypes.Account storage account) internal view returns (uint64) {
-        return account.lastCefiEventId;
+    /// @notice get last engine event id
+    function getLastEngineEventId(AccountTypes.Account storage account) internal view returns (uint64) {
+        return account.lastEngineEventId;
     }
 
     // ====================
