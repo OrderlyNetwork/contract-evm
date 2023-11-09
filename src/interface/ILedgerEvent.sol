@@ -60,7 +60,7 @@ interface ILedgerEvent {
         bytes32 insuranceAccountId,
         uint128 insuranceTransferAmount,
         uint64 settlementExecutionsCount,
-        uint64 lastCefiEventId
+        uint64 lastEngineEventId
     );
 
     event AdlResult(
@@ -72,7 +72,7 @@ interface ILedgerEvent {
         int128 costPositionTransfer,
         uint128 adlPrice,
         int128 sumUnitaryFundings,
-        uint64 lastCefiEventId
+        uint64 lastEngineEventId
     );
 
     event LiquidationResult(
@@ -81,7 +81,7 @@ interface ILedgerEvent {
         bytes32 indexed insuranceAccountId,
         bytes32 liquidatedAssetHash,
         uint128 insuranceTransferAmount,
-        uint64 lastCefiEventId
+        uint64 lastEngineEventId
     );
 
     event ChangeOperatorManager(address oldAddress, address newAddress);
