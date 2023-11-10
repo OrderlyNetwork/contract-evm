@@ -172,7 +172,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     }
 
     /// @notice The function to query layerzero fee from CrossChainManager contract
-    function getDepositFee(VaultTypes.VaultDepositFE calldata data, address receiver)
+    function getDepositFee(address receiver, VaultTypes.VaultDepositFE calldata data)
         public
         view
         override

@@ -49,7 +49,7 @@ interface IVault {
 
     function deposit(VaultTypes.VaultDepositFE calldata data) external payable;
     function depositTo(address receiver, VaultTypes.VaultDepositFE calldata data) external payable;
-    function getDepositFee(VaultTypes.VaultDepositFE calldata data, address recevier) external view returns (uint256);
+    function getDepositFee(address recevier, VaultTypes.VaultDepositFE calldata data) external view returns (uint256);
     function enableDepositFee(bool _enabled) external;
     function withdraw(VaultTypes.VaultWithdraw calldata data) external;
 
