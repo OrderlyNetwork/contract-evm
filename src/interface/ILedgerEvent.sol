@@ -84,6 +84,21 @@ interface ILedgerEvent {
         uint64 lastEngineEventId
     );
 
+    event ProcessValidatedFutures(
+        bytes32 indexed accountId,
+        bytes32 indexed symbolHash,
+        bytes32 feeAssetHash,
+        int128 tradeQty,
+        int128 notional,
+        uint128 executedPrice,
+        uint128 fee,
+        int128 sumUnitaryFundings,
+        uint64 tradeId,
+        uint64 matchId,
+        uint64 timestamp,
+        bool side
+    );
+
     event ChangeOperatorManager(address oldAddress, address newAddress);
     event ChangeCrossChainManager(address oldAddress, address newAddress);
     event ChangeVaultManager(address oldAddress, address newAddress);
