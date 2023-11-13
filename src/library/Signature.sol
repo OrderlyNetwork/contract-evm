@@ -33,8 +33,7 @@ library Signature {
         );
 
         bytes32 hash = keccak256(abi.encodePacked("\x19\x01", eip712DomainHash, hashStruct));
-        address signer = ecrecover(hash, data.v, data.r, data.s);
-        return signer == sender && signer != address(0);
+        return ECDSA.recover(hash, data.v, data.r, data.s) == sender;
     }
 
     function verify(bytes32 hash, bytes32 r, bytes32 s, uint8 v, address signer) internal pure returns (bool) {
