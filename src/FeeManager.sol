@@ -46,6 +46,8 @@ contract FeeManager is IFeeManager, LedgerComponent {
         } else if (feeCollectorType == FeeCollectorType.FuturesFeeCollector) {
             emit ChangeFeeCollector(feeCollectorType, futuresFeeCollector, _newCollector);
             futuresFeeCollector = _newCollector;
+        } else {
+            revert InvalidFeeCollectorType();
         }
     }
 }
