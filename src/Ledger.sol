@@ -278,6 +278,9 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             } else if (maxWithdrawFee > 0 && maxWithdrawFee < withdraw.fee) {
                 // require fee not exceed maxWithdrawFee
                 state = 5;
+            } else if (withdraw.receiver == address(0)) {
+                // require receiver not zero address
+                state = 6;
             }
         }
         // check all assert, should not change any status
@@ -384,6 +387,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         for (uint256 i = 0; i < length; ++i) {
             EventTypes.SettlementExecution calldata ledgerExecution = settlementExecutions[i];
             totalSettleAmount += ledgerExecution.settledAmount;
+            if (!vaultManager.getAllowedSymbol(ledgerExecution.symbolHash)) revert SymbolNotAllowed();
             AccountTypes.PerpPosition storage position = account.perpPositions[ledgerExecution.symbolHash];
             position.chargeFundingFee(ledgerExecution.sumUnitaryFundings);
             position.costPosition += ledgerExecution.settledAmount;
@@ -451,6 +455,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
     }
 
     function executeAdl(EventTypes.Adl calldata adl, uint64 eventId) external override onlyOperatorManager {
+        if (!vaultManager.getAllowedSymbol(adl.symbolHash)) revert SymbolNotAllowed();
         AccountTypes.Account storage account = userLedger[adl.accountId];
         AccountTypes.PerpPosition storage userPosition = account.perpPositions[adl.symbolHash];
         userPosition.chargeFundingFee(adl.sumUnitaryFundings);

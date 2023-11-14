@@ -80,6 +80,12 @@ contract LiquidationTest is Test {
         if (!vaultManager.getAllowedBroker(BROKER_HASH)) {
             vaultManager.setAllowedBroker(BROKER_HASH, true);
         }
+        if (!vaultManager.getAllowedSymbol(SYMBOL_HASH_BTC_USDC)) {
+            vaultManager.setAllowedSymbol(SYMBOL_HASH_BTC_USDC, true);
+        }
+        if (!vaultManager.getAllowedSymbol(SYMBOL_HASH_ETH_USDC)) {
+            vaultManager.setAllowedSymbol(SYMBOL_HASH_ETH_USDC, true);
+        }
         vaultManager.setAllowedChainToken(TOKEN_HASH, CHAIN_ID, true);
 
         feeManager.setLedgerAddress(address(ledger));
