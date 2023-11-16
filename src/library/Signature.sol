@@ -5,6 +5,7 @@ import "openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
 import "./types/PerpTypes.sol";
 import "./types/EventTypes.sol";
 import "./types/MarketTypes.sol";
+import "./types/RebalanceTypes.sol";
 
 /// @title Signature library
 /// @author Orderly_Rubick
@@ -218,6 +219,35 @@ library Signature {
         returns (bool)
     {
         bytes memory encoded = abi.encode(data.maxTimestamp, data.sumUnitaryFundings);
+        bytes32 h = ECDSA.toEthSignedMessageHash(keccak256(encoded));
+        return verify(h, data.r, data.s, data.v, signer);
+    }
+
+    function rebalanceBurnUploadEncodeHashVerify(RebalanceTypes.RebalanceBurnUploadData memory data, address signer)
+        internal
+        pure
+        returns (bool)
+    {
+        bytes memory encoded =
+            abi.encode(data.rebalanceId, data.amount, data.tokenHash, data.srcChainId, data.dstChainId);
+        bytes32 h = ECDSA.toEthSignedMessageHash(keccak256(encoded));
+        return verify(h, data.r, data.s, data.v, signer);
+    }
+
+    function rebalanceMintUploadEncodeHashVerify(RebalanceTypes.RebalanceMintUploadData memory data, address signer)
+        internal
+        pure
+        returns (bool)
+    {
+        bytes memory encoded = abi.encode(
+            data.rebalanceId,
+            data.amount,
+            data.tokenHash,
+            data.srcChainId,
+            data.dstChainId,
+            data.messageBytes,
+            data.messageSignature
+        );
         bytes32 h = ECDSA.toEthSignedMessageHash(keccak256(encoded));
         return verify(h, data.r, data.s, data.v, signer);
     }

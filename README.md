@@ -64,7 +64,7 @@ For more information of project structure, please see standard [foundry project 
 
    3. other libraries
 
-      Libraries of inline functions, the `Signature.sol` is used by Ledger contract for the verification of signature from CeFi for event upload and trades upload, the `Utils.sol` is used by Vault contract to compute the account id of an Orderly user.
+      Libraries of inline functions, the `Signature.sol` is used by Ledger contract for the verification of signature from Engine for event upload and trades upload, the `Utils.sol` is used by Vault contract to compute the account id of an Orderly user.
 
 4. vaultSide
 
@@ -74,7 +74,7 @@ For more information of project structure, please see standard [foundry project 
 
    The most important contracts for `settlement layer`, or in another word, the Ledger side. They are `Ledger`, `OperatorManager`, `FeeManager`, `MarketManager`, `VaultManager`. All these contracts are deployed on the Orderly L2 based OP Stack to provide the settlement service for Orderly users.
 
-   On Ledger side, the `Ledger` contract is the main contract to store the user's account information and execute actions according to the function call from `OperatorManager`, and the `OperatorManager` contract is used to receive the operation request from CeFi, the `FeeManager` contract is used to manage the fee collector address, the `MarketManager` contract is used to manage the market information for trading context, the `VaultManager` contract is used to manage the token balance of the Vault contract on each EVM chain.
+   On Ledger side, the `Ledger` contract is the main contract to store the user's account information and execute actions according to the function call from `OperatorManager`, and the `OperatorManager` contract is used to receive the operation request from Engine, the `FeeManager` contract is used to manage the fee collector address, the `MarketManager` contract is used to manage the market information for trading context, the `VaultManager` contract is used to manage the token balance of the Vault contract on each EVM chain.
 
    Check [conflunce here](https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/279838766/Solidity+Contract+Overview) for more info
 

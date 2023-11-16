@@ -5,7 +5,8 @@ import "../library/types/AccountTypes.sol";
 import "../library/types/PerpTypes.sol";
 import "../library/types/EventTypes.sol";
 import "../library/types/MarketTypes.sol";
-import "./ILedgerError.sol";
+import "../library/types/RebalanceTypes.sol";
+import "./error/ILedgerError.sol";
 import "./ILedgerEvent.sol";
 
 // Defines the error, event and ABI.
@@ -23,6 +24,10 @@ interface ILedger is ILedgerError, ILedgerEvent {
     function executeSettlement(EventTypes.Settlement calldata ledger, uint64 eventId) external;
     function executeLiquidation(EventTypes.Liquidation calldata liquidation, uint64 eventId) external;
     function executeAdl(EventTypes.Adl calldata adl, uint64 eventId) external;
+    function executeRebalanceBurn(RebalanceTypes.RebalanceBurnUploadData calldata data) external;
+    function rebalanceBurnFinish(RebalanceTypes.RebalanceBurnCCFinishData calldata data) external;
+    function executeRebalanceMint(RebalanceTypes.RebalanceMintUploadData calldata data) external;
+    function rebalanceMintFinish(RebalanceTypes.RebalanceMintCCFinishData calldata data) external;
 
     // view call
     function getFrozenWithdrawNonce(bytes32 accountId, uint64 withdrawNonce, bytes32 tokenHash)
