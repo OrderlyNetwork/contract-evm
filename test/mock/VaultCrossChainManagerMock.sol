@@ -13,7 +13,11 @@ contract VaultCrossChainManagerMock is IOrderlyCrossChainReceiver, IVaultCrossCh
 
     function getDepositFee(VaultTypes.VaultDeposit memory data) external view override returns (uint256) {}
 
-    function deposit(VaultTypes.VaultDeposit memory data) external payable override {}
+    function deposit(VaultTypes.VaultDeposit memory data) external override {}
+
+    function burnFinish(RebalanceTypes.RebalanceBurnCCFinishData memory data) external override {}
+
+    function mintFinish(RebalanceTypes.RebalanceMintCCFinishData memory data) external override {}
 
     function withdraw(VaultTypes.VaultWithdraw memory data) external override {}
 

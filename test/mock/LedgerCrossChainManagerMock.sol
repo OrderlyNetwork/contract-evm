@@ -27,4 +27,7 @@ contract LedgerCrossChainManagerMock is IOrderlyCrossChainReceiver, ILedgerCross
     function withdrawFinishMock(AccountTypes.AccountWithdraw memory message) external {
         ledger.accountWithDrawFinish(message);
     }
+
+    function burn(RebalanceTypes.RebalanceBurnCCData memory data) external override {}
+    function mint(RebalanceTypes.RebalanceMintCCData memory data) external override {}
 }

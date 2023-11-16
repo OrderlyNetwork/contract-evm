@@ -28,6 +28,18 @@ contract VaultManager is IVaultManager, LedgerComponent {
 
     mapping(bytes32 => uint128) private maxWithdrawFee; // default = unlimited
 
+    // A mapping to record how much balance each token has been burn-frozen on each chain: tokenHash => chainId => frozenBalance
+    mapping(bytes32 => mapping(uint256 => uint128)) private tokenBurnFrozenBalanceOnchain;
+    // A mapping to record CCTP domain
+    mapping(uint256 => uint32) private chain2cctpDomain;
+    // A mapping to record vault address
+    mapping(uint256 => address) private chain2VaultAddress;
+
+    // rebalanceStatus key is mod by this constant
+    uint64 constant MAX_REBALACE_SLOT = 100;
+    // for record latest rebalance status
+    mapping(uint64 => RebalanceTypes.RebalanceStatus) public rebalanceStatus;
+
     constructor() {
         _disableInitializers();
     }
@@ -163,5 +175,130 @@ contract VaultManager is IVaultManager, LedgerComponent {
     /// @notice Get maxWithdrawFee
     function getMaxWithdrawFee(bytes32 _tokenHash) public view override returns (uint128) {
         return maxWithdrawFee[_tokenHash];
+    }
+
+    // chain2cctpDomain & chain2VaultAddress
+    function setChain2cctpDomain(uint256 chainId, uint32 cctpDomain) external override onlyOwner {
+        chain2cctpDomain[chainId] = cctpDomain;
+    }
+
+    function getChain2cctpDomain(uint256 chainId) public view override returns (uint32) {
+        return chain2cctpDomain[chainId];
+    }
+
+    function setChain2VaultAddress(uint256 chainId, address vaultAddress) external override onlyOwner {
+        chain2VaultAddress[chainId] = vaultAddress;
+    }
+
+    function getChain2VaultAddress(uint256 chainId) public view override returns (address) {
+        return chain2VaultAddress[chainId];
+    }
+
+    // burn & mint with CCTP
+    function executeRebalanceBurn(RebalanceTypes.RebalanceBurnUploadData calldata data)
+        external
+        override
+        onlyLedger
+        returns (uint32, address)
+    {
+        // check if the burn request is valid
+        RebalanceTypes.RebalanceStatus storage status = rebalanceStatus[data.rebalanceId % MAX_REBALACE_SLOT];
+        if (status.rebalanceId == data.rebalanceId) {
+            if (status.burnStatus == RebalanceTypes.RebalanceStatusEnum.Pending) {
+                revert RebalanceStillPending();
+            } else if (status.burnStatus == RebalanceTypes.RebalanceStatusEnum.Succ) {
+                revert RebalanceAlreadySucc();
+            }
+        }
+        // record rebalance status
+        rebalanceStatus[data.rebalanceId % MAX_REBALACE_SLOT] = RebalanceTypes.RebalanceStatus({
+            rebalanceId: data.rebalanceId,
+            burnStatus: RebalanceTypes.RebalanceStatusEnum.Pending,
+            mintStatus: RebalanceTypes.RebalanceStatusEnum.None
+        });
+        burnToken(data.tokenHash, data.srcChainId, data.amount);
+        uint32 dstDomain = getChain2cctpDomain(data.dstChainId);
+        address dstVaultAddress = getChain2VaultAddress(data.dstChainId);
+
+        emit RebalanceBurn(data.rebalanceId, data.amount, data.tokenHash, data.srcChainId, data.dstChainId);
+        return (dstDomain, dstVaultAddress);
+    }
+
+    function rebalanceBurnFinish(RebalanceTypes.RebalanceBurnCCFinishData calldata data) external override onlyLedger {
+        RebalanceTypes.RebalanceStatus storage status = rebalanceStatus[data.rebalanceId % MAX_REBALACE_SLOT];
+        // check if the rebalanceId is valid
+        if (status.rebalanceId != data.rebalanceId) {
+            revert RebalanceIdNotMatch(data.rebalanceId, status.rebalanceId);
+        }
+        if (data.success) {
+            finishBurnToken(data.tokenHash, data.srcChainId, data.amount);
+            status.burnStatus = RebalanceTypes.RebalanceStatusEnum.Succ;
+        } else {
+            cancelBurnToken(data.tokenHash, data.srcChainId, data.amount);
+            status.burnStatus = RebalanceTypes.RebalanceStatusEnum.Fail;
+        }
+        emit RebalanceBurnResult(data.rebalanceId, data.success);
+    }
+
+    function executeRebalanceMint(RebalanceTypes.RebalanceMintUploadData calldata data) external override onlyLedger {
+        // check if the mint request is valid
+        RebalanceTypes.RebalanceStatus storage status = rebalanceStatus[data.rebalanceId % MAX_REBALACE_SLOT];
+        if (status.rebalanceId == data.rebalanceId) {
+            if (status.burnStatus != RebalanceTypes.RebalanceStatusEnum.Succ) {
+                revert RebalanceMintUnexpected();
+            }
+            if (status.mintStatus == RebalanceTypes.RebalanceStatusEnum.Pending) {
+                revert RebalanceStillPending();
+            } else if (status.mintStatus == RebalanceTypes.RebalanceStatusEnum.Succ) {
+                revert RebalanceAlreadySucc();
+            }
+        } else {
+            revert RebalanceMintUnexpected();
+        }
+        // record rebalance status
+        status.mintStatus = RebalanceTypes.RebalanceStatusEnum.Pending;
+        emit RebalanceMint(data.rebalanceId);
+    }
+
+    function rebalanceMintFinish(RebalanceTypes.RebalanceMintCCFinishData calldata data) external override onlyLedger {
+        RebalanceTypes.RebalanceStatus storage status = rebalanceStatus[data.rebalanceId % MAX_REBALACE_SLOT];
+        // check if the rebalanceId is valid
+        if (status.rebalanceId != data.rebalanceId) {
+            revert RebalanceIdNotMatch(data.rebalanceId, status.rebalanceId);
+        }
+        if (data.success) {
+            finishMintToken(data.tokenHash, data.dstChainId, data.amount);
+            status.mintStatus = RebalanceTypes.RebalanceStatusEnum.Succ;
+        } else {
+            status.mintStatus = RebalanceTypes.RebalanceStatusEnum.Fail;
+        }
+        emit RebalanceMintResult(data.rebalanceId, data.success);
+    }
+
+    function getRebalanceStatus(uint64 rebalanceId)
+        public
+        view
+        override
+        returns (RebalanceTypes.RebalanceStatus memory)
+    {
+        return rebalanceStatus[rebalanceId % MAX_REBALACE_SLOT];
+    }
+
+    function burnToken(bytes32 _tokenHash, uint256 _chainId, uint128 _amount) internal {
+        tokenBalanceOnchain[_tokenHash][_chainId] -= _amount;
+        tokenBurnFrozenBalanceOnchain[_tokenHash][_chainId] += _amount;
+    }
+
+    function finishBurnToken(bytes32 _tokenHash, uint256 _chainId, uint128 _amount) internal {
+        tokenBurnFrozenBalanceOnchain[_tokenHash][_chainId] -= _amount;
+    }
+
+    function cancelBurnToken(bytes32 _tokenHash, uint256 _chainId, uint128 _amount) internal {
+        tokenBalanceOnchain[_tokenHash][_chainId] += _amount;
+        tokenBurnFrozenBalanceOnchain[_tokenHash][_chainId] -= _amount;
+    }
+
+    function finishMintToken(bytes32 _tokenHash, uint256 _chainId, uint128 _amount) internal {
+        tokenBalanceOnchain[_tokenHash][_chainId] += _amount;
     }
 }
