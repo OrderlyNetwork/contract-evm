@@ -19,58 +19,86 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         _;
     }
 
+    /// @notice check non-zero address
+    modifier nonZeroAddress(address _address) {
+        if (_address == address(0)) revert AddressZero();
+        _;
+    }
+
     /// @notice Set the operator address
-    function setOperator(address _operatorAddress) public override onlyOwner {
-        if (_operatorAddress == address(0)) revert AddressZero();
+    function setOperator(address _operatorAddress) public override onlyOwner nonZeroAddress(_operatorAddress) {
         emit ChangeOperator(1, operatorAddress, _operatorAddress);
         operatorAddress = _operatorAddress;
     }
 
     /// @notice Set engine signature address for spot trade upload
-    function setEngineSpotTradeUploadAddress(address _engineSpotTradeUploadAddress) public override onlyOwner {
-        if (_engineSpotTradeUploadAddress == address(0)) revert AddressZero();
+    function setEngineSpotTradeUploadAddress(address _engineSpotTradeUploadAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_engineSpotTradeUploadAddress)
+    {
         emit ChangeEngineUpload(1, engineSpotTradeUploadAddress, _engineSpotTradeUploadAddress);
         engineSpotTradeUploadAddress = _engineSpotTradeUploadAddress;
     }
 
     /// @notice Set engine signature address for perpetual future trade upload
-    function setEnginePerpTradeUploadAddress(address _enginePerpTradeUploadAddress) public override onlyOwner {
-        if (_enginePerpTradeUploadAddress == address(0)) revert AddressZero();
+    function setEnginePerpTradeUploadAddress(address _enginePerpTradeUploadAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_enginePerpTradeUploadAddress)
+    {
         emit ChangeEngineUpload(2, enginePerpTradeUploadAddress, _enginePerpTradeUploadAddress);
         enginePerpTradeUploadAddress = _enginePerpTradeUploadAddress;
     }
 
     /// @notice Set engine signature address for event upload
-    function setEngineEventUploadAddress(address _engineEventUploadAddress) public override onlyOwner {
-        if (_engineEventUploadAddress == address(0)) revert AddressZero();
+    function setEngineEventUploadAddress(address _engineEventUploadAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_engineEventUploadAddress)
+    {
         emit ChangeEngineUpload(3, engineEventUploadAddress, _engineEventUploadAddress);
         engineEventUploadAddress = _engineEventUploadAddress;
     }
 
     /// @notice Set engine signature address for market information upload
-    function setEngineMarketUploadAddress(address _engineMarketUploadAddress) public override onlyOwner {
-        if (_engineMarketUploadAddress == address(0)) revert AddressZero();
+    function setEngineMarketUploadAddress(address _engineMarketUploadAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_engineMarketUploadAddress)
+    {
         emit ChangeEngineUpload(4, engineMarketUploadAddress, _engineMarketUploadAddress);
         engineMarketUploadAddress = _engineMarketUploadAddress;
     }
 
     /// @notice Set engine signature address for rebalance upload
-    function setEngineRebalanceUploadAddress(address _engineRebalanceUploadAddress) public override onlyOwner {
-        if (_engineRebalanceUploadAddress == address(0)) revert AddressZero();
+    function setEngineRebalanceUploadAddress(address _engineRebalanceUploadAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_engineRebalanceUploadAddress)
+    {
         emit ChangeEngineUpload(5, engineRebalanceUploadAddress, _engineRebalanceUploadAddress);
         engineRebalanceUploadAddress = _engineRebalanceUploadAddress;
     }
 
     /// @notice Set the address of ledger contract
-    function setLedger(address _ledger) public override onlyOwner {
-        if (_ledger == address(0)) revert AddressZero();
+    function setLedger(address _ledger) public override onlyOwner nonZeroAddress(_ledger) {
         emit ChangeLedger(address(ledger), _ledger);
         ledger = ILedger(_ledger);
     }
 
     /// @notice Set the address of market manager contract
-    function setMarketManager(address _marketManagerAddress) public override onlyOwner {
-        if (_marketManagerAddress == address(0)) revert AddressZero();
+    function setMarketManager(address _marketManagerAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_marketManagerAddress)
+    {
         emit ChangeMarketManager(address(marketManager), _marketManagerAddress);
         marketManager = IMarketManager(_marketManagerAddress);
     }

@@ -48,6 +48,12 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         _;
     }
 
+    /// @notice check non-zero address
+    modifier nonZeroAddress(address _address) {
+        if (_address == address(0)) revert AddressZero();
+        _;
+    }
+
     constructor() {
         _disableInitializers();
     }
@@ -58,8 +64,12 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     }
 
     /// @notice Change crossChainManager address
-    function setCrossChainManager(address _crossChainManagerAddress) public override onlyOwner {
-        if (_crossChainManagerAddress == address(0)) revert AddressZero();
+    function setCrossChainManager(address _crossChainManagerAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_crossChainManagerAddress)
+    {
         emit ChangeCrossChainManager(crossChainManagerAddress, _crossChainManagerAddress);
         crossChainManagerAddress = _crossChainManagerAddress;
     }
@@ -93,8 +103,12 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
 
     /// @notice Change the token address for an allowed token, used when a new token is added
     /// @dev maybe should called `addTokenAddressAndAllow`, because it's for initializing
-    function changeTokenAddressAndAllow(bytes32 _tokenHash, address _tokenAddress) public override onlyOwner {
-        if (_tokenAddress == address(0)) revert AddressZero();
+    function changeTokenAddressAndAllow(bytes32 _tokenHash, address _tokenAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_tokenAddress)
+    {
         allowedToken[_tokenHash] = _tokenAddress;
         allowedTokenSet.add(_tokenHash); // ignore returns here
         emit ChangeTokenAddressAndAllow(_tokenHash, _tokenAddress);
@@ -234,6 +248,24 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
 
     function emergencyUnpause() public whenPaused onlyOwner {
         _unpause();
+    }
+
+    function setTokenMessengerContract(address _tokenMessengerContract)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_tokenMessengerContract)
+    {
+        tokenMessengerContract = _tokenMessengerContract;
+    }
+
+    function setRebalanceMessengerContract(address _rebalanceMessengerContract)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_rebalanceMessengerContract)
+    {
+        messageTransmitterContract = _rebalanceMessengerContract;
     }
 
     function rebalanceBurn(RebalanceTypes.RebalanceBurnCCData calldata data) external override onlyCrossChainManager {

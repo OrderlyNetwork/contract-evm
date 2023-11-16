@@ -57,6 +57,8 @@ interface IVault {
     // CCTP: functions for receive rebalance msg
     function rebalanceMint(RebalanceTypes.RebalanceMintCCData calldata data) external;
     function rebalanceBurn(RebalanceTypes.RebalanceBurnCCData calldata data) external;
+    function setTokenMessengerContract(address _tokenMessengerContract) external;
+    function setRebalanceMessengerContract(address _rebalanceMessengerContract) external;
 
     // admin call
     function setCrossChainManager(address _crossChainManagerAddress) external;
