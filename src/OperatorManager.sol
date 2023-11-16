@@ -54,6 +54,13 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         engineMarketUploadAddress = _engineMarketUploadAddress;
     }
 
+    /// @notice Set engine signature address for rebalance upload
+    function setEngineRebalanceUploadAddress(address _engineRebalanceUploadAddress) public override onlyOwner {
+        if (_engineRebalanceUploadAddress == address(0)) revert AddressZero();
+        emit ChangeEngineUpload(5, engineRebalanceUploadAddress, _engineRebalanceUploadAddress);
+        engineRebalanceUploadAddress = _engineRebalanceUploadAddress;
+    }
+
     /// @notice Set the address of ledger contract
     function setLedger(address _ledger) public override onlyOwner {
         if (_ledger == address(0)) revert AddressZero();
@@ -129,7 +136,23 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         _perpMarketInfo(data);
     }
 
-    /// @notice Function to verify CeFi signature for futures trade upload data, if validated then Ledger contract will be called to execute the trade process
+    // @notice Function for rebalance burn upload
+    function rebalanceBurnUpload(RebalanceTypes.RebalanceBurnUploadData calldata data) public override onlyOperator {
+        _innerPing();
+        _rebalanceBurnUpload(data);
+        // emit event
+        emit RebalanceBurnUpload(data.rebalanceId);
+    }
+
+    // @notice Function for rebalance mint upload
+    function rebalanceMintUpload(RebalanceTypes.RebalanceMintUploadData calldata data) public override onlyOperator {
+        _innerPing();
+        _rebalanceMintUpload(data);
+        // emit event
+        emit RebalanceMintUpload(data.rebalanceId);
+    }
+
+    /// @notice Function to verify Engine signature for futures trade upload data, if validated then Ledger contract will be called to execute the trade process
     function _futuresTradeUploadData(PerpTypes.FuturesTradeUploadData calldata data) internal {
         PerpTypes.FuturesTradeUpload[] calldata trades = data.trades;
         if (trades.length != data.count) revert CountNotMatch(trades.length, data.count);
@@ -149,7 +172,7 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         ledger.executeProcessValidatedFutures(trade);
     }
 
-    /// @notice Function to verify CeFi signature for event upload data, if validated then Ledger contract will be called to execute the event process
+    /// @notice Function to verify Engine signature for event upload data, if validated then Ledger contract will be called to execute the event process
     function _eventUploadData(EventTypes.EventUpload calldata data) internal {
         EventTypes.EventUploadData[] calldata events = data.events; // gas saving
         if (events.length != data.count) revert CountNotMatch(events.length, data.count);
@@ -184,7 +207,7 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         }
     }
 
-    /// @notice Function to verify CeFi signature for perpetual future price data, if validated then MarketManager contract will be called to execute the market process
+    /// @notice Function to verify Engine signature for perpetual future price data, if validated then MarketManager contract will be called to execute the market process
     function _perpMarketInfo(MarketTypes.UploadPerpPrice calldata data) internal {
         // check engine signature
         bool succ = Signature.marketUploadEncodeHashVerify(data, engineMarketUploadAddress);
@@ -193,13 +216,31 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         marketManager.updateMarketUpload(data);
     }
 
-    /// @notice Function to verify CeFi signature for sum unitary fundings data, if validated then MarketManager contract will be called to execute the market process
+    /// @notice Function to verify Engine signature for sum unitary fundings data, if validated then MarketManager contract will be called to execute the market process
     function _perpMarketInfo(MarketTypes.UploadSumUnitaryFundings calldata data) internal {
         // check engine signature
         bool succ = Signature.marketUploadEncodeHashVerify(data, engineMarketUploadAddress);
         if (!succ) revert SignatureNotMatch();
         // process perp market info
         marketManager.updateMarketUpload(data);
+    }
+
+    /// @notice Cross-Contract call to Ledger contract to process each validated rebalance burn
+    function _rebalanceBurnUpload(RebalanceTypes.RebalanceBurnUploadData calldata data) internal {
+        // check engine signature
+        bool succ = Signature.rebalanceBurnUploadEncodeHashVerify(data, engineRebalanceUploadAddress);
+        if (!succ) revert SignatureNotMatch();
+        // process rebalance burn
+        ledger.executeRebalanceBurn(data);
+    }
+
+    /// @notice Cross-Contract call to Ledger contract to process each validated rebalance mint
+    function _rebalanceMintUpload(RebalanceTypes.RebalanceMintUploadData calldata data) internal {
+        // check engine signature
+        bool succ = Signature.rebalanceMintUploadEncodeHashVerify(data, engineRebalanceUploadAddress);
+        if (!succ) revert SignatureNotMatch();
+        // process rebalance mint
+        ledger.executeRebalanceMint(data);
     }
 
     /// @notice Function to update last operator interaction timestamp

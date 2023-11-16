@@ -9,6 +9,8 @@ import "openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeabl
 import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 import "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
+import "../interface/cctp/ITokenMessenger.sol";
+import "../interface/cctp/IMessageTransmitter.sol";
 
 /// @title Vault contract
 /// @author Orderly_Rubick
@@ -33,6 +35,12 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     mapping(bytes32 => address) public allowedToken;
     // A flag to indicate if deposit fee is enabled
     bool public depositFeeEnabled;
+
+    // https://developers.circle.com/stablecoin/docs/cctp-protocol-contract#tokenmessenger-mainnet
+    // TokenMessager for CCTP
+    address public tokenMessengerContract;
+    // MessageTransmitterContract for CCTP
+    address public messageTransmitterContract;
 
     /// @notice Require only cross-chain manager can call
     modifier onlyCrossChainManager() {
@@ -226,5 +234,70 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
 
     function emergencyUnpause() public whenPaused onlyOwner {
         _unpause();
+    }
+
+    function rebalanceBurn(RebalanceTypes.RebalanceBurnCCData calldata data) external override onlyCrossChainManager {
+        address burnToken = allowedToken[data.tokenHash];
+        if (burnToken == address(0)) revert AddressZero();
+        IERC20(burnToken).approve(tokenMessengerContract, data.amount);
+        try ITokenMessenger(tokenMessengerContract).depositForBurn(
+            data.amount, data.dstDomain, Utils.toBytes32(data.dstVaultAddress), burnToken
+        ) {
+            // send succ cross-chain tx to ledger
+            // rebalanceId, amount, tokenHash, srcChainId, dstChainId | true
+            IVaultCrossChainManager(crossChainManagerAddress).burnFinish(
+                RebalanceTypes.RebalanceBurnCCFinishData({
+                    rebalanceId: data.rebalanceId,
+                    amount: data.amount,
+                    tokenHash: data.tokenHash,
+                    srcChainId: data.srcChainId,
+                    dstChainId: data.dstChainId,
+                    success: true
+                })
+            );
+        } catch {
+            // send fail cross-chain tx to ledger
+            // rebalanceId, amount, tokenHash, srcChainId, dstChainId | false
+            IVaultCrossChainManager(crossChainManagerAddress).burnFinish(
+                RebalanceTypes.RebalanceBurnCCFinishData({
+                    rebalanceId: data.rebalanceId,
+                    amount: data.amount,
+                    tokenHash: data.tokenHash,
+                    srcChainId: data.srcChainId,
+                    dstChainId: data.dstChainId,
+                    success: false
+                })
+            );
+        }
+    }
+
+    function rebalanceMint(RebalanceTypes.RebalanceMintCCData calldata data) external override onlyCrossChainManager {
+        try IMessageTransmitter(messageTransmitterContract).receiveMessage(data.messageBytes, data.messageSignature) {
+            // send succ cross-chain tx to ledger
+            // rebalanceId, amount, tokenHash, srcChainId, dstChainId | true
+            IVaultCrossChainManager(crossChainManagerAddress).mintFinish(
+                RebalanceTypes.RebalanceMintCCFinishData({
+                    rebalanceId: data.rebalanceId,
+                    amount: data.amount,
+                    tokenHash: data.tokenHash,
+                    srcChainId: data.srcChainId,
+                    dstChainId: data.dstChainId,
+                    success: true
+                })
+            );
+        } catch {
+            // send fail cross-chain tx to ledger
+            // rebalanceId, amount, tokenHash, srcChainId, dstChainId | false
+            IVaultCrossChainManager(crossChainManagerAddress).mintFinish(
+                RebalanceTypes.RebalanceMintCCFinishData({
+                    rebalanceId: data.rebalanceId,
+                    amount: data.amount,
+                    tokenHash: data.tokenHash,
+                    srcChainId: data.srcChainId,
+                    dstChainId: data.dstChainId,
+                    success: false
+                })
+            );
+        }
     }
 }

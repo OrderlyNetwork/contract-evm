@@ -39,6 +39,12 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         _;
     }
 
+    /// @notice check non-zero address
+    modifier nonZeroAddress(address _address) {
+        if (_address == address(0)) revert AddressZero();
+        _;
+    }
+
     constructor() {
         _disableInitializers();
     }
@@ -49,40 +55,55 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
 
     /// @notice Set the address of operatorManager contract
     /// @param _operatorManagerAddress new operatorManagerAddress
-    function setOperatorManagerAddress(address _operatorManagerAddress) public override onlyOwner {
-        if (_operatorManagerAddress == address(0)) revert AddressZero();
+    function setOperatorManagerAddress(address _operatorManagerAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_operatorManagerAddress)
+    {
         emit ChangeOperatorManager(operatorManagerAddress, _operatorManagerAddress);
         operatorManagerAddress = _operatorManagerAddress;
     }
 
     /// @notice Set the address of crossChainManager on Ledger side
     /// @param _crossChainManagerAddress  new crossChainManagerAddress
-    function setCrossChainManager(address _crossChainManagerAddress) public override onlyOwner {
-        if (_crossChainManagerAddress == address(0)) revert AddressZero();
+    function setCrossChainManager(address _crossChainManagerAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_crossChainManagerAddress)
+    {
         emit ChangeCrossChainManager(crossChainManagerAddress, _crossChainManagerAddress);
         crossChainManagerAddress = _crossChainManagerAddress;
     }
 
     /// @notice Set the address of vaultManager contract
     /// @param _vaultManagerAddress new vaultManagerAddress
-    function setVaultManager(address _vaultManagerAddress) public override onlyOwner {
-        if (_vaultManagerAddress == address(0)) revert AddressZero();
+    function setVaultManager(address _vaultManagerAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_vaultManagerAddress)
+    {
         emit ChangeVaultManager(address(vaultManager), _vaultManagerAddress);
         vaultManager = IVaultManager(_vaultManagerAddress);
     }
 
     /// @notice Set the address of marketManager contract
     /// @param _marketManagerAddress new marketManagerAddress
-    function setMarketManager(address _marketManagerAddress) public override onlyOwner {
-        if (_marketManagerAddress == address(0)) revert AddressZero();
+    function setMarketManager(address _marketManagerAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_marketManagerAddress)
+    {
         emit ChangeMarketManager(address(marketManager), _marketManagerAddress);
         marketManager = IMarketManager(_marketManagerAddress);
     }
 
     /// @notice Set the address of feeManager contract
     /// @param _feeManagerAddress new feeManagerAddress
-    function setFeeManager(address _feeManagerAddress) public override onlyOwner {
-        if (_feeManagerAddress == address(0)) revert AddressZero();
+    function setFeeManager(address _feeManagerAddress) public override onlyOwner nonZeroAddress(_feeManagerAddress) {
         emit ChangeFeeManager(address(feeManager), _feeManagerAddress);
         feeManager = IFeeManager(_feeManagerAddress);
     }
@@ -493,6 +514,64 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             adl.sumUnitaryFundings,
             eventId
         );
+    }
+
+    function executeRebalanceBurn(RebalanceTypes.RebalanceBurnUploadData calldata data)
+        external
+        override
+        onlyOperatorManager
+    {
+        (uint32 dstDomain, address dstVaultAddress) = vaultManager.executeRebalanceBurn(data);
+        // send cc message with:
+        // rebalanceId, amount, tokenHash, srcChainId, dstChainId | dstDomain, dstVaultAddress
+        ILedgerCrossChainManager(crossChainManagerAddress).burn(
+            RebalanceTypes.RebalanceBurnCCData({
+                dstDomain: dstDomain,
+                rebalanceId: data.rebalanceId,
+                amount: data.amount,
+                tokenHash: data.tokenHash,
+                srcChainId: data.srcChainId,
+                dstChainId: data.dstChainId,
+                dstVaultAddress: dstVaultAddress
+            })
+        );
+    }
+
+    function rebalanceBurnFinish(RebalanceTypes.RebalanceBurnCCFinishData calldata data)
+        external
+        override
+        onlyCrossChainManager
+    {
+        vaultManager.rebalanceBurnFinish(data);
+    }
+
+    function executeRebalanceMint(RebalanceTypes.RebalanceMintUploadData calldata data)
+        external
+        override
+        onlyOperatorManager
+    {
+        vaultManager.executeRebalanceMint(data);
+        // send cc Message with:
+        // rebalanceId, amount, tokenHash, srcChainId, dstChainId | messageBytes, messageSignature
+        ILedgerCrossChainManager(crossChainManagerAddress).mint(
+            RebalanceTypes.RebalanceMintCCData({
+                rebalanceId: data.rebalanceId,
+                amount: data.amount,
+                tokenHash: data.tokenHash,
+                srcChainId: data.srcChainId,
+                dstChainId: data.dstChainId,
+                messageBytes: data.messageBytes,
+                messageSignature: data.messageSignature
+            })
+        );
+    }
+
+    function rebalanceMintFinish(RebalanceTypes.RebalanceMintCCFinishData calldata data)
+        external
+        override
+        onlyCrossChainManager
+    {
+        vaultManager.rebalanceMintFinish(data);
     }
 
     function _newGlobalEventId() internal returns (uint64) {

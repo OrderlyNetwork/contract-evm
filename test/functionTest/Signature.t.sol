@@ -464,4 +464,42 @@ contract SignatureTest is Test {
         bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
         assertEq(succ, true);
     }
+
+    // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/401440769/Rebalance+Test+vector#Burn
+    function test_rebalanceBurnUploadEncodeHash() public {
+        RebalanceTypes.RebalanceBurnUploadData memory data = RebalanceTypes.RebalanceBurnUploadData({
+            r: 0x80e4cf10349a922a52efb8764cd07a107dc9a68865fd2a5e4ee539199b60f217,
+            s: 0x44035df25557de70ebbf18d600052995a925096ea7e6bd217262e965f33e5565,
+            v: 0x1c,
+            rebalanceId: 123,
+            amount: 1234567,
+            tokenHash: 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa,
+            srcChainId: 43113,
+            dstChainId: 421613
+        });
+        bool succ = Signature.rebalanceBurnUploadEncodeHashVerify(data, addr);
+        assertEq(succ, true);
+    }
+
+    // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/401440769/Rebalance+Test+vector#Mint
+    function test_rebalanceMintUploadEncodeHash() public {
+        RebalanceTypes.RebalanceMintUploadData memory data = RebalanceTypes.RebalanceMintUploadData({
+            r: 0xc9dc61f67d71ffcfebacf463026957c466e452c0d1e292bfde8eadf221f3e78b,
+            s: 0x07363a680273ecf7030c8a869d23c82b5564463bb37b9340921c8b4bdc03924f,
+            v: 0x1b,
+            rebalanceId: 123,
+            amount: 1234567,
+            tokenHash: 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa,
+            srcChainId: 43113,
+            dstChainId: 421613,
+            messageBytes: abi.encodePacked(
+                hex"000000000000000300000000000000000000033800000000000000000000000012dcfd3fe2e9eac2859fd1ed86d2ab8c5a2f9352000000000000000000000000d0c3da58f55358142b8d3e06c1c30c5c6114efe8000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000fd064a18f3bf249cf1f87fc203e90d8f650f2d63000000000000000000000000dd3287043493e0a08d2b348397554096728b459c00000000000000000000000000000000000000000000000000000000004c4b40000000000000000000000000dd3287043493e0a08d2b348397554096728b459c"
+                ),
+            messageSignature: abi.encodePacked(
+                hex"b8ccbb12d7cda9ca09dabf2440b18e731475ec613689fb3ac4469d09eeef18fe0bf53b8818780a643dc9e191de321504139a748df7ea037b51094fa0a6dadda91ba8b856e7d1af15c56af225a3bc442c6f46f48ac17d46a30711027d3019f4a40e3d55a507fdf11a4265031940ff54f6971139de1622827c5fee33e4ee82d7f07d1b"
+                )
+        });
+        bool succ = Signature.rebalanceMintUploadEncodeHashVerify(data, addr);
+        assertEq(succ, true);
+    }
 }
