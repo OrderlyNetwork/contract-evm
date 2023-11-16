@@ -5,6 +5,12 @@
       "proxyAdmin": "0x93A5486E16553eb112Ec1Fa41f5B8b9E24102B6e",
       "usdc": "0xfd064A18f3BF249cf1f87FC203E90D8f650f2d63",
       "vault": "0x0C554dDb6a9010Ed1FD7e50d92559A06655dA482"
+    },
+    "opgoerli": {
+      "multiSig": "0xFae9CAF31EeD9f6480262808920dA03eb7f76E7E",
+      "proxyAdmin": "0xBfF90C01458f452225A8da88bfEB30c53a99562f",
+      "usdc": "0xe05606174bac4A6364B31bd0eCA4bf4dD368f8C6",
+      "vault": "0xe014a38501cF2B8139dED0b60Ed4FbD02C113b59"
     }
   },
   "qa": {
