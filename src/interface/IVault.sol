@@ -2,6 +2,7 @@
 pragma solidity ^0.8.18;
 
 import "./../library/types/VaultTypes.sol";
+import "./../library/types/RebalanceTypes.sol";
 
 interface IVault {
     error OnlyCrossChainManagerCanCall();
@@ -52,6 +53,10 @@ interface IVault {
     function getDepositFee(address recevier, VaultTypes.VaultDepositFE calldata data) external view returns (uint256);
     function enableDepositFee(bool _enabled) external;
     function withdraw(VaultTypes.VaultWithdraw calldata data) external;
+
+    // CCTP: functions for receive rebalance msg
+    function rebalanceMint(RebalanceTypes.RebalanceMintCCData calldata data) external;
+    function rebalanceBurn(RebalanceTypes.RebalanceBurnCCData calldata data) external;
 
     // admin call
     function setCrossChainManager(address _crossChainManagerAddress) external;
