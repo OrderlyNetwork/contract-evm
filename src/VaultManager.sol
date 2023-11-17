@@ -207,13 +207,13 @@ contract VaultManager is IVaultManager, LedgerComponent {
             burnStatus: RebalanceTypes.RebalanceStatusEnum.Pending,
             mintStatus: RebalanceTypes.RebalanceStatusEnum.None
         });
-        burnToken(data.tokenHash, data.srcChainId, data.amount);
-        uint32 dstDomain = chain2cctpDomain[data.dstChainId];
-        address dstVaultAddress = chain2VaultAddress[data.dstChainId];
+        burnToken(data.tokenHash, data.burnChainId, data.amount);
+        uint32 dstDomain = chain2cctpDomain[data.mintChainId];
+        address dstVaultAddress = chain2VaultAddress[data.mintChainId];
         // domain can be 0, so do not check domain. But vaultAddress should not be 0, check that.
-        if (dstVaultAddress == address(0)) revert RebalanceChainIdInvalid(data.dstChainId);
+        if (dstVaultAddress == address(0)) revert RebalanceChainIdInvalid(data.mintChainId);
 
-        emit RebalanceBurn(data.rebalanceId, data.amount, data.tokenHash, data.srcChainId, data.dstChainId);
+        emit RebalanceBurn(data.rebalanceId, data.amount, data.tokenHash, data.burnChainId, data.mintChainId);
         return (dstDomain, dstVaultAddress);
     }
 
@@ -224,10 +224,10 @@ contract VaultManager is IVaultManager, LedgerComponent {
             revert RebalanceIdNotMatch(data.rebalanceId, status.rebalanceId);
         }
         if (data.success) {
-            finishBurnToken(data.tokenHash, data.srcChainId, data.amount);
+            finishBurnToken(data.tokenHash, data.burnChainId, data.amount);
             status.burnStatus = RebalanceTypes.RebalanceStatusEnum.Succ;
         } else {
-            cancelBurnToken(data.tokenHash, data.srcChainId, data.amount);
+            cancelBurnToken(data.tokenHash, data.burnChainId, data.amount);
             status.burnStatus = RebalanceTypes.RebalanceStatusEnum.Fail;
         }
         emit RebalanceBurnResult(data.rebalanceId, data.success);
@@ -260,7 +260,7 @@ contract VaultManager is IVaultManager, LedgerComponent {
             revert RebalanceIdNotMatch(data.rebalanceId, status.rebalanceId);
         }
         if (data.success) {
-            finishMintToken(data.tokenHash, data.dstChainId, data.amount);
+            finishMintToken(data.tokenHash, data.mintChainId, data.amount);
             status.mintStatus = RebalanceTypes.RebalanceStatusEnum.Succ;
         } else {
             status.mintStatus = RebalanceTypes.RebalanceStatusEnum.Fail;
