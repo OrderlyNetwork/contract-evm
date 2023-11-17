@@ -523,15 +523,15 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
     {
         (uint32 dstDomain, address dstVaultAddress) = vaultManager.executeRebalanceBurn(data);
         // send cc message with:
-        // rebalanceId, amount, tokenHash, srcChainId, dstChainId | dstDomain, dstVaultAddress
+        // rebalanceId, amount, tokenHash, burnChainId, mintChainId | dstDomain, dstVaultAddress
         ILedgerCrossChainManager(crossChainManagerAddress).burn(
             RebalanceTypes.RebalanceBurnCCData({
                 dstDomain: dstDomain,
                 rebalanceId: data.rebalanceId,
                 amount: data.amount,
                 tokenHash: data.tokenHash,
-                srcChainId: data.srcChainId,
-                dstChainId: data.dstChainId,
+                burnChainId: data.burnChainId,
+                mintChainId: data.mintChainId,
                 dstVaultAddress: dstVaultAddress
             })
         );
@@ -552,14 +552,14 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
     {
         vaultManager.executeRebalanceMint(data);
         // send cc Message with:
-        // rebalanceId, amount, tokenHash, srcChainId, dstChainId | messageBytes, messageSignature
+        // rebalanceId, amount, tokenHash, burnChainId, mintChainId | messageBytes, messageSignature
         ILedgerCrossChainManager(crossChainManagerAddress).mint(
             RebalanceTypes.RebalanceMintCCData({
                 rebalanceId: data.rebalanceId,
                 amount: data.amount,
                 tokenHash: data.tokenHash,
-                srcChainId: data.srcChainId,
-                dstChainId: data.dstChainId,
+                burnChainId: data.burnChainId,
+                mintChainId: data.mintChainId,
                 messageBytes: data.messageBytes,
                 messageSignature: data.messageSignature
             })

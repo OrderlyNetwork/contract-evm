@@ -276,27 +276,27 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
             data.amount, data.dstDomain, Utils.toBytes32(data.dstVaultAddress), burnToken
         ) {
             // send succ cross-chain tx to ledger
-            // rebalanceId, amount, tokenHash, srcChainId, dstChainId | true
+            // rebalanceId, amount, tokenHash, burnChainId, mintChainId | true
             IVaultCrossChainManager(crossChainManagerAddress).burnFinish(
                 RebalanceTypes.RebalanceBurnCCFinishData({
                     rebalanceId: data.rebalanceId,
                     amount: data.amount,
                     tokenHash: data.tokenHash,
-                    srcChainId: data.srcChainId,
-                    dstChainId: data.dstChainId,
+                    burnChainId: data.burnChainId,
+                    mintChainId: data.mintChainId,
                     success: true
                 })
             );
         } catch {
             // send fail cross-chain tx to ledger
-            // rebalanceId, amount, tokenHash, srcChainId, dstChainId | false
+            // rebalanceId, amount, tokenHash, burnChainId, mintChainId | false
             IVaultCrossChainManager(crossChainManagerAddress).burnFinish(
                 RebalanceTypes.RebalanceBurnCCFinishData({
                     rebalanceId: data.rebalanceId,
                     amount: data.amount,
                     tokenHash: data.tokenHash,
-                    srcChainId: data.srcChainId,
-                    dstChainId: data.dstChainId,
+                    burnChainId: data.burnChainId,
+                    mintChainId: data.mintChainId,
                     success: false
                 })
             );
@@ -306,27 +306,27 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     function rebalanceMint(RebalanceTypes.RebalanceMintCCData calldata data) external override onlyCrossChainManager {
         try IMessageTransmitter(messageTransmitterContract).receiveMessage(data.messageBytes, data.messageSignature) {
             // send succ cross-chain tx to ledger
-            // rebalanceId, amount, tokenHash, srcChainId, dstChainId | true
+            // rebalanceId, amount, tokenHash, burnChainId, mintChainId | true
             IVaultCrossChainManager(crossChainManagerAddress).mintFinish(
                 RebalanceTypes.RebalanceMintCCFinishData({
                     rebalanceId: data.rebalanceId,
                     amount: data.amount,
                     tokenHash: data.tokenHash,
-                    srcChainId: data.srcChainId,
-                    dstChainId: data.dstChainId,
+                    burnChainId: data.burnChainId,
+                    mintChainId: data.mintChainId,
                     success: true
                 })
             );
         } catch {
             // send fail cross-chain tx to ledger
-            // rebalanceId, amount, tokenHash, srcChainId, dstChainId | false
+            // rebalanceId, amount, tokenHash, burnChainId, mintChainId | false
             IVaultCrossChainManager(crossChainManagerAddress).mintFinish(
                 RebalanceTypes.RebalanceMintCCFinishData({
                     rebalanceId: data.rebalanceId,
                     amount: data.amount,
                     tokenHash: data.tokenHash,
-                    srcChainId: data.srcChainId,
-                    dstChainId: data.dstChainId,
+                    burnChainId: data.burnChainId,
+                    mintChainId: data.mintChainId,
                     success: false
                 })
             );
