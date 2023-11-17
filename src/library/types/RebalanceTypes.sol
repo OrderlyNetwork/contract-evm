@@ -26,8 +26,8 @@ library RebalanceTypes {
         uint64 rebalanceId;
         uint128 amount;
         bytes32 tokenHash;
-        uint256 srcChainId;
-        uint256 dstChainId;
+        uint256 burnChainId;
+        uint256 mintChainId;
     }
 
     struct RebalanceBurnCCData {
@@ -35,8 +35,8 @@ library RebalanceTypes {
         uint64 rebalanceId;
         uint128 amount;
         bytes32 tokenHash;
-        uint256 srcChainId;
-        uint256 dstChainId;
+        uint256 burnChainId;
+        uint256 mintChainId;
         address dstVaultAddress;
     }
 
@@ -45,8 +45,8 @@ library RebalanceTypes {
         uint64 rebalanceId;
         uint128 amount;
         bytes32 tokenHash;
-        uint256 srcChainId;
-        uint256 dstChainId;
+        uint256 burnChainId;
+        uint256 mintChainId;
     }
 
     // RebalanceMintUploadData
@@ -57,8 +57,8 @@ library RebalanceTypes {
         uint64 rebalanceId;
         uint128 amount;
         bytes32 tokenHash;
-        uint256 srcChainId;
-        uint256 dstChainId;
+        uint256 burnChainId;
+        uint256 mintChainId;
         bytes messageBytes;
         bytes messageSignature;
     }
@@ -67,8 +67,8 @@ library RebalanceTypes {
         uint64 rebalanceId;
         uint128 amount;
         bytes32 tokenHash;
-        uint256 srcChainId;
-        uint256 dstChainId;
+        uint256 burnChainId;
+        uint256 mintChainId;
         bytes messageBytes;
         bytes messageSignature;
     }
@@ -78,7 +78,7 @@ library RebalanceTypes {
         uint64 rebalanceId;
         uint128 amount;
         bytes32 tokenHash;
-        uint256 srcChainId;
-        uint256 dstChainId;
+        uint256 burnChainId;
+        uint256 mintChainId;
     }
 }
