@@ -30,6 +30,9 @@ contract OperatorManagerDataLayout {
     address public engineMarketUploadAddress;
     address public engineRebalanceUploadAddress;
 
+    // For OperatorManagerZip contract, which calldata is zipped to reduce L1 gas cost
+    address public operatorManagerZipAddress;
+
     // The storage gap to prevent overwriting by proxy
-    uint256[41] private __gap;
+    uint256[40] private __gap;
 }

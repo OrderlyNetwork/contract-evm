@@ -15,7 +15,8 @@ import "./library/Signature.sol";
 contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManagerDataLayout {
     /// @notice Require only operator can call
     modifier onlyOperator() {
-        if (msg.sender != operatorAddress) revert OnlyOperatorCanCall();
+        // Update: operatorManagerZipAddress is also allowed to call
+        if (msg.sender != operatorAddress && msg.sender != operatorManagerZipAddress) revert OnlyOperatorCanCall();
         _;
     }
 
@@ -84,6 +85,17 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
     {
         emit ChangeEngineUpload(5, engineRebalanceUploadAddress, _engineRebalanceUploadAddress);
         engineRebalanceUploadAddress = _engineRebalanceUploadAddress;
+    }
+
+    /// @notice Set the address of OperatorManagerZip contract
+    function setOperatorManagerZipAddress(address _operatorManagerZipAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_operatorManagerZipAddress)
+    {
+        emit ChangeOperator(2, operatorManagerZipAddress, _operatorManagerZipAddress);
+        operatorManagerZipAddress = _operatorManagerZipAddress;
     }
 
     /// @notice Set the address of ledger contract
