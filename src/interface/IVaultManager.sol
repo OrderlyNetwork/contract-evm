@@ -66,10 +66,7 @@ interface IVaultManager is IVaultManagerError, ILedgerComponent {
     function getMaxWithdrawFee(bytes32 _tokenHash) external view returns (uint128);
 
     // chain2cctpDomain & chain2VaultAddress
-    function setChain2cctpDomain(uint256 chainId, uint32 cctpDomain) external;
-    function getChain2cctpDomain(uint256 chainId) external view returns (uint32);
-    function setChain2VaultAddress(uint256 chainId, address vaultAddress) external;
-    function getChain2VaultAddress(uint256 chainId) external view returns (address);
+    function setChain2cctpMeta(uint256 chainId, uint32 cctpDomain, address vaultAddress) external;
 
     // burn & mint with CCTP
     function executeRebalanceBurn(RebalanceTypes.RebalanceBurnUploadData calldata data)
