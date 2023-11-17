@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
-interface ILedgerError {
+import "./ICommonError.sol";
+
+interface ILedgerError is ICommonError {
     error OnlyOperatorCanCall();
     error OnlyCrossChainManagerCanCall();
     error TotalSettleAmountNotMatch(int128 amount);
@@ -14,5 +16,4 @@ interface ILedgerError {
     error TokenNotAllowed(bytes32 tokenHash, uint256 chainId);
     error BrokerNotAllowed();
     error SymbolNotAllowed();
-    error AddressZero();
 }
