@@ -31,7 +31,8 @@ contract UtilsTest is Test {
 
     function test_toBytes32() public {
         assertEq(
-            Utils.toBytes32(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4), hex"5B38Da6a701c568545dCfcB03FcB875f56beddC4"
+            Utils.toBytes32(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4),
+            hex"0000000000000000000000005B38Da6a701c568545dCfcB03FcB875f56beddC4"
         );
     }
 }
