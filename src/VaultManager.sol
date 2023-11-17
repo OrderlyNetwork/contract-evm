@@ -13,11 +13,11 @@ contract VaultManager is IVaultManager, LedgerComponent {
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
     // A mapping to record how much balance each token has on each chain: tokenHash => chainId => balance
-    mapping(bytes32 => mapping(uint256 => uint128)) private tokenBalanceOnchain;
+    mapping(bytes32 => mapping(uint256 => uint128)) public tokenBalanceOnchain;
     // A mapping to record how much balance each token has been frozen on each chain: tokenHash => chainId => frozenBalance
-    mapping(bytes32 => mapping(uint256 => uint128)) private tokenFrozenBalanceOnchain;
+    mapping(bytes32 => mapping(uint256 => uint128)) public tokenFrozenBalanceOnchain;
     // A mapping to record which token has been allowed on each chain: tokenHash => chainId => allowed
-    mapping(bytes32 => mapping(uint256 => bool)) private allowedChainToken; // supported token on each chain
+    mapping(bytes32 => mapping(uint256 => bool)) public allowedChainToken; // supported token on each chain
 
     // A set to record supported tokenHash
     EnumerableSet.Bytes32Set private allowedTokenSet; // supported token
@@ -26,19 +26,19 @@ contract VaultManager is IVaultManager, LedgerComponent {
     // A set to record supported symbolHash, this symbol means the trading pair, such BTC_USDC_PERP
     EnumerableSet.Bytes32Set private allowedSymbolSet; // supported symbol
 
-    mapping(bytes32 => uint128) private maxWithdrawFee; // default = unlimited
+    mapping(bytes32 => uint128) public maxWithdrawFee; // default = unlimited
 
     // A mapping to record how much balance each token has been burn-frozen on each chain: tokenHash => chainId => frozenBalance
-    mapping(bytes32 => mapping(uint256 => uint128)) private tokenBurnFrozenBalanceOnchain;
+    mapping(bytes32 => mapping(uint256 => uint128)) public tokenBurnFrozenBalanceOnchain;
     // A mapping to record CCTP domain
-    mapping(uint256 => uint32) private chain2cctpDomain;
+    mapping(uint256 => uint32) public chain2cctpDomain;
     // A mapping to record vault address
-    mapping(uint256 => address) private chain2VaultAddress;
+    mapping(uint256 => address) public chain2VaultAddress;
 
     // rebalanceStatus key is mod by this constant
     uint64 constant MAX_REBALACE_SLOT = 100;
     // for record latest rebalance status
-    mapping(uint64 => RebalanceTypes.RebalanceStatus) public rebalanceStatus;
+    mapping(uint64 => RebalanceTypes.RebalanceStatus) private rebalanceStatus;
 
     constructor() {
         _disableInitializers();
@@ -178,20 +178,11 @@ contract VaultManager is IVaultManager, LedgerComponent {
     }
 
     // chain2cctpDomain & chain2VaultAddress
-    function setChain2cctpDomain(uint256 chainId, uint32 cctpDomain) external override onlyOwner {
+
+    function setChain2cctpMeta(uint256 chainId, uint32 cctpDomain, address vaultAddress) external override onlyOwner {
+        if (vaultAddress == address(0)) revert AddressZero();
         chain2cctpDomain[chainId] = cctpDomain;
-    }
-
-    function getChain2cctpDomain(uint256 chainId) public view override returns (uint32) {
-        return chain2cctpDomain[chainId];
-    }
-
-    function setChain2VaultAddress(uint256 chainId, address vaultAddress) external override onlyOwner {
         chain2VaultAddress[chainId] = vaultAddress;
-    }
-
-    function getChain2VaultAddress(uint256 chainId) public view override returns (address) {
-        return chain2VaultAddress[chainId];
     }
 
     // burn & mint with CCTP
@@ -217,8 +208,10 @@ contract VaultManager is IVaultManager, LedgerComponent {
             mintStatus: RebalanceTypes.RebalanceStatusEnum.None
         });
         burnToken(data.tokenHash, data.srcChainId, data.amount);
-        uint32 dstDomain = getChain2cctpDomain(data.dstChainId);
-        address dstVaultAddress = getChain2VaultAddress(data.dstChainId);
+        uint32 dstDomain = chain2cctpDomain[data.dstChainId];
+        address dstVaultAddress = chain2VaultAddress[data.dstChainId];
+        // domain can be 0, so do not check domain. But vaultAddress should not be 0, check that.
+        if (dstVaultAddress == address(0)) revert RebalanceChainIdInvalid(data.dstChainId);
 
         emit RebalanceBurn(data.rebalanceId, data.amount, data.tokenHash, data.srcChainId, data.dstChainId);
         return (dstDomain, dstVaultAddress);
