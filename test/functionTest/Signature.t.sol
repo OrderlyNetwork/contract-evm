@@ -474,8 +474,8 @@ contract SignatureTest is Test {
             rebalanceId: 123,
             amount: 1234567,
             tokenHash: 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa,
-            srcChainId: 43113,
-            dstChainId: 421613
+            burnChainId: 43113,
+            mintChainId: 421613
         });
         bool succ = Signature.rebalanceBurnUploadEncodeHashVerify(data, addr);
         assertEq(succ, true);
@@ -490,8 +490,8 @@ contract SignatureTest is Test {
             rebalanceId: 123,
             amount: 1234567,
             tokenHash: 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa,
-            srcChainId: 43113,
-            dstChainId: 421613,
+            burnChainId: 43113,
+            mintChainId: 421613,
             messageBytes: abi.encodePacked(
                 hex"000000000000000300000000000000000000033800000000000000000000000012dcfd3fe2e9eac2859fd1ed86d2ab8c5a2f9352000000000000000000000000d0c3da58f55358142b8d3e06c1c30c5c6114efe8000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000fd064a18f3bf249cf1f87fc203e90d8f650f2d63000000000000000000000000dd3287043493e0a08d2b348397554096728b459c00000000000000000000000000000000000000000000000000000000004c4b40000000000000000000000000dd3287043493e0a08d2b348397554096728b459c"
                 ),

@@ -229,7 +229,7 @@ library Signature {
         returns (bool)
     {
         bytes memory encoded =
-            abi.encode(data.rebalanceId, data.amount, data.tokenHash, data.srcChainId, data.dstChainId);
+            abi.encode(data.rebalanceId, data.amount, data.tokenHash, data.burnChainId, data.mintChainId);
         bytes32 h = ECDSA.toEthSignedMessageHash(keccak256(encoded));
         return verify(h, data.r, data.s, data.v, signer);
     }
@@ -243,8 +243,8 @@ library Signature {
             data.rebalanceId,
             data.amount,
             data.tokenHash,
-            data.srcChainId,
-            data.dstChainId,
+            data.burnChainId,
+            data.mintChainId,
             data.messageBytes,
             data.messageSignature
         );
