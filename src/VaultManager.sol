@@ -212,7 +212,13 @@ contract VaultManager is IVaultManager, LedgerComponent {
         address dstVaultAddress = chain2VaultAddress[data.mintChainId];
         // domain can be 0, so do not check domain. But vaultAddress should not be 0, check that.
         if (dstVaultAddress == address(0)) revert RebalanceChainIdInvalid(data.mintChainId);
-
+        // check token is supported on both chain
+        if (!getAllowedChainToken(data.tokenHash, data.burnChainId)) {
+            revert RebalanceTokenNotSupported(data.tokenHash, data.burnChainId);
+        }
+        if (!getAllowedChainToken(data.tokenHash, data.mintChainId)) {
+            revert RebalanceTokenNotSupported(data.tokenHash, data.mintChainId);
+        }
         emit RebalanceBurn(data.rebalanceId, data.amount, data.tokenHash, data.burnChainId, data.mintChainId);
         return (dstDomain, dstVaultAddress);
     }
