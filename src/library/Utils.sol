@@ -20,7 +20,7 @@ library Utils {
         return keccak256(abi.encode(_userAddress, _brokerHash)) == _accountId;
     }
 
-    function toBytes32(address addr) public pure returns (bytes32) {
+    function toBytes32(address addr) internal pure returns (bytes32) {
         return bytes32(abi.encode(addr));
     }
 }
