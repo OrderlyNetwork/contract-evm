@@ -10,4 +10,5 @@ interface IVaultManagerError is ICommonError {
     error RebalanceAlreadySucc(); // the rebalance is already succ, so no need to upload again
     error RebalanceMintUnexpected(); // the rebalance burn state or something is wrong, so the rebalance mint is unexpected. Should never happen.
     error RebalanceChainIdInvalid(uint256 chainId);
+    error RebalanceTokenNotSupported(bytes32 tokenHash, uint256 chainId);
 }
