@@ -167,26 +167,26 @@ Still the version 2 scripts is used for deployment. The deploy command is as fol
 
 ```shell
 # arb goerli
-forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_ARBITRUMGOERLI --verifier-url https://api-goerli.arbiscan.io/api --broadcast --verify [--etherscan-api-key=ARB_ETHERSCAN_API_KEY]
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_ARBITRUMGOERLI --verifier-url https://api-goerli.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
 # arb mainnet
-forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_ARBITRUM --verifier-url https://api.arbiscan.io/api --broadcast --verify [--etherscan-api-key=ARB_ETHERSCAN_API_KEY]
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_ARBITRUM --verifier-url https://api.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
 # op goerli
-forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_OPGOERLI --verifier-url https://api-goerli-optimistic.etherscan.io/api --broadcast --verify [--etherscan-api-key=OP_ETHERSCAN_API_KEY]
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_OPGOERLI --verifier-url https://api-goerli-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
 # op mainnet
-forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_OP --verifier-url https://api-optimistic.etherscan.io/api --broadcast --verify [--etherscan-api-key=OP_ETHERSCAN_API_KEY]
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_OP --verifier-url https://api-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
 ```
 
 ### Deploy new implement command:
 
 ```shell
 # arb goerli
-forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_ARBITRUMGOERLI --verifier-url https://api-goerli.arbiscan.io/api --broadcast --verify [--etherscan-api-key=ARB_ETHERSCAN_API_KEY]
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_ARBITRUMGOERLI --verifier-url https://api-goerli.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
 # arb mainnet
-forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_ARBITRUM --verifier-url https://api.arbiscan.io/api --broadcast --verify [--etherscan-api-key=ARB_ETHERSCAN_API_KEY]
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_ARBITRUM --verifier-url https://api.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
 # op goerli
-forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_OPGOERLI --verifier-url https://api-goerli-optimistic.etherscan.io/api --broadcast --verify [--etherscan-api-key=OP_ETHERSCAN_API_KEY]
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_OPGOERLI --verifier-url https://api-goerli-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
 # op mainnet
-forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_OP --verifier-url https://api-optimistic.etherscan.io/api --broadcast --verify [--etherscan-api-key=OP_ETHERSCAN_API_KEY]
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_OP --verifier-url https://api-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
 ```
 
 ### Set Cross-Chain Manager
@@ -210,11 +210,11 @@ The upgrade model is the same as Ledger side, the upgrade command is as follows:
 
 ```shell
 # arb goerli
-forge script script/vaultV2/UpgradeVault.s.sol -f $RPC_URL_ARBITRUMGOERLI --broadcast --verifier-url https://api-goerli.arbiscan.io/api --broadcast --verify [--etherscan-api-key=ARB_ETHERSCAN_API_KEY]
+forge script script/vaultV2/UpgradeVault.s.sol -f $RPC_URL_ARBITRUMGOERLI --broadcast --verifier-url https://api-goerli.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
 # arb mainnet
-forge script script/vaultV2/UpgradeVault.s.sol -f $RPC_URL_ARBITRUM --broadcast --verifier-url https://api.arbiscan.io/api --broadcast --verify [--etherscan-api-key=ARB_ETHERSCAN_API_KEY]
+forge script script/vaultV2/UpgradeVault.s.sol -f $RPC_URL_ARBITRUM --broadcast --verifier-url https://api.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
 # op goerli
-forge script script/vaultV2/UpgradeVault.s.sol -f $RPC_URL_OPGOERLI --broadcast --verifier-url https://api-goerli-optimistic.etherscan.io/api --broadcast --verify [--etherscan-api-key=OP_ETHERSCAN_API_KEY]
+forge script script/vaultV2/UpgradeVault.s.sol -f $RPC_URL_OPGOERLI --broadcast --verifier-url https://api-goerli-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
 # op mainnet
-forge script script/vaultV2/UpgradeVault.s.sol -f $RPC_URL_OP --broadcast --verifier-url https://api-optimistic.etherscan.io/api --broadcast --verify [--etherscan-api-key=OP_ETHERSCAN_API_KEY]
+forge script script/vaultV2/UpgradeVault.s.sol -f $RPC_URL_OP --broadcast --verifier-url https://api-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
 ```
