@@ -19,6 +19,12 @@
       "proxyAdmin": "0xCaE33d6D72cd2c01b71d6Be3CE2E62b4B7297961",
       "usdc": "0xfd064A18f3BF249cf1f87FC203E90D8f650f2d63",
       "vault": "0x22b10472d3Da206aaA85D3f19E91A8da15E0F56A"
+    },
+    "opgoerli": {
+      "multiSig": "0xc1465019B3e04602a50d34A558c6630Ac50f8fbb",
+      "proxyAdmin": "0xAbCA777A0439Fc13ff7bA472d85DBb82D83E7738",
+      "usdc": "0xe05606174bac4A6364B31bd0eCA4bf4dD368f8C6",
+      "vault": "0x7fc077e4487bb03D393a0C2b87B52798E19602DB"
     }
   },
   "staging": {
