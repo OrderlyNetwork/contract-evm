@@ -140,28 +140,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
 
     /// @notice The function to receive user deposit, VaultDepositFE type is defined in VaultTypes.sol
     function deposit(VaultTypes.VaultDepositFE calldata data) public payable override whenNotPaused {
-        // require tokenAddress exist
-        if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
-        if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
-        if (!Utils.validateAccountId(data.accountId, data.brokerHash, msg.sender)) revert AccountIdInvalid();
-        // avoid reentrancy, so `transferFrom` token at the beginning
-        IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
-        // avoid non-standard ERC20 tranferFrom bug
-        tokenAddress.safeTransferFrom(msg.sender, address(this), data.tokenAmount);
-        // cross-chain tx to ledger
-        VaultTypes.VaultDeposit memory depositData = VaultTypes.VaultDeposit(
-            data.accountId, msg.sender, data.brokerHash, data.tokenHash, data.tokenAmount, _newDepositId()
-        );
-        // if deposit fee is enabled, user should pay fee in native token and msg.value will be forwarded to CrossChainManager to pay for the layerzero cross-chain fee
-        if (depositFeeEnabled) {
-            if (msg.value == 0) revert ZeroDepositFee();
-            IVaultCrossChainManager(crossChainManagerAddress).depositWithFee{value: msg.value}(depositData);
-        } else {
-            IVaultCrossChainManager(crossChainManagerAddress).deposit(depositData);
-        }
-
-        // emit deposit event
-        emit AccountDeposit(data.accountId, msg.sender, depositId, data.tokenHash, data.tokenAmount);
+        _deposit(msg.sender, data);
     }
 
     /// @notice The function to allow users to deposit on behalf of another user, the receiver is the user who will receive the deposit
@@ -171,9 +150,31 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         override
         whenNotPaused
     {
-        if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
-        if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
-        if (!Utils.validateAccountId(data.accountId, data.brokerHash, receiver)) revert AccountIdInvalid();
+        _deposit(receiver, data);
+    }
+
+    /// @notice The function to query layerzero fee from CrossChainManager contract
+    function getDepositFee(address receiver, VaultTypes.VaultDepositFE calldata data)
+        public
+        view
+        override
+        whenNotPaused
+        returns (uint256)
+    {
+        _validateDeposit(receiver, data);
+        VaultTypes.VaultDeposit memory depositData = VaultTypes.VaultDeposit(
+            data.accountId, receiver, data.brokerHash, data.tokenHash, data.tokenAmount, depositId + 1
+        );
+        return (IVaultCrossChainManager(crossChainManagerAddress).getDepositFee(depositData));
+    }
+
+    /// @notice The function to enable/disable deposit fee
+    function enableDepositFee(bool _enabled) public override onlyOwner whenNotPaused {
+        depositFeeEnabled = _enabled;
+    }
+
+    function _deposit(address receiver, VaultTypes.VaultDepositFE calldata data) internal whenNotPaused {
+        _validateDeposit(receiver, data);
         // avoid reentrancy, so `transferFrom` token at the beginning
         IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
         // avoid non-standard ERC20 tranferFrom bug
@@ -189,30 +190,15 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         } else {
             IVaultCrossChainManager(crossChainManagerAddress).deposit(depositData);
         }
-        // emit deposit event
         emit AccountDepositTo(data.accountId, receiver, depositId, data.tokenHash, data.tokenAmount);
     }
 
-    /// @notice The function to query layerzero fee from CrossChainManager contract
-    function getDepositFee(address receiver, VaultTypes.VaultDepositFE calldata data)
-        public
-        view
-        override
-        whenNotPaused
-        returns (uint256)
-    {
+    function _validateDeposit(address receiver, VaultTypes.VaultDepositFE calldata data) internal view {
+        // check if tokenHash and brokerHash are allowed
         if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
+        // check if accountId = keccak256(abi.encodePacked(brokerHash, receiver))
         if (!Utils.validateAccountId(data.accountId, data.brokerHash, receiver)) revert AccountIdInvalid();
-        VaultTypes.VaultDeposit memory depositData = VaultTypes.VaultDeposit(
-            data.accountId, receiver, data.brokerHash, data.tokenHash, data.tokenAmount, depositId + 1
-        );
-        return (IVaultCrossChainManager(crossChainManagerAddress).getDepositFee(depositData));
-    }
-
-    /// @notice The function to enable/disable deposit fee
-    function enableDepositFee(bool _enabled) public override onlyOwner whenNotPaused {
-        depositFeeEnabled = _enabled;
     }
 
     /// @notice user withdraw

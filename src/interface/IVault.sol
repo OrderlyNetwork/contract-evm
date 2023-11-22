@@ -14,6 +14,7 @@ interface IVault {
     error EnumerableSetError();
     error ZeroDepositFee();
 
+    // @deprecated
     event AccountDeposit(
         bytes32 indexed accountId,
         address indexed userAddress,
