@@ -424,6 +424,12 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             if (position.isFullSettled()) {
                 delete account.perpPositions[ledgerExecution.symbolHash];
             }
+            emit SettlementExecution(
+                ledgerExecution.symbolHash,
+                ledgerExecution.markPrice,
+                ledgerExecution.sumUnitaryFundings,
+                ledgerExecution.settledAmount
+            );
         }
         if (totalSettleAmount != settlement.settledAmount) revert TotalSettleAmountNotMatch(totalSettleAmount);
         account.lastEngineEventId = eventId;
@@ -463,8 +469,21 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             );
             _liquidatedAccountLiquidate(liquidatedAccount, liquidationTransfer);
             _insuranceLiquidateAndUpdateEventId(liquidation.insuranceAccountId, liquidationTransfer, eventId);
+            emit LiquidationTransfer(
+                liquidationTransfer.liquidationTransferId,
+                liquidationTransfer.liquidatorAccountId,
+                liquidationTransfer.symbolHash,
+                liquidationTransfer.positionQtyTransfer,
+                liquidationTransfer.costPositionTransfer,
+                liquidationTransfer.liquidatorFee,
+                liquidationTransfer.insuranceFee,
+                liquidationTransfer.liquidationFee,
+                liquidationTransfer.markPrice,
+                liquidationTransfer.sumUnitaryFundings
+            );
         }
         liquidatedAccount.lastEngineEventId = eventId;
+        // emit event
         emit LiquidationResult(
             _newGlobalEventId(),
             liquidation.liquidatedAccountId,
