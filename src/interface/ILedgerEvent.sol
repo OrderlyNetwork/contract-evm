@@ -99,6 +99,22 @@ interface ILedgerEvent {
         bool side
     );
 
+    event SettlementExecution(
+        bytes32 indexed symbolHash, uint128 markPrice, int128 sumUnitaryFundings, int128 settledAmount
+    );
+    event LiquidationTransfer(
+        uint64 indexed liquidationTransferId,
+        bytes32 indexed liquidatorAccountId,
+        bytes32 indexed symbolHash,
+        int128 positionQtyTransfer,
+        int128 costPositionTransfer,
+        int128 liquidatorFee,
+        int128 insuranceFee,
+        int128 liquidationFee,
+        uint128 markPrice,
+        int128 sumUnitaryFundings
+    );
+
     event ChangeOperatorManager(address oldAddress, address newAddress);
     event ChangeCrossChainManager(address oldAddress, address newAddress);
     event ChangeVaultManager(address oldAddress, address newAddress);
