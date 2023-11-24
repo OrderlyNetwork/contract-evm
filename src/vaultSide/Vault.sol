@@ -159,7 +159,9 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
         uint128 amount = data.tokenAmount - data.fee;
         // avoid non-standard ERC20 tranfer bug
-        tokenAddress.safeTransfer(data.receiver, amount);
+        if (data.receiver != address(0)) {
+            tokenAddress.safeTransfer(data.receiver, amount);
+        }
         // emit withdraw event
         emit AccountWithdraw(
             data.accountId,
