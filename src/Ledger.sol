@@ -39,6 +39,12 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         _;
     }
 
+    /// @notice check non-zero address
+    modifier nonZeroAddress(address _address) {
+        if (_address == address(0)) revert AddressZero();
+        _;
+    }
+
     constructor() {
         _disableInitializers();
     }
@@ -49,40 +55,55 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
 
     /// @notice Set the address of operatorManager contract
     /// @param _operatorManagerAddress new operatorManagerAddress
-    function setOperatorManagerAddress(address _operatorManagerAddress) public override onlyOwner {
-        if (_operatorManagerAddress == address(0)) revert AddressZero();
+    function setOperatorManagerAddress(address _operatorManagerAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_operatorManagerAddress)
+    {
         emit ChangeOperatorManager(operatorManagerAddress, _operatorManagerAddress);
         operatorManagerAddress = _operatorManagerAddress;
     }
 
     /// @notice Set the address of crossChainManager on Ledger side
     /// @param _crossChainManagerAddress  new crossChainManagerAddress
-    function setCrossChainManager(address _crossChainManagerAddress) public override onlyOwner {
-        if (_crossChainManagerAddress == address(0)) revert AddressZero();
+    function setCrossChainManager(address _crossChainManagerAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_crossChainManagerAddress)
+    {
         emit ChangeCrossChainManager(crossChainManagerAddress, _crossChainManagerAddress);
         crossChainManagerAddress = _crossChainManagerAddress;
     }
 
     /// @notice Set the address of vaultManager contract
     /// @param _vaultManagerAddress new vaultManagerAddress
-    function setVaultManager(address _vaultManagerAddress) public override onlyOwner {
-        if (_vaultManagerAddress == address(0)) revert AddressZero();
+    function setVaultManager(address _vaultManagerAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_vaultManagerAddress)
+    {
         emit ChangeVaultManager(address(vaultManager), _vaultManagerAddress);
         vaultManager = IVaultManager(_vaultManagerAddress);
     }
 
     /// @notice Set the address of marketManager contract
     /// @param _marketManagerAddress new marketManagerAddress
-    function setMarketManager(address _marketManagerAddress) public override onlyOwner {
-        if (_marketManagerAddress == address(0)) revert AddressZero();
+    function setMarketManager(address _marketManagerAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_marketManagerAddress)
+    {
         emit ChangeMarketManager(address(marketManager), _marketManagerAddress);
         marketManager = IMarketManager(_marketManagerAddress);
     }
 
     /// @notice Set the address of feeManager contract
     /// @param _feeManagerAddress new feeManagerAddress
-    function setFeeManager(address _feeManagerAddress) public override onlyOwner {
-        if (_feeManagerAddress == address(0)) revert AddressZero();
+    function setFeeManager(address _feeManagerAddress) public override onlyOwner nonZeroAddress(_feeManagerAddress) {
         emit ChangeFeeManager(address(feeManager), _feeManagerAddress);
         feeManager = IFeeManager(_feeManagerAddress);
     }
@@ -151,7 +172,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
                 userAddress: account.userAddress,
                 lastWithdrawNonce: account.lastWithdrawNonce,
                 lastPerpTradeId: account.lastPerpTradeId,
-                lastCefiEventId: account.lastCefiEventId,
+                lastEngineEventId: account.lastEngineEventId,
                 lastDepositEventId: account.lastDepositEventId,
                 tokenBalances: tokenInner,
                 perpPositions: symbolInner
@@ -228,6 +249,21 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         account.lastPerpTradeId = trade.tradeId;
         // update last funding update timestamp
         marketManager.setLastFundingUpdated(trade.symbolHash, trade.timestamp);
+        // emit event
+        emit ProcessValidatedFutures(
+            trade.accountId,
+            trade.symbolHash,
+            trade.feeAssetHash,
+            trade.tradeQty,
+            trade.notional,
+            trade.executedPrice,
+            trade.fee,
+            trade.sumUnitaryFundings,
+            trade.tradeId,
+            trade.matchId,
+            trade.timestamp,
+            trade.side
+        );
     }
 
     function executeWithdrawAction(EventTypes.WithdrawData calldata withdraw, uint64 eventId)
@@ -263,6 +299,9 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             } else if (maxWithdrawFee > 0 && maxWithdrawFee < withdraw.fee) {
                 // require fee not exceed maxWithdrawFee
                 state = 5;
+            } else if (withdraw.receiver == address(0)) {
+                // require receiver not zero address
+                state = 6;
             }
         }
         // check all assert, should not change any status
@@ -287,7 +326,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         // account should frozen `tokenAmount`, and vault should frozen `tokenAmount - fee`, because vault will payout `tokenAmount - fee`
         account.frozenBalance(withdraw.withdrawNonce, tokenHash, withdraw.tokenAmount);
         vaultManager.frozenBalance(tokenHash, withdraw.chainId, withdraw.tokenAmount - withdraw.fee);
-        account.lastCefiEventId = eventId;
+        account.lastEngineEventId = eventId;
         // emit withdraw approve event
         emit AccountWithdrawApprove(
             withdraw.accountId,
@@ -369,6 +408,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         for (uint256 i = 0; i < length; ++i) {
             EventTypes.SettlementExecution calldata ledgerExecution = settlementExecutions[i];
             totalSettleAmount += ledgerExecution.settledAmount;
+            if (!vaultManager.getAllowedSymbol(ledgerExecution.symbolHash)) revert SymbolNotAllowed();
             AccountTypes.PerpPosition storage position = account.perpPositions[ledgerExecution.symbolHash];
             position.chargeFundingFee(ledgerExecution.sumUnitaryFundings);
             position.costPosition += ledgerExecution.settledAmount;
@@ -384,9 +424,15 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             if (position.isFullSettled()) {
                 delete account.perpPositions[ledgerExecution.symbolHash];
             }
+            emit SettlementExecution(
+                ledgerExecution.symbolHash,
+                ledgerExecution.markPrice,
+                ledgerExecution.sumUnitaryFundings,
+                ledgerExecution.settledAmount
+            );
         }
         if (totalSettleAmount != settlement.settledAmount) revert TotalSettleAmountNotMatch(totalSettleAmount);
-        account.lastCefiEventId = eventId;
+        account.lastEngineEventId = eventId;
         // emit event
         emit SettlementResult(
             _newGlobalEventId(),
@@ -423,8 +469,21 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             );
             _liquidatedAccountLiquidate(liquidatedAccount, liquidationTransfer);
             _insuranceLiquidateAndUpdateEventId(liquidation.insuranceAccountId, liquidationTransfer, eventId);
+            emit LiquidationTransfer(
+                liquidationTransfer.liquidationTransferId,
+                liquidationTransfer.liquidatorAccountId,
+                liquidationTransfer.symbolHash,
+                liquidationTransfer.positionQtyTransfer,
+                liquidationTransfer.costPositionTransfer,
+                liquidationTransfer.liquidatorFee,
+                liquidationTransfer.insuranceFee,
+                liquidationTransfer.liquidationFee,
+                liquidationTransfer.markPrice,
+                liquidationTransfer.sumUnitaryFundings
+            );
         }
-        liquidatedAccount.lastCefiEventId = eventId;
+        liquidatedAccount.lastEngineEventId = eventId;
+        // emit event
         emit LiquidationResult(
             _newGlobalEventId(),
             liquidation.liquidatedAccountId,
@@ -436,6 +495,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
     }
 
     function executeAdl(EventTypes.Adl calldata adl, uint64 eventId) external override onlyOperatorManager {
+        if (!vaultManager.getAllowedSymbol(adl.symbolHash)) revert SymbolNotAllowed();
         AccountTypes.Account storage account = userLedger[adl.accountId];
         AccountTypes.PerpPosition storage userPosition = account.perpPositions[adl.symbolHash];
         userPosition.chargeFundingFee(adl.sumUnitaryFundings);
@@ -460,8 +520,8 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         insurancePosition.lastExecutedPrice = adl.adlPrice;
         insurancePosition.lastAdlPrice = adl.adlPrice;
 
-        account.lastCefiEventId = eventId;
-        insuranceFund.lastCefiEventId = eventId;
+        account.lastEngineEventId = eventId;
+        insuranceFund.lastEngineEventId = eventId;
         emit AdlResult(
             _newGlobalEventId(),
             adl.accountId,
@@ -473,6 +533,64 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             adl.sumUnitaryFundings,
             eventId
         );
+    }
+
+    function executeRebalanceBurn(RebalanceTypes.RebalanceBurnUploadData calldata data)
+        external
+        override
+        onlyOperatorManager
+    {
+        (uint32 dstDomain, address dstVaultAddress) = vaultManager.executeRebalanceBurn(data);
+        // send cc message with:
+        // rebalanceId, amount, tokenHash, burnChainId, mintChainId | dstDomain, dstVaultAddress
+        ILedgerCrossChainManager(crossChainManagerAddress).burn(
+            RebalanceTypes.RebalanceBurnCCData({
+                dstDomain: dstDomain,
+                rebalanceId: data.rebalanceId,
+                amount: data.amount,
+                tokenHash: data.tokenHash,
+                burnChainId: data.burnChainId,
+                mintChainId: data.mintChainId,
+                dstVaultAddress: dstVaultAddress
+            })
+        );
+    }
+
+    function rebalanceBurnFinish(RebalanceTypes.RebalanceBurnCCFinishData calldata data)
+        external
+        override
+        onlyCrossChainManager
+    {
+        vaultManager.rebalanceBurnFinish(data);
+    }
+
+    function executeRebalanceMint(RebalanceTypes.RebalanceMintUploadData calldata data)
+        external
+        override
+        onlyOperatorManager
+    {
+        vaultManager.executeRebalanceMint(data);
+        // send cc Message with:
+        // rebalanceId, amount, tokenHash, burnChainId, mintChainId | messageBytes, messageSignature
+        ILedgerCrossChainManager(crossChainManagerAddress).mint(
+            RebalanceTypes.RebalanceMintCCData({
+                rebalanceId: data.rebalanceId,
+                amount: data.amount,
+                tokenHash: data.tokenHash,
+                burnChainId: data.burnChainId,
+                mintChainId: data.mintChainId,
+                messageBytes: data.messageBytes,
+                messageSignature: data.messageSignature
+            })
+        );
+    }
+
+    function rebalanceMintFinish(RebalanceTypes.RebalanceMintCCFinishData calldata data)
+        external
+        override
+        onlyCrossChainManager
+    {
+        vaultManager.rebalanceMintFinish(data);
     }
 
     function _newGlobalEventId() internal returns (uint64) {
@@ -542,7 +660,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         liquidatorPosition.positionQty += liquidationTransfer.positionQtyTransfer;
         liquidatorPosition.costPosition += liquidationTransfer.costPositionTransfer - liquidationTransfer.liquidatorFee;
         liquidatorPosition.lastExecutedPrice = liquidationTransfer.markPrice;
-        liquidatorAccount.lastCefiEventId = eventId;
+        liquidatorAccount.lastEngineEventId = eventId;
     }
 
     function _liquidatedAccountLiquidate(
@@ -578,6 +696,6 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         insurancePosition.chargeFundingFee(liquidationTransfer.sumUnitaryFundings);
         insurancePosition.costPosition -= liquidationTransfer.insuranceFee;
         insurancePosition.lastExecutedPrice = liquidationTransfer.markPrice;
-        insuranceFund.lastCefiEventId = eventId;
+        insuranceFund.lastEngineEventId = eventId;
     }
 }

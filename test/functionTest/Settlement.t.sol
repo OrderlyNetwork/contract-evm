@@ -80,6 +80,12 @@ contract SettlementTest is Test {
         if (!vaultManager.getAllowedBroker(BROKER_HASH)) {
             vaultManager.setAllowedBroker(BROKER_HASH, true);
         }
+        if (!vaultManager.getAllowedSymbol(SYMBOL_HASH_BTC_USDC)) {
+            vaultManager.setAllowedSymbol(SYMBOL_HASH_BTC_USDC, true);
+        }
+        if (!vaultManager.getAllowedSymbol(SYMBOL_HASH_ETH_USDC)) {
+            vaultManager.setAllowedSymbol(SYMBOL_HASH_ETH_USDC, true);
+        }
         vaultManager.setAllowedChainToken(TOKEN_HASH, CHAIN_ID, true);
 
         feeManager.setLedgerAddress(address(ledger));
@@ -142,7 +148,7 @@ contract SettlementTest is Test {
         });
 
         assertEq(ledger.getUserLedgerBalance(ALICE, TOKEN_HASH), 1_000_000_000);
-        assertEq(ledger.getUserLedgerLastCefiEventId(ALICE), 1);
+        assertEq(ledger.getUserLedgerLastEngineEventId(ALICE), 1);
     }
 
     function test_one_settlement_execution() public {
@@ -175,7 +181,7 @@ contract SettlementTest is Test {
         assertEq(position.lastSumUnitaryFundings, 20_000_000_000_000_000);
         assertEq(position.positionQty, 1_000_000_000);
 
-        assertEq(ledger.getUserLedgerLastCefiEventId(BOB), 1);
+        assertEq(ledger.getUserLedgerLastEngineEventId(BOB), 1);
     }
 
     function test_two_settlement_execution() public {
@@ -220,7 +226,7 @@ contract SettlementTest is Test {
         assertEq(btcPosition.lastSumUnitaryFundings, 20_000_000_000_000_000);
         assertEq(btcPosition.positionQty, 1_000_000_000);
 
-        assertEq(ledger.getUserLedgerLastCefiEventId(BOB), 1);
+        assertEq(ledger.getUserLedgerLastEngineEventId(BOB), 1);
     }
 
     function test_insurance_transfer_above_zero() public {
@@ -253,7 +259,7 @@ contract SettlementTest is Test {
         assertEq(position.lastSumUnitaryFundings, 20_000_000_000_000_000);
         assertEq(position.positionQty, 1_000_000_000);
 
-        assertEq(ledger.getUserLedgerLastCefiEventId(BOB), 1);
+        assertEq(ledger.getUserLedgerLastEngineEventId(BOB), 1);
     }
 
     function testRevert_settled_amount_not_eq_sum() public {

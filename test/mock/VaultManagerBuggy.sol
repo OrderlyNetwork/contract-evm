@@ -63,4 +63,25 @@ contract VaultManagerBuggy is IVaultManager, LedgerComponent {
     function setMaxWithdrawFee(bytes32 _tokenHash, uint128 _maxWithdrawFee) external override {}
 
     function getMaxWithdrawFee(bytes32 _tokenHash) external view override returns (uint128) {}
+
+    function setChain2cctpMeta(uint256 chainId, uint32 cctpDomain, address vaultAddress) external override {}
+
+    function executeRebalanceBurn(RebalanceTypes.RebalanceBurnUploadData calldata data)
+        external
+        override
+        returns (uint32, address)
+    {}
+
+    function rebalanceBurnFinish(RebalanceTypes.RebalanceBurnCCFinishData calldata data) external override {}
+
+    function executeRebalanceMint(RebalanceTypes.RebalanceMintUploadData calldata data) external override {}
+
+    function rebalanceMintFinish(RebalanceTypes.RebalanceMintCCFinishData calldata data) external override {}
+
+    function getRebalanceStatus(uint64 rebalanceId)
+        external
+        view
+        override
+        returns (RebalanceTypes.RebalanceStatus memory)
+    {}
 }

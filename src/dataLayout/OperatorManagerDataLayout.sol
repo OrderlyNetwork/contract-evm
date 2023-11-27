@@ -23,12 +23,16 @@ contract OperatorManagerDataLayout {
     // The last operator interaction timestamp
     uint256 public lastOperatorInteraction;
 
-    // The signature addresses of CeFi
-    address public cefiSpotTradeUploadAddress;
-    address public cefiPerpTradeUploadAddress;
-    address public cefiEventUploadAddress;
-    address public cefiMarketUploadAddress;
+    // The signature addresses of Engine
+    address public engineSpotTradeUploadAddress;
+    address public enginePerpTradeUploadAddress;
+    address public engineEventUploadAddress;
+    address public engineMarketUploadAddress;
+    address public engineRebalanceUploadAddress;
+
+    // For OperatorManagerZip contract, which calldata is zipped to reduce L1 gas cost
+    address public operatorManagerZipAddress;
 
     // The storage gap to prevent overwriting by proxy
-    uint256[42] private __gap;
+    uint256[40] private __gap;
 }
