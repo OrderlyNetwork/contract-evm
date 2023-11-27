@@ -1,22 +1,35 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
+// Importing types
 import "../library/types/EventTypes.sol";
 import "../library/types/AccountTypes.sol";
+import "../library/types/RebalanceTypes.sol";
 
+/// @title ILedgerCrossChainManager Interface
+/// @notice Interface for managing cross-chain activities related to the ledger.
 interface ILedgerCrossChainManager {
-    // cross chain call deposit | from vault to leger
-    //function deposit(
-    //  AccountTypes.AccountDeposit memory message
-    //) external;
-
-    // cross chain withdraw approve | from leger to vault
+    /// @notice Approves a cross-chain withdrawal from the ledger to the vault.
+    /// @param data Struct containing withdrawal data.
     function withdraw(EventTypes.WithdrawData memory data) external;
-    // cross chain withdraw finish | from vault to leger
-    //function withdrawFinish(AccountTypes.AccountWithdraw memory message) external;
 
-    // admin call
-    function setLedger(address _ledger) external;
-    function setOperatorManager(address _operatorManager) external;
-    function setCrossChainRelay(address _crossChainRelay) external;
+    /// @notice Approves a cross-chain burn from the ledger to the vault.
+    /// @param data Struct containing burn data.
+    function burn(RebalanceTypes.RebalanceBurnCCData memory data) external;
+
+    /// @notice Approves a cross-chain mint from the vault to the ledger.
+    /// @param data Struct containing mint data.
+    function mint(RebalanceTypes.RebalanceMintCCData memory data) external;
+
+    /// @notice Sets the ledger address.
+    /// @param ledger Address of the new ledger.
+    function setLedger(address ledger) external;
+
+    /// @notice Sets the operator manager address.
+    /// @param operatorManager Address of the new operator manager.
+    function setOperatorManager(address operatorManager) external;
+
+    /// @notice Sets the cross-chain relay address.
+    /// @param crossChainRelay Address of the new cross-chain relay.
+    function setCrossChainRelay(address crossChainRelay) external;
 }

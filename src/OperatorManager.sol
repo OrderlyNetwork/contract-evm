@@ -10,60 +10,107 @@ import "./library/Signature.sol";
 
 /// @title Operator call this manager for update data
 /// @author Orderly_Rubick
-/// @notice OperatorManager is responsible for executing cefi tx, only called by operator.
+/// @notice OperatorManager is responsible for executing engine tx, only called by operator.
 /// @notice This contract should only have one in main-chain
 contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManagerDataLayout {
     /// @notice Require only operator can call
     modifier onlyOperator() {
-        if (msg.sender != operatorAddress) revert OnlyOperatorCanCall();
+        // Update: operatorManagerZipAddress is also allowed to call
+        if (msg.sender != operatorAddress && msg.sender != operatorManagerZipAddress) revert OnlyOperatorCanCall();
+        _;
+    }
+
+    /// @notice check non-zero address
+    modifier nonZeroAddress(address _address) {
+        if (_address == address(0)) revert AddressZero();
         _;
     }
 
     /// @notice Set the operator address
-    function setOperator(address _operatorAddress) public override onlyOwner {
-        if (_operatorAddress == address(0)) revert AddressZero();
+    function setOperator(address _operatorAddress) public override onlyOwner nonZeroAddress(_operatorAddress) {
         emit ChangeOperator(1, operatorAddress, _operatorAddress);
         operatorAddress = _operatorAddress;
     }
 
-    /// @notice Set cefi signature address for spot trade upload
-    function setCefiSpotTradeUploadAddress(address _cefiSpotTradeUploadAddress) public override onlyOwner {
-        if (_cefiSpotTradeUploadAddress == address(0)) revert AddressZero();
-        emit ChangeCefiUpload(1, cefiSpotTradeUploadAddress, _cefiSpotTradeUploadAddress);
-        cefiSpotTradeUploadAddress = _cefiSpotTradeUploadAddress;
+    /// @notice Set engine signature address for spot trade upload
+    function setEngineSpotTradeUploadAddress(address _engineSpotTradeUploadAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_engineSpotTradeUploadAddress)
+    {
+        emit ChangeEngineUpload(1, engineSpotTradeUploadAddress, _engineSpotTradeUploadAddress);
+        engineSpotTradeUploadAddress = _engineSpotTradeUploadAddress;
     }
 
-    /// @notice Set cefi signature address for perpetual future trade upload
-    function setCefiPerpTradeUploadAddress(address _cefiPerpTradeUploadAddress) public override onlyOwner {
-        if (_cefiPerpTradeUploadAddress == address(0)) revert AddressZero();
-        emit ChangeCefiUpload(2, cefiPerpTradeUploadAddress, _cefiPerpTradeUploadAddress);
-        cefiPerpTradeUploadAddress = _cefiPerpTradeUploadAddress;
+    /// @notice Set engine signature address for perpetual future trade upload
+    function setEnginePerpTradeUploadAddress(address _enginePerpTradeUploadAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_enginePerpTradeUploadAddress)
+    {
+        emit ChangeEngineUpload(2, enginePerpTradeUploadAddress, _enginePerpTradeUploadAddress);
+        enginePerpTradeUploadAddress = _enginePerpTradeUploadAddress;
     }
 
-    /// @notice Set cefi signature address for event upload
-    function setCefiEventUploadAddress(address _cefiEventUploadAddress) public override onlyOwner {
-        if (_cefiEventUploadAddress == address(0)) revert AddressZero();
-        emit ChangeCefiUpload(3, cefiEventUploadAddress, _cefiEventUploadAddress);
-        cefiEventUploadAddress = _cefiEventUploadAddress;
+    /// @notice Set engine signature address for event upload
+    function setEngineEventUploadAddress(address _engineEventUploadAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_engineEventUploadAddress)
+    {
+        emit ChangeEngineUpload(3, engineEventUploadAddress, _engineEventUploadAddress);
+        engineEventUploadAddress = _engineEventUploadAddress;
     }
 
-    /// @notice Set cefi signature address for market information upload
-    function setCefiMarketUploadAddress(address _cefiMarketUploadAddress) public override onlyOwner {
-        if (_cefiMarketUploadAddress == address(0)) revert AddressZero();
-        emit ChangeCefiUpload(4, cefiMarketUploadAddress, _cefiMarketUploadAddress);
-        cefiMarketUploadAddress = _cefiMarketUploadAddress;
+    /// @notice Set engine signature address for market information upload
+    function setEngineMarketUploadAddress(address _engineMarketUploadAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_engineMarketUploadAddress)
+    {
+        emit ChangeEngineUpload(4, engineMarketUploadAddress, _engineMarketUploadAddress);
+        engineMarketUploadAddress = _engineMarketUploadAddress;
+    }
+
+    /// @notice Set engine signature address for rebalance upload
+    function setEngineRebalanceUploadAddress(address _engineRebalanceUploadAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_engineRebalanceUploadAddress)
+    {
+        emit ChangeEngineUpload(5, engineRebalanceUploadAddress, _engineRebalanceUploadAddress);
+        engineRebalanceUploadAddress = _engineRebalanceUploadAddress;
+    }
+
+    /// @notice Set the address of OperatorManagerZip contract
+    function setOperatorManagerZipAddress(address _operatorManagerZipAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_operatorManagerZipAddress)
+    {
+        emit ChangeOperator(2, operatorManagerZipAddress, _operatorManagerZipAddress);
+        operatorManagerZipAddress = _operatorManagerZipAddress;
     }
 
     /// @notice Set the address of ledger contract
-    function setLedger(address _ledger) public override onlyOwner {
-        if (_ledger == address(0)) revert AddressZero();
+    function setLedger(address _ledger) public override onlyOwner nonZeroAddress(_ledger) {
         emit ChangeLedger(address(ledger), _ledger);
         ledger = ILedger(_ledger);
     }
 
     /// @notice Set the address of market manager contract
-    function setMarketManager(address _marketManagerAddress) public override onlyOwner {
-        if (_marketManagerAddress == address(0)) revert AddressZero();
+    function setMarketManager(address _marketManagerAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_marketManagerAddress)
+    {
         emit ChangeMarketManager(address(marketManager), _marketManagerAddress);
         marketManager = IMarketManager(_marketManagerAddress);
     }
@@ -77,12 +124,12 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         futuresUploadBatchId = 1;
         eventUploadBatchId = 1;
         lastOperatorInteraction = block.timestamp;
-        // init all cefi sign address
+        // init all engine sign address
         // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/315785217/Orderly+V2+Keys+Smart+Contract
-        cefiSpotTradeUploadAddress = 0x4348C254D611fe55Ff1c58e7E20D33C14B0021A1;
-        cefiPerpTradeUploadAddress = 0xd642D1b669b5021C057A81A917E1e831D97484AA;
-        cefiEventUploadAddress = 0x1a4C6008d576E32b0B3D84E7620B4f4623c0cB38;
-        cefiMarketUploadAddress = 0xE238F0A623D405b943B76700F85C56f0BE7d38da;
+        engineSpotTradeUploadAddress = 0x4348C254D611fe55Ff1c58e7E20D33C14B0021A1;
+        enginePerpTradeUploadAddress = 0xd642D1b669b5021C057A81A917E1e831D97484AA;
+        engineEventUploadAddress = 0x1a4C6008d576E32b0B3D84E7620B4f4623c0cB38;
+        engineMarketUploadAddress = 0xE238F0A623D405b943B76700F85C56f0BE7d38da;
         operatorAddress = 0x056e1e2bF9F5C856A5D115e2B04742AE877098ac;
     }
 
@@ -129,13 +176,29 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         _perpMarketInfo(data);
     }
 
-    /// @notice Function to verify CeFi signature for futures trade upload data, if validated then Ledger contract will be called to execute the trade process
+    // @notice Function for rebalance burn upload
+    function rebalanceBurnUpload(RebalanceTypes.RebalanceBurnUploadData calldata data) public override onlyOperator {
+        _innerPing();
+        _rebalanceBurnUpload(data);
+        // emit event
+        emit RebalanceBurnUpload(data.rebalanceId);
+    }
+
+    // @notice Function for rebalance mint upload
+    function rebalanceMintUpload(RebalanceTypes.RebalanceMintUploadData calldata data) public override onlyOperator {
+        _innerPing();
+        _rebalanceMintUpload(data);
+        // emit event
+        emit RebalanceMintUpload(data.rebalanceId);
+    }
+
+    /// @notice Function to verify Engine signature for futures trade upload data, if validated then Ledger contract will be called to execute the trade process
     function _futuresTradeUploadData(PerpTypes.FuturesTradeUploadData calldata data) internal {
         PerpTypes.FuturesTradeUpload[] calldata trades = data.trades;
         if (trades.length != data.count) revert CountNotMatch(trades.length, data.count);
 
-        // check cefi signature
-        bool succ = Signature.perpUploadEncodeHashVerify(data, cefiPerpTradeUploadAddress);
+        // check engine signature
+        bool succ = Signature.perpUploadEncodeHashVerify(data, enginePerpTradeUploadAddress);
         if (!succ) revert SignatureNotMatch();
 
         // process each validated perp trades
@@ -149,13 +212,13 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         ledger.executeProcessValidatedFutures(trade);
     }
 
-    /// @notice Function to verify CeFi signature for event upload data, if validated then Ledger contract will be called to execute the event process
+    /// @notice Function to verify Engine signature for event upload data, if validated then Ledger contract will be called to execute the event process
     function _eventUploadData(EventTypes.EventUpload calldata data) internal {
         EventTypes.EventUploadData[] calldata events = data.events; // gas saving
         if (events.length != data.count) revert CountNotMatch(events.length, data.count);
 
-        // check cefi signature
-        bool succ = Signature.eventsUploadEncodeHashVerify(data, cefiEventUploadAddress);
+        // check engine signature
+        bool succ = Signature.eventsUploadEncodeHashVerify(data, engineEventUploadAddress);
         if (!succ) revert SignatureNotMatch();
 
         // process each event upload
@@ -184,22 +247,40 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         }
     }
 
-    /// @notice Function to verify CeFi signature for perpetual future price data, if validated then MarketManager contract will be called to execute the market process
+    /// @notice Function to verify Engine signature for perpetual future price data, if validated then MarketManager contract will be called to execute the market process
     function _perpMarketInfo(MarketTypes.UploadPerpPrice calldata data) internal {
-        // check cefi signature
-        bool succ = Signature.marketUploadEncodeHashVerify(data, cefiMarketUploadAddress);
+        // check engine signature
+        bool succ = Signature.marketUploadEncodeHashVerify(data, engineMarketUploadAddress);
         if (!succ) revert SignatureNotMatch();
         // process perp market info
         marketManager.updateMarketUpload(data);
     }
 
-    /// @notice Function to verify CeFi signature for sum unitary fundings data, if validated then MarketManager contract will be called to execute the market process
+    /// @notice Function to verify Engine signature for sum unitary fundings data, if validated then MarketManager contract will be called to execute the market process
     function _perpMarketInfo(MarketTypes.UploadSumUnitaryFundings calldata data) internal {
-        // check cefi signature
-        bool succ = Signature.marketUploadEncodeHashVerify(data, cefiMarketUploadAddress);
+        // check engine signature
+        bool succ = Signature.marketUploadEncodeHashVerify(data, engineMarketUploadAddress);
         if (!succ) revert SignatureNotMatch();
         // process perp market info
         marketManager.updateMarketUpload(data);
+    }
+
+    /// @notice Cross-Contract call to Ledger contract to process each validated rebalance burn
+    function _rebalanceBurnUpload(RebalanceTypes.RebalanceBurnUploadData calldata data) internal {
+        // check engine signature
+        bool succ = Signature.rebalanceBurnUploadEncodeHashVerify(data, engineRebalanceUploadAddress);
+        if (!succ) revert SignatureNotMatch();
+        // process rebalance burn
+        ledger.executeRebalanceBurn(data);
+    }
+
+    /// @notice Cross-Contract call to Ledger contract to process each validated rebalance mint
+    function _rebalanceMintUpload(RebalanceTypes.RebalanceMintUploadData calldata data) internal {
+        // check engine signature
+        bool succ = Signature.rebalanceMintUploadEncodeHashVerify(data, engineRebalanceUploadAddress);
+        if (!succ) revert SignatureNotMatch();
+        // process rebalance mint
+        ledger.executeRebalanceMint(data);
     }
 
     /// @notice Function to update last operator interaction timestamp
@@ -208,7 +289,7 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
     }
 
     /// @notice Function to check if the last operator interaction timestamp is over 3 days
-    function checkCefiDown() public view override returns (bool) {
+    function checkEngineDown() public view override returns (bool) {
         return (lastOperatorInteraction + 3 days < block.timestamp);
     }
 }

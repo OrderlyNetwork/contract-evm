@@ -6,6 +6,8 @@ import "../types/AccountTypes.sol";
 /// @title AccountTypeHelper library
 /// @author Orderly_Rubick
 library AccountTypeHelper {
+    error FrozenBalanceInconsistent(); // should never happen
+
     // ====================
     // part1: methods for get meta data
     // ====================
@@ -20,9 +22,9 @@ library AccountTypeHelper {
         return account.brokerHash;
     }
 
-    /// @notice get last cefi event id
-    function getLastCefiEventId(AccountTypes.Account storage account) internal view returns (uint64) {
-        return account.lastCefiEventId;
+    /// @notice get last engine event id
+    function getLastEngineEventId(AccountTypes.Account storage account) internal view returns (uint64) {
+        return account.lastEngineEventId;
     }
 
     // ====================
@@ -61,7 +63,8 @@ library AccountTypeHelper {
     ) internal {
         account.balances[tokenHash] += amount;
         account.totalFrozenBalances[tokenHash] -= amount;
-        account.frozenBalances[withdrawNonce][tokenHash] = 0;
+        account.frozenBalances[withdrawNonce][tokenHash] -= amount;
+        if (account.frozenBalances[withdrawNonce][tokenHash] != 0) revert FrozenBalanceInconsistent();
     }
 
     /// @notice transfer frozen balance out
@@ -72,7 +75,8 @@ library AccountTypeHelper {
         uint128 amount
     ) internal {
         account.totalFrozenBalances[tokenHash] -= amount;
-        account.frozenBalances[withdrawNonce][tokenHash] = 0;
+        account.frozenBalances[withdrawNonce][tokenHash] -= amount;
+        if (account.frozenBalances[withdrawNonce][tokenHash] != 0) revert FrozenBalanceInconsistent();
     }
 
     function getFrozenTotalBalance(AccountTypes.Account storage account, bytes32 tokenHash)

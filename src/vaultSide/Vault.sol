@@ -9,6 +9,8 @@ import "openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeabl
 import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 import "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
+import "../interface/cctp/ITokenMessenger.sol";
+import "../interface/cctp/IMessageTransmitter.sol";
 
 /// @title Vault contract
 /// @author Orderly_Rubick
@@ -31,10 +33,24 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     EnumerableSet.Bytes32Set private allowedTokenSet;
     // A mapping from tokenHash to token contract address
     mapping(bytes32 => address) public allowedToken;
+    // A flag to indicate if deposit fee is enabled
+    bool public depositFeeEnabled;
+
+    // https://developers.circle.com/stablecoin/docs/cctp-protocol-contract#tokenmessenger-mainnet
+    // TokenMessager for CCTP
+    address public tokenMessengerContract;
+    // MessageTransmitterContract for CCTP
+    address public messageTransmitterContract;
 
     /// @notice Require only cross-chain manager can call
     modifier onlyCrossChainManager() {
         if (msg.sender != crossChainManagerAddress) revert OnlyCrossChainManagerCanCall();
+        _;
+    }
+
+    /// @notice check non-zero address
+    modifier nonZeroAddress(address _address) {
+        if (_address == address(0)) revert AddressZero();
         _;
     }
 
@@ -48,8 +64,12 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     }
 
     /// @notice Change crossChainManager address
-    function setCrossChainManager(address _crossChainManagerAddress) public override onlyOwner {
-        if (_crossChainManagerAddress == address(0)) revert AddressZero();
+    function setCrossChainManager(address _crossChainManagerAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_crossChainManagerAddress)
+    {
         emit ChangeCrossChainManager(crossChainManagerAddress, _crossChainManagerAddress);
         crossChainManagerAddress = _crossChainManagerAddress;
     }
@@ -83,8 +103,12 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
 
     /// @notice Change the token address for an allowed token, used when a new token is added
     /// @dev maybe should called `addTokenAddressAndAllow`, because it's for initializing
-    function changeTokenAddressAndAllow(bytes32 _tokenHash, address _tokenAddress) public override onlyOwner {
-        if (_tokenAddress == address(0)) revert AddressZero();
+    function changeTokenAddressAndAllow(bytes32 _tokenHash, address _tokenAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_tokenAddress)
+    {
         allowedToken[_tokenHash] = _tokenAddress;
         allowedTokenSet.add(_tokenHash); // ignore returns here
         emit ChangeTokenAddressAndAllow(_tokenHash, _tokenAddress);
@@ -115,29 +139,42 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     }
 
     /// @notice The function to receive user deposit, VaultDepositFE type is defined in VaultTypes.sol
-    function deposit(VaultTypes.VaultDepositFE calldata data) public override whenNotPaused {
-        // require tokenAddress exist
-        if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
-        if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
-        if (!Utils.validateAccountId(data.accountId, data.brokerHash, msg.sender)) revert AccountIdInvalid();
-        // avoid reentrancy, so `transferFrom` token at the beginning
-        IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
-        // avoid non-standard ERC20 tranferFrom bug
-        tokenAddress.safeTransferFrom(msg.sender, address(this), data.tokenAmount);
-        // cross-chain tx to ledger
-        VaultTypes.VaultDeposit memory depositData = VaultTypes.VaultDeposit(
-            data.accountId, msg.sender, data.brokerHash, data.tokenHash, data.tokenAmount, _newDepositId()
-        );
-        IVaultCrossChainManager(crossChainManagerAddress).deposit(depositData);
-        // emit deposit event
-        emit AccountDeposit(data.accountId, msg.sender, depositId, data.tokenHash, data.tokenAmount);
+    function deposit(VaultTypes.VaultDepositFE calldata data) public payable override whenNotPaused {
+        _deposit(msg.sender, data);
     }
 
     /// @notice The function to allow users to deposit on behalf of another user, the receiver is the user who will receive the deposit
-    function depositTo(address receiver, VaultTypes.VaultDepositFE calldata data) public whenNotPaused {
-        if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
-        if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
-        if (!Utils.validateAccountId(data.accountId, data.brokerHash, receiver)) revert AccountIdInvalid();
+    function depositTo(address receiver, VaultTypes.VaultDepositFE calldata data)
+        public
+        payable
+        override
+        whenNotPaused
+    {
+        _deposit(receiver, data);
+    }
+
+    /// @notice The function to query layerzero fee from CrossChainManager contract
+    function getDepositFee(address receiver, VaultTypes.VaultDepositFE calldata data)
+        public
+        view
+        override
+        whenNotPaused
+        returns (uint256)
+    {
+        _validateDeposit(receiver, data);
+        VaultTypes.VaultDeposit memory depositData = VaultTypes.VaultDeposit(
+            data.accountId, receiver, data.brokerHash, data.tokenHash, data.tokenAmount, depositId + 1
+        );
+        return (IVaultCrossChainManager(crossChainManagerAddress).getDepositFee(depositData));
+    }
+
+    /// @notice The function to enable/disable deposit fee
+    function enableDepositFee(bool _enabled) public override onlyOwner whenNotPaused {
+        depositFeeEnabled = _enabled;
+    }
+
+    function _deposit(address receiver, VaultTypes.VaultDepositFE calldata data) internal whenNotPaused {
+        _validateDeposit(receiver, data);
         // avoid reentrancy, so `transferFrom` token at the beginning
         IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
         // avoid non-standard ERC20 tranferFrom bug
@@ -146,9 +183,22 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         VaultTypes.VaultDeposit memory depositData = VaultTypes.VaultDeposit(
             data.accountId, receiver, data.brokerHash, data.tokenHash, data.tokenAmount, _newDepositId()
         );
-        IVaultCrossChainManager(crossChainManagerAddress).deposit(depositData);
-        // emit deposit event
+        // if deposit fee is enabled, user should pay fee in native token and the msg.value will be forwarded to CrossChainManager to pay for the layerzero cross-chain fee
+        if (depositFeeEnabled) {
+            if (msg.value == 0) revert ZeroDepositFee();
+            IVaultCrossChainManager(crossChainManagerAddress).depositWithFee{value: msg.value}(depositData);
+        } else {
+            IVaultCrossChainManager(crossChainManagerAddress).deposit(depositData);
+        }
         emit AccountDepositTo(data.accountId, receiver, depositId, data.tokenHash, data.tokenAmount);
+    }
+
+    function _validateDeposit(address receiver, VaultTypes.VaultDepositFE calldata data) internal view {
+        // check if tokenHash and brokerHash are allowed
+        if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
+        if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
+        // check if accountId = keccak256(abi.encodePacked(brokerHash, receiver))
+        if (!Utils.validateAccountId(data.accountId, data.brokerHash, receiver)) revert AccountIdInvalid();
     }
 
     /// @notice user withdraw
@@ -158,8 +208,12 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         // avoid reentrancy, so `transfer` token at the end
         IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
         uint128 amount = data.tokenAmount - data.fee;
-        // avoid non-standard ERC20 tranfer bug
-        tokenAddress.safeTransfer(data.receiver, amount);
+        // avoid revert if transfer to zero address.
+        /// @notice This check condition should always be true because cc promise that
+        if (data.receiver != address(0)) {
+            // avoid non-standard ERC20 tranfer bug
+            tokenAddress.safeTransfer(data.receiver, amount);
+        }
         // emit withdraw event
         emit AccountWithdraw(
             data.accountId,
@@ -184,5 +238,88 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
 
     function emergencyUnpause() public whenPaused onlyOwner {
         _unpause();
+    }
+
+    function setTokenMessengerContract(address _tokenMessengerContract)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_tokenMessengerContract)
+    {
+        tokenMessengerContract = _tokenMessengerContract;
+    }
+
+    function setRebalanceMessengerContract(address _rebalanceMessengerContract)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_rebalanceMessengerContract)
+    {
+        messageTransmitterContract = _rebalanceMessengerContract;
+    }
+
+    function rebalanceBurn(RebalanceTypes.RebalanceBurnCCData calldata data) external override onlyCrossChainManager {
+        address burnToken = allowedToken[data.tokenHash];
+        if (burnToken == address(0)) revert AddressZero();
+        IERC20(burnToken).approve(tokenMessengerContract, data.amount);
+        try ITokenMessenger(tokenMessengerContract).depositForBurn(
+            data.amount, data.dstDomain, Utils.toBytes32(data.dstVaultAddress), burnToken
+        ) {
+            // send succ cross-chain tx to ledger
+            // rebalanceId, amount, tokenHash, burnChainId, mintChainId | true
+            IVaultCrossChainManager(crossChainManagerAddress).burnFinish(
+                RebalanceTypes.RebalanceBurnCCFinishData({
+                    rebalanceId: data.rebalanceId,
+                    amount: data.amount,
+                    tokenHash: data.tokenHash,
+                    burnChainId: data.burnChainId,
+                    mintChainId: data.mintChainId,
+                    success: true
+                })
+            );
+        } catch {
+            // send fail cross-chain tx to ledger
+            // rebalanceId, amount, tokenHash, burnChainId, mintChainId | false
+            IVaultCrossChainManager(crossChainManagerAddress).burnFinish(
+                RebalanceTypes.RebalanceBurnCCFinishData({
+                    rebalanceId: data.rebalanceId,
+                    amount: data.amount,
+                    tokenHash: data.tokenHash,
+                    burnChainId: data.burnChainId,
+                    mintChainId: data.mintChainId,
+                    success: false
+                })
+            );
+        }
+    }
+
+    function rebalanceMint(RebalanceTypes.RebalanceMintCCData calldata data) external override onlyCrossChainManager {
+        try IMessageTransmitter(messageTransmitterContract).receiveMessage(data.messageBytes, data.messageSignature) {
+            // send succ cross-chain tx to ledger
+            // rebalanceId, amount, tokenHash, burnChainId, mintChainId | true
+            IVaultCrossChainManager(crossChainManagerAddress).mintFinish(
+                RebalanceTypes.RebalanceMintCCFinishData({
+                    rebalanceId: data.rebalanceId,
+                    amount: data.amount,
+                    tokenHash: data.tokenHash,
+                    burnChainId: data.burnChainId,
+                    mintChainId: data.mintChainId,
+                    success: true
+                })
+            );
+        } catch {
+            // send fail cross-chain tx to ledger
+            // rebalanceId, amount, tokenHash, burnChainId, mintChainId | false
+            IVaultCrossChainManager(crossChainManagerAddress).mintFinish(
+                RebalanceTypes.RebalanceMintCCFinishData({
+                    rebalanceId: data.rebalanceId,
+                    amount: data.amount,
+                    tokenHash: data.tokenHash,
+                    burnChainId: data.burnChainId,
+                    mintChainId: data.mintChainId,
+                    success: false
+                })
+            );
+        }
     }
 }

@@ -3,31 +3,43 @@
     "arbitrumgoerli": {
       "multiSig": "0xFae9CAF31EeD9f6480262808920dA03eb7f76E7E",
       "proxyAdmin": "0x93A5486E16553eb112Ec1Fa41f5B8b9E24102B6e",
-      "tUSDC": "0x004d88aa993fd2100d6c8beb6cdb6bc04f565b44",
+      "usdc": "0xfd064A18f3BF249cf1f87FC203E90D8f650f2d63",
       "vault": "0x0C554dDb6a9010Ed1FD7e50d92559A06655dA482"
+    },
+    "opgoerli": {
+      "multiSig": "0xFae9CAF31EeD9f6480262808920dA03eb7f76E7E",
+      "proxyAdmin": "0xBfF90C01458f452225A8da88bfEB30c53a99562f",
+      "usdc": "0xe05606174bac4A6364B31bd0eCA4bf4dD368f8C6",
+      "vault": "0xe014a38501cF2B8139dED0b60Ed4FbD02C113b59"
     }
   },
   "qa": {
     "arbitrumgoerli": {
-      "multiSig": "0xFae9CAF31EeD9f6480262808920dA03eb7f76E7E",
+      "multiSig": "0xc1465019B3e04602a50d34A558c6630Ac50f8fbb",
       "proxyAdmin": "0xCaE33d6D72cd2c01b71d6Be3CE2E62b4B7297961",
-      "tUSDC": "0x6aAd876244E7A1Ad44Ec4824Ce813729E5B6C291",
+      "usdc": "0xfd064A18f3BF249cf1f87FC203E90D8f650f2d63",
       "vault": "0x22b10472d3Da206aaA85D3f19E91A8da15E0F56A"
+    },
+    "opgoerli": {
+      "multiSig": "0xc1465019B3e04602a50d34A558c6630Ac50f8fbb",
+      "proxyAdmin": "0xAbCA777A0439Fc13ff7bA472d85DBb82D83E7738",
+      "usdc": "0xe05606174bac4A6364B31bd0eCA4bf4dD368f8C6",
+      "vault": "0x7fc077e4487bb03D393a0C2b87B52798E19602DB"
     }
   },
   "staging": {
     "arbitrumgoerli": {
       "multiSig": "0x7D1e7BeAd9fBb72e35Dc8E6d1966c2e57DbDA3F0",
       "proxyAdmin": "0x3ec2259a0e208867CD812b3b1e7A980Bab5FB38D",
-      "tUSDC": "0x6aAd876244E7A1Ad44Ec4824Ce813729E5B6C291",
+      "usdc": "0xfd064A18f3BF249cf1f87FC203E90D8f650f2d63",
       "vault": "0xd64AeB281f3E8cd70e668b6cb24De7e532dC214D"
     }
   },
   "mainnet": {
-    "arbitrumgoerli": {
-      "multiSig": "0x7D1e7BeAd9fBb72e35Dc8E6d1966c2e57DbDA3F0",
+    "arbitrum": {
+      "multiSig": "0x4e834Ca9310d7710a409638A7aa70CB22F141Df3",
       "proxyAdmin": "0xA2eA0a58b083c492AdC91A687FAc8B53AdB7c0Fd",
-      "tUSDC": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+      "usdc": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
       "vault": "0x816f722424B49Cf1275cc86DA9840Fbd5a6167e9"
     }
   }

@@ -34,8 +34,8 @@ library AccountTypes {
         uint64 lastWithdrawNonce;
         // last perp trade id
         uint64 lastPerpTradeId;
-        // last cefi event id
-        uint64 lastCefiEventId;
+        // last engine event id
+        uint64 lastEngineEventId;
         // last deposit event id
         uint64 lastDepositEventId;
     }
@@ -92,7 +92,7 @@ library AccountTypes {
         address userAddress;
         uint64 lastWithdrawNonce;
         uint64 lastPerpTradeId;
-        uint64 lastCefiEventId;
+        uint64 lastEngineEventId;
         uint64 lastDepositEventId;
         AccountTokenBalances[] tokenBalances;
         AccountPerpPositions[] perpPositions;

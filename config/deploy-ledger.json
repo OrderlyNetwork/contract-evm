@@ -16,7 +16,7 @@
       "feeManager": "0x8A929891DE9a648B6A3D05d21362418f756cf728",
       "ledger": "0x50F59504D3623Ad99302835da367676d1f7E3D44",
       "marketManager": "0x1AFE8286eD1b365671870A735f7deb4dcc9DB16D",
-      "multiSig": "0xFae9CAF31EeD9f6480262808920dA03eb7f76E7E",
+      "multiSig": "0xc1465019B3e04602a50d34A558c6630Ac50f8fbb",
       "operatorAddress": "0x314d042d164BbEF71924f19A3913F65C0aCFb94E",
       "operatorManager": "0x7Cd1FBdA284997Be499D3294C9a50352Dd682155",
       "proxyAdmin": "0x0EaC556c0C2321BA25b9DC01e4e3c95aD5CDCd2f",
@@ -36,11 +36,11 @@
     }
   },
   "mainnet": {
-    "orderlyop": {
+    "orderlymain": {
       "feeManager": "0x343Ca787e960cB2cCA0ce8cfB2f38c3739E28a1E",
       "ledger": "0x6F7a338F2aA472838dEFD3283eB360d4Dff5D203",
       "marketManager": "0x9281CBc1e37d3bcDB8BAddFa4302B6eb5DAd2672",
-      "multiSig": "0x7D1e7BeAd9fBb72e35Dc8E6d1966c2e57DbDA3F0",
+      "multiSig": "0x4e834Ca9310d7710a409638A7aa70CB22F141Df3",
       "operatorAddress": "0x056e1e2bF9F5C856A5D115e2B04742AE877098ac",
       "operatorManager": "0x7CC5B6433eb33164c88F6512f56C566CFC3420BF",
       "proxyAdmin": "0xA2eA0a58b083c492AdC91A687FAc8B53AdB7c0Fd",
