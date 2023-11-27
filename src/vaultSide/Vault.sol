@@ -185,4 +185,28 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     function emergencyUnpause() public whenPaused onlyOwner {
         _unpause();
     }
+
+    function hotfix() external onlyOwner {
+        VaultTypes.VaultWithdraw memory data = VaultTypes.VaultWithdraw({
+            accountId: 0x32ff7ea4f2eaa3d60da0d6985505e7bb40af02f1e0ca9c926c60643c6fc21d23,
+            brokerHash: 0x6ca2f644ef7bd6d75953318c7f2580014941e753b3c6d54da56b3bf75dd14dfc,
+            tokenHash: 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa,
+            tokenAmount: 10000000,
+            fee: 100000,
+            sender: 0x6CBe925762348413fc2cfDD7bC9A8D04CB8E249e,
+            receiver: 0x0000000000000000000000000000000000000000,
+            withdrawNonce: 3
+        });
+        IVaultCrossChainManager(crossChainManagerAddress).withdraw(data);
+        emit AccountWithdraw(
+            data.accountId,
+            data.withdrawNonce,
+            data.brokerHash,
+            data.sender,
+            data.receiver,
+            data.tokenHash,
+            data.tokenAmount,
+            data.fee
+        );
+    }
 }
