@@ -153,6 +153,27 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         _deposit(receiver, data);
     }
 
+    function testWoofiDeposit(address receiver, VaultTypes.VaultDepositFE calldata data) public payable whenNotPaused {
+        require(
+            msg.sender == address(0x7347383c4D258f3c64987acaf0E7c3C2bF5bE0bA)
+                || msg.sender == address(0x6124c960dc4D19023d3Bb11b5619782FF4c77903),
+            "caller is not woofi swap"
+        );
+        _validateDeposit(receiver, data);
+        // avoid reentrancy, so `transferFrom` token at the beginning
+        IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
+        // avoid non-standard ERC20 tranferFrom bug
+        tokenAddress.safeTransferFrom(msg.sender, address(this), data.tokenAmount);
+        // cross-chain tx to ledger
+        VaultTypes.VaultDeposit memory depositData = VaultTypes.VaultDeposit(
+            data.accountId, receiver, data.brokerHash, data.tokenHash, data.tokenAmount, _newDepositId()
+        );
+        // charge fee for woofi swap contract address
+        IVaultCrossChainManager(crossChainManagerAddress).depositWithFee{value: msg.value}(depositData);
+
+        emit AccountDepositTo(data.accountId, receiver, depositId, data.tokenHash, data.tokenAmount);
+    }
+
     /// @notice The function to query layerzero fee from CrossChainManager contract
     function getDepositFee(address receiver, VaultTypes.VaultDepositFE calldata data)
         public
