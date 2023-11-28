@@ -64,8 +64,8 @@ contract OperatorManagerTest is Test {
         operatorManager.operatorPing();
     }
 
-    function test_cefiNotDown() public {
-        bool isDown = operatorManager.checkCefiDown();
+    function test_engineNotDown() public {
+        bool isDown = operatorManager.checkEngineDown();
         assertEq(isDown, false);
     }
 }
