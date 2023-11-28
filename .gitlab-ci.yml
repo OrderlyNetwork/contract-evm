@@ -1,0 +1,16 @@
+stages:
+  - test
+
+test-job:
+  stage: test
+  image: ghcr.io/foundry-rs/foundry
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  before_script:
+    - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/".insteadOf "git@gitlab.com:"
+  script:
+    - echo "Install build essentials"
+    - apk add --no-cache openssh
+    - echo "Build with commit $CI_COMMIT_BRANCH!"
+    - forge install
+    - forge test

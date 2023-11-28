@@ -18,7 +18,7 @@ struct LedgerDepolyData {
 struct VaultDepolyData {
     address multiSig;
     address proxyAdmin;
-    address tUSDC;
+    address usdc;
     address vault;
 }
 

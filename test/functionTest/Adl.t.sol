@@ -81,6 +81,12 @@ contract AdlTest is Test {
         if (!vaultManager.getAllowedBroker(BROKER_HASH)) {
             vaultManager.setAllowedBroker(BROKER_HASH, true);
         }
+        if (!vaultManager.getAllowedSymbol(SYMBOL_HASH_BTC_USDC)) {
+            vaultManager.setAllowedSymbol(SYMBOL_HASH_BTC_USDC, true);
+        }
+        if (!vaultManager.getAllowedSymbol(SYMBOL_HASH_ETH_USDC)) {
+            vaultManager.setAllowedSymbol(SYMBOL_HASH_ETH_USDC, true);
+        }
         vaultManager.setAllowedChainToken(TOKEN_HASH, CHAIN_ID, true);
 
         feeManager.setLedgerAddress(address(ledger));
@@ -212,7 +218,7 @@ contract AdlTest is Test {
 
         assertEq(bobEthPosition.positionQty, 0);
         assertEq(bobEthPosition.averageEntryPrice, 0);
-        assertEq(ledger.getUserLedgerLastCefiEventId(BOB), 1);
+        assertEq(ledger.getUserLedgerLastEngineEventId(BOB), 1);
 
         assertEq(insuranceFundEthPosition.costPosition, 200_000_000);
         assertEq(insuranceFundEthPosition.lastExecutedPrice, 30_000_000);
@@ -221,7 +227,7 @@ contract AdlTest is Test {
 
         assertEq(insuranceFundEthPosition.positionQty, 1_000_000_000);
         // assertEq(insuranceFundEthPosition.averageEntryPrice, 0);
-        assertEq(ledger.getUserLedgerLastCefiEventId(INSURANCE_FUND), 1);
+        assertEq(ledger.getUserLedgerLastEngineEventId(INSURANCE_FUND), 1);
     }
 
     function test_insuranceFundAdlNegativePosition() public {
@@ -251,7 +257,7 @@ contract AdlTest is Test {
 
         assertEq(bobBtcPosition.positionQty, 0);
         assertEq(bobBtcPosition.averageEntryPrice, 0);
-        assertEq(ledger.getUserLedgerLastCefiEventId(BOB), 1);
+        assertEq(ledger.getUserLedgerLastEngineEventId(BOB), 1);
 
         assertEq(insuranceFundBtcPosition.costPosition, 0);
         assertEq(insuranceFundBtcPosition.lastExecutedPrice, 40_000_000);
@@ -260,7 +266,7 @@ contract AdlTest is Test {
 
         assertEq(insuranceFundBtcPosition.positionQty, -1_000_000_000);
         // assertEq(insuranceFundEthPosition.averageEntryPrice, 0);
-        assertEq(ledger.getUserLedgerLastCefiEventId(INSURANCE_FUND), 1);
+        assertEq(ledger.getUserLedgerLastEngineEventId(INSURANCE_FUND), 1);
     }
 
     function testRevert_insuranceFundAdlLessPosition() public {

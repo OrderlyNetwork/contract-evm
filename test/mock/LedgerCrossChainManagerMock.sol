@@ -3,16 +3,10 @@ pragma solidity ^0.8.18;
 
 import "../../src/interface/ILedgerCrossChainManager.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
-import "crosschain/interface/IOrderlyCrossChain.sol";
 import "../../src/interface/ILedger.sol";
 
-contract LedgerCrossChainManagerMock is IOrderlyCrossChainReceiver, ILedgerCrossChainManager, Ownable {
+contract LedgerCrossChainManagerMock is ILedgerCrossChainManager, Ownable {
     ILedger public ledger;
-
-    function receiveMessage(OrderlyCrossChainMessage.MessageV1 memory message, bytes memory payload)
-        external
-        override
-    {}
 
     function withdraw(EventTypes.WithdrawData calldata data) external override {}
 
@@ -27,4 +21,7 @@ contract LedgerCrossChainManagerMock is IOrderlyCrossChainReceiver, ILedgerCross
     function withdrawFinishMock(AccountTypes.AccountWithdraw memory message) external {
         ledger.accountWithDrawFinish(message);
     }
+
+    function burn(RebalanceTypes.RebalanceBurnCCData memory data) external override {}
+    function mint(RebalanceTypes.RebalanceMintCCData memory data) external override {}
 }

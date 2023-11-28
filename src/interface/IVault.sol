@@ -2,6 +2,7 @@
 pragma solidity ^0.8.18;
 
 import "./../library/types/VaultTypes.sol";
+import "./../library/types/RebalanceTypes.sol";
 
 interface IVault {
     error OnlyCrossChainManagerCanCall();
@@ -11,7 +12,9 @@ interface IVault {
     error BalanceNotEnough(uint256 balance, uint128 amount);
     error AddressZero();
     error EnumerableSetError();
+    error ZeroDepositFee();
 
+    // @deprecated
     event AccountDeposit(
         bytes32 indexed accountId,
         address indexed userAddress,
@@ -46,9 +49,17 @@ interface IVault {
 
     function initialize() external;
 
-    function deposit(VaultTypes.VaultDepositFE calldata data) external;
-    function depositTo(address receiver, VaultTypes.VaultDepositFE calldata data) external;
+    function deposit(VaultTypes.VaultDepositFE calldata data) external payable;
+    function depositTo(address receiver, VaultTypes.VaultDepositFE calldata data) external payable;
+    function getDepositFee(address recevier, VaultTypes.VaultDepositFE calldata data) external view returns (uint256);
+    function enableDepositFee(bool _enabled) external;
     function withdraw(VaultTypes.VaultWithdraw calldata data) external;
+
+    // CCTP: functions for receive rebalance msg
+    function rebalanceMint(RebalanceTypes.RebalanceMintCCData calldata data) external;
+    function rebalanceBurn(RebalanceTypes.RebalanceBurnCCData calldata data) external;
+    function setTokenMessengerContract(address _tokenMessengerContract) external;
+    function setRebalanceMessengerContract(address _rebalanceMessengerContract) external;
 
     // admin call
     function setCrossChainManager(address _crossChainManagerAddress) external;
