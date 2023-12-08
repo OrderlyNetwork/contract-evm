@@ -20,7 +20,7 @@ contract DeployVault is BaseScript, ConfigHelper {
         string memory env = envs.env;
         string memory network = envs.vaultNetwork;
 
-        VaultDepolyData memory config = getVaultDeployData(env, network);
+        VaultDeployData memory config = getVaultDeployData(env, network);
         address usdcAddress = config.usdc;
         console.log("usdcAddress: ", usdcAddress);
 
