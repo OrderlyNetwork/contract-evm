@@ -157,7 +157,7 @@ forge script script/ledgerV2/DeployNewVaultManager.s.sol -f $RPC_URL_ORDERLYMAIN
 forge script script/ledgerV2/DeployNewMarketManager.s.sol -f $RPC_URL_ORDERLYMAIN --broadcast --verifier-url https://explorer.orderly.network/api\? --verifier blockscout --verify
 ```
 
-## Vault deploy
+## Vault scripts
 
 The contracts on Vault side is deployed on EVM-compatiable chains, such as Arbitrum-Goerli, so the rpc is set as RPC_URL_ARBITRUMGOERLI.
 
@@ -217,4 +217,54 @@ forge script script/vaultV2/UpgradeVault.s.sol -f $RPC_URL_ARBITRUM --broadcast 
 forge script script/vaultV2/UpgradeVault.s.sol -f $RPC_URL_OPGOERLI --broadcast --verifier-url https://api-goerli-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
 # op mainnet
 forge script script/vaultV2/UpgradeVault.s.sol -f $RPC_URL_OP --broadcast --verifier-url https://api-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
+```
+
+
+## Zip scripts
+
+### Deploy command:
+
+The Zip contract on Ledger side is deployed on Orderly L2 based OP Stack, so the rpc is set as RPC_URL_ORDERLYOP. The deploy command is as follows:
+
+```shell
+# orderly testnet
+forge script script/zip/DeployProxyZip.s.sol -f $RPC_URL_ORDERLYOP --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
+# orderly mainnet
+forge script script/zip/DeployProxyZip.s.sol -f $RPC_URL_ORDERLYMAIN --broadcast --verifier-url https://explorer.orderly.network/api\? --verifier blockscout --verify
+```
+
+After executing the command, the deployed contracts are Zip proxy contract, Zip implementation contract and the ProxyAdmin contract.
+
+The addresses of the deployed contracts will be listed inside `config` folder, named as `deploy-zip.json` file.
+
+### Set OpearatorManager and Operator Address
+
+Once the contracts are deployed, the Operator EOA address and OperatorManager contract should be set for Zip contract. The command to set is as follows:
+
+```shell
+# orderly testnet
+forge script script/zip/SetOperatorAddress.s.sol -f $RPC_URL_ORDERLYOP --broadcast
+# orderly mainnet
+forge script script/zip/SetOperatorAddress.s.sol -f $RPC_URL_ORDERLYMAIN --broadcast
+```
+
+### Deploy new implement command:
+
+```shell
+# orderly testnet
+forge script script/zip/DeployNewZip.s.sol -f $RPC_URL_ORDERLYOP --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
+# orderly mainnet
+forge script script/zip/DeployNewZip.s.sol -f $RPC_URL_ORDERLYMAIN --broadcast --verifier-url https://explorer.orderly.network/api\? --verifier blockscout --verify
+```
+
+### Upgrade command:
+
+Transparent upgrade pattern is used for Zip contract, to upgrade a specific contract, the corresponding upgrade script should be executed. The upgrade command is as follows:
+
+```shell
+# orderly testnet
+forge script script/zip/UpgradeZip.s.sol -f $RPC_URL_ORDERLYOP --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
+
+# orderly mainnet
+forge script script/zip/UpgradeZip.s.sol -f $RPC_URL_ORDERLYMAIN --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
 ```

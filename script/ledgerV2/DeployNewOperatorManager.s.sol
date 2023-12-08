@@ -15,7 +15,7 @@ contract DeployNewOperatorManager is BaseScript, ConfigHelper {
         string memory env = envs.env;
         string memory network = envs.ledgerNetwork;
 
-        LedgerDepolyData memory config = getLedgerDeployData(env, network);
+        LedgerDeployData memory config = getLedgerDeployData(env, network);
         address operatorManagerAddress = config.operatorManager;
         console.log("operatorManagerAddress: ", operatorManagerAddress);
 

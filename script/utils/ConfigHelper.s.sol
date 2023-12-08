@@ -4,7 +4,8 @@ pragma solidity ^0.8.18;
 import "forge-std/Script.sol";
 import "./Utils.sol";
 
-struct LedgerDepolyData {
+// field name must be in alphabetical order and the same as json key
+struct LedgerDeployData {
     address feeManager;
     address ledger;
     address marketManager;
@@ -15,7 +16,11 @@ struct LedgerDepolyData {
     address vaultManager;
 }
 
-struct VaultDepolyData {
+struct ZipDeployData {
+    address zip;
+}
+
+struct VaultDeployData {
     address multiSig;
     address proxyAdmin;
     address usdc;
@@ -34,6 +39,7 @@ contract ConfigHelper is Script {
     string constant ENVS_FILE = "./config/tasks/ledger-vault-envs.json";
     string constant DEPLOY_LEDGER_SAVE_FILE = "./config/deploy-ledger.json";
     string constant DEPLOY_VAULT_SAVE_FILE = "./config/deploy-vault.json";
+    string constant DEPLOY_ZIP_SAVE_FILE = "./config/deploy-zip.json";
 
     function getConfigFileData(string memory envVar) internal returns (bytes memory) {
         string memory configFile = vm.envString(envVar);
@@ -75,21 +81,31 @@ contract ConfigHelper is Script {
         return envs;
     }
 
-    function getLedgerDeployData(string memory env, string memory network) internal returns (LedgerDepolyData memory) {
+    function getLedgerDeployData(string memory env, string memory network) internal returns (LedgerDeployData memory) {
         string memory deployData = vm.readFile(DEPLOY_LEDGER_SAVE_FILE);
         string memory networkKey = env.formJsonKey().concat(network.formJsonKey());
         bytes memory networkEncodeData = vm.parseJson(deployData, networkKey);
-        LedgerDepolyData memory networkRelayData = abi.decode(networkEncodeData, (LedgerDepolyData));
+        LedgerDeployData memory networkRelayData = abi.decode(networkEncodeData, (LedgerDeployData));
         // close file
         vm.closeFile(DEPLOY_LEDGER_SAVE_FILE);
         return networkRelayData;
     }
 
-    function getVaultDeployData(string memory env, string memory network) internal returns (VaultDepolyData memory) {
+    function getZipDeployData(string memory env, string memory network) internal returns (ZipDeployData memory) {
+        string memory deployData = vm.readFile(DEPLOY_ZIP_SAVE_FILE);
+        string memory networkKey = env.formJsonKey().concat(network.formJsonKey());
+        bytes memory networkEncodeData = vm.parseJson(deployData, networkKey);
+        ZipDeployData memory networkRelayData = abi.decode(networkEncodeData, (ZipDeployData));
+        // close file
+        vm.closeFile(DEPLOY_ZIP_SAVE_FILE);
+        return networkRelayData;
+    }
+
+    function getVaultDeployData(string memory env, string memory network) internal returns (VaultDeployData memory) {
         string memory deployData = vm.readFile(DEPLOY_VAULT_SAVE_FILE);
         string memory networkKey = env.formJsonKey().concat(network.formJsonKey());
         bytes memory networkEncodeData = vm.parseJson(deployData, networkKey);
-        VaultDepolyData memory networkRelayData = abi.decode(networkEncodeData, (VaultDepolyData));
+        VaultDeployData memory networkRelayData = abi.decode(networkEncodeData, (VaultDeployData));
         // close file
         vm.closeFile(DEPLOY_VAULT_SAVE_FILE);
         return networkRelayData;
@@ -105,6 +121,12 @@ contract ConfigHelper is Script {
         internal
     {
         writeDeployData(env, network, key, value, DEPLOY_VAULT_SAVE_FILE);
+    }
+
+    function writeZipDeployData(string memory env, string memory network, string memory key, string memory value)
+        internal
+    {
+        writeDeployData(env, network, key, value, DEPLOY_ZIP_SAVE_FILE);
     }
 
     function writeDeployData(

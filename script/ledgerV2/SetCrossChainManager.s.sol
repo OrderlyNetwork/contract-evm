@@ -14,7 +14,7 @@ contract SetCrossChainManager is BaseScript, ConfigHelper {
         string memory env = envs.env;
         string memory network = envs.ledgerNetwork;
 
-        LedgerDepolyData memory config = getLedgerDeployData(env, network);
+        LedgerDeployData memory config = getLedgerDeployData(env, network);
         address adminAddress = config.proxyAdmin;
         address ledgerAddress = config.ledger;
         console.log("adminAddress: ", adminAddress);
