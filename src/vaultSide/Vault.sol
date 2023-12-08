@@ -199,6 +199,8 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
         // check if accountId = keccak256(abi.encodePacked(brokerHash, receiver))
         if (!Utils.validateAccountId(data.accountId, data.brokerHash, receiver)) revert AccountIdInvalid();
+        // check if tokenAmount > 0
+        if (data.tokenAmount == 0) revert ZeroDeposit();
     }
 
     /// @notice user withdraw
