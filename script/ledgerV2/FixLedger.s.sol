@@ -19,7 +19,7 @@ contract FixLedger is BaseScript, ConfigHelper {
         string memory env = envs.env;
         string memory network = envs.ledgerNetwork;
 
-        LedgerDepolyData memory config = getLedgerDeployData(env, network);
+        LedgerDeployData memory config = getLedgerDeployData(env, network);
         address ledgerAddress = config.ledger;
         address operatorManagerAddress = config.operatorManager;
         address vaultManagerAddresss = config.vaultManager;
