@@ -467,7 +467,11 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             _liquidatorLiquidateAndUpdateEventId(
                 liquidationTransfer, eventId, liquidationTransfer.liquidatorAccountId != liquidation.insuranceAccountId
             );
-            _liquidatedAccountLiquidate(liquidatedAccount, liquidationTransfer);
+            _liquidatedAccountLiquidate(
+                liquidatedAccount,
+                liquidationTransfer,
+                liquidation.liquidatedAccountId != liquidation.insuranceAccountId
+            );
             _insuranceLiquidateAndUpdateEventId(liquidation.insuranceAccountId, liquidationTransfer, eventId);
             emit LiquidationTransfer(
                 liquidationTransfer.liquidationTransferId,
@@ -665,17 +669,20 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
 
     function _liquidatedAccountLiquidate(
         AccountTypes.Account storage liquidatedAccount,
-        EventTypes.LiquidationTransfer calldata liquidationTransfer
+        EventTypes.LiquidationTransfer calldata liquidationTransfer,
+        bool needCalAvg
     ) internal {
         AccountTypes.PerpPosition storage liquidatedPosition =
             liquidatedAccount.perpPositions[liquidationTransfer.symbolHash];
         liquidatedPosition.chargeFundingFee(liquidationTransfer.sumUnitaryFundings);
-        liquidatedPosition.calAverageEntryPrice(
-            -liquidationTransfer.positionQtyTransfer,
-            liquidationTransfer.markPrice.toInt128(),
-            liquidationTransfer.costPositionTransfer
-                - (liquidationTransfer.liquidatorFee + liquidationTransfer.insuranceFee)
-        );
+        if (needCalAvg) {
+            liquidatedPosition.calAverageEntryPrice(
+                -liquidationTransfer.positionQtyTransfer,
+                liquidationTransfer.markPrice.toInt128(),
+                liquidationTransfer.costPositionTransfer
+                    - (liquidationTransfer.liquidatorFee + liquidationTransfer.insuranceFee)
+            );
+        }
         liquidatedPosition.positionQty -= liquidationTransfer.positionQtyTransfer;
 
         liquidatedPosition.costPosition += liquidationTransfer.liquidationFee - liquidationTransfer.costPositionTransfer;
