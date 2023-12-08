@@ -14,7 +14,7 @@ contract VaultSetCrossChainManager is BaseScript, ConfigHelper {
         string memory env = envs.env;
         string memory network = envs.vaultNetwork;
 
-        VaultDepolyData memory config = getVaultDeployData(env, network);
+        VaultDeployData memory config = getVaultDeployData(env, network);
         address adminAddress = config.proxyAdmin;
         address vaultAddress = config.vault;
         console.log("adminAddress: ", adminAddress);
