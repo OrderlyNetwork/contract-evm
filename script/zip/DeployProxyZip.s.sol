@@ -20,7 +20,6 @@ contract DeployLedger is BaseScript, ConfigHelper {
         env = envs.env;
         network = envs.ledgerNetwork;
         LedgerDeployData memory ledgerConfig = getLedgerDeployData(env, network);
-        address operatorAddress = ledgerConfig.operatorAddress;
         address operatorManager = ledgerConfig.operatorManager;
         address proxyAdmin = ledgerConfig.proxyAdmin;
         vm.startBroadcast(orderlyPrivateKey);
@@ -50,10 +49,9 @@ contract DeployLedger is BaseScript, ConfigHelper {
 
         // avoid stack too deep error
         {
-            console.log("operator address: ", operatorAddress);
             console.log("operatorManager address: ", operatorManager);
-            operatorManagerZip.setOperator(operatorAddress);
             operatorManagerZip.setOpeartorManager(operatorManager);
+            operatorManagerZip.initSymbolId2Hash();
         }
         vm.stopBroadcast();
 
