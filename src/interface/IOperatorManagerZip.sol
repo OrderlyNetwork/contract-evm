@@ -11,7 +11,6 @@ interface IOperatorManagerZip {
     error AddressZero();
 
     event ChangeOperator(address oldAddress, address newAddress);
-    event ChangeLegacyOperator(address oldAddress, address newAddress);
     event ChangeOperatorManager(address oldAddress, address newAddress);
 
     function initialize() external;
