@@ -11,12 +11,17 @@ interface IOperatorManagerZip {
     error AddressZero();
 
     event ChangeOperator(address oldAddress, address newAddress);
+    event ChangeLegacyOperator(address oldAddress, address newAddress);
     event ChangeOperatorManager(address oldAddress, address newAddress);
 
     function initialize() external;
     // admin call
     function setOperator(address _operatorAddress) external;
     function setOpeartorManager(address _operatorManager) external;
-    function decodeFuturesTradeUploadData(bytes calldata data) external;
     function setSymbol(bytes32 symbolHash, uint8 symbolId) external;
+    // opeartor call
+    function decodeFuturesTradeUploadData(bytes calldata data) external;
+    // misc
+    function initSymbolId2Hash() external;
+    function placeholder(PerpTypesZip.FuturesTradeUploadDataZip calldata zip) external;
 }
