@@ -8,8 +8,8 @@ import "../library/types/PerpTypes.sol";
 /// @author Orderly_Zion
 /// @notice DataLayout for OperatorManagerZip contract, align with 50 slots
 contract OperatorManagerZipDataLayout {
-    // An EOA operator address
-    address public operatorAddress;
+    // An EOA operator address, for zip contract to call
+    address public zipOperatorAddress;
     // The opeartorManager Interface
     IOperatorManager public operatorManager;
     // mapping symbolHash from uint8 to bytes32
