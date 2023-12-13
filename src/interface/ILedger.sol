@@ -6,12 +6,12 @@ import "../library/types/PerpTypes.sol";
 import "../library/types/EventTypes.sol";
 import "../library/types/MarketTypes.sol";
 import "../library/types/RebalanceTypes.sol";
-import "./error/ILedgerError.sol";
+import "./error/IError.sol";
 import "./ILedgerEvent.sol";
 
 // Defines the error, event and ABI.
 // Data should be stored in LedgerDataLayout, NOT in this contract.
-interface ILedger is ILedgerError, ILedgerEvent {
+interface ILedger is IError, ILedgerEvent {
     function initialize() external;
 
     // Functions called by cross chain manager on Ledger side
