@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
 
-interface IOperatorManagerComponent {
-    error OnlyOperatorManagerCanCall();
-    error OperatorManagerAddressZero();
+import "./error/IError.sol";
 
+interface IOperatorManagerComponent is IError {
     event ChangeOperatorManager(address oldAddress, address newAddress);
 
     function initialize() external;
