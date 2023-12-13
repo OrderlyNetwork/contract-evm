@@ -3,13 +3,9 @@ pragma solidity ^0.8.18;
 
 import "../library/types/PerpTypes.sol";
 import "../library/types/PerpTypesZip.sol";
+import "./error/IError.sol";
 
-// IOperatorManager is ILedgerError because OperatorManager call Ledger, and may revert Ledger's error at operator side.
-// So, the operator can get the human-readable error message from ILedgerError.
-interface IOperatorManagerZip {
-    error OnlyOperatorCanCall();
-    error AddressZero();
-
+interface IOperatorManagerZip is IError {
     event ChangeOperator(address oldAddress, address newAddress);
     event ChangeOperatorManager(address oldAddress, address newAddress);
 

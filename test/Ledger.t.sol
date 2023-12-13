@@ -196,20 +196,20 @@ contract LedgerTest is Test {
     function testRevert_depositNotAllowedBroker() public {
         vaultManager.setAllowedBroker(BROKER_HASH, false);
         vm.prank(address(ledgerCrossChainManager));
-        vm.expectRevert(ILedgerError.BrokerNotAllowed.selector);
+        vm.expectRevert(IError.BrokerNotAllowed.selector);
         ledger.accountDeposit(depositData);
     }
 
     function testRevert_depositNotallowedChainToken() public {
         vaultManager.setAllowedChainToken(TOKEN_HASH, CHAIN_ID, false);
         vm.prank(address(ledgerCrossChainManager));
-        vm.expectRevert(abi.encodeWithSelector(ILedgerError.TokenNotAllowed.selector, TOKEN_HASH, CHAIN_ID));
+        vm.expectRevert(abi.encodeWithSelector(IError.TokenNotAllowed.selector, TOKEN_HASH, CHAIN_ID));
         ledger.accountDeposit(depositData);
     }
 
     function testRevert_depositInvalidAccountId() public {
         vm.prank(address(ledgerCrossChainManager));
-        vm.expectRevert(ILedgerError.AccountIdInvalid.selector);
+        vm.expectRevert(IError.AccountIdInvalid.selector);
         depositData.accountId = 0x44a4d91d025846561e99ca284b96d282bc1f183c12c36471c58dee3747487d99;
         ledger.accountDeposit(depositData);
     }

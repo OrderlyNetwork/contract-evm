@@ -8,14 +8,7 @@ import "../library/types/MarketTypes.sol";
 import "../library/types/RebalanceTypes.sol";
 import "./error/IError.sol";
 
-// IOperatorManager is IError because OperatorManager call Ledger (and other Managers), and may revert Ledger's error at operator side.
-// So, the operator can get the human-readable error message from IError.
 interface IOperatorManager is IError {
-    error InvalidBizType(uint8 bizType);
-    error BatchIdNotMatch(uint64 batchId, uint64 futuresUploadBatchId);
-    error CountNotMatch(uint256 length, uint256 count);
-    error SignatureNotMatch();
-
     event FuturesTradeUpload(uint64 indexed batchId);
     event EventUpload(uint64 indexed batchId);
     event ChangeEngineUpload(uint8 indexed types, address oldAddress, address newAddress);

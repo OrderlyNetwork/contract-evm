@@ -70,6 +70,7 @@ contract OperatorManagerZip is
         });
         for (uint8 i = 0; i < decoded.count; i++) {
             PerpTypesZip.FuturesTradeUploadZip memory zipData = decoded.trades[i];
+            if (symbolId2Hash[zipData.symbolId] == 0x0) revert SymbolNotRegister();
             // notional = tradeQty * executedPrice / 1e10, where tradeQty is int128, executedPrice is uint128
             // no worry about overflow, we expand the notional to int256
             decodedData.trades[i] = PerpTypes.FuturesTradeUpload({
