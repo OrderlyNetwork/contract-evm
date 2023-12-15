@@ -15,7 +15,7 @@ contract UpgradeMarketManager is BaseScript, ConfigHelper {
         string memory env = envs.env;
         string memory network = envs.ledgerNetwork;
 
-        LedgerDepolyData memory config = getLedgerDeployData(env, network);
+        LedgerDeployData memory config = getLedgerDeployData(env, network);
         address adminAddress = config.proxyAdmin;
         address marketManagerAddress = config.marketManager;
         console.log("adminAddress: ", adminAddress);

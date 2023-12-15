@@ -16,7 +16,7 @@ contract GetLedgerAllowedList is BaseScript, ConfigHelper {
         console.log("env: ", env);
         console.log("network: ", network);
 
-        LedgerDepolyData memory config = getLedgerDeployData(env, network);
+        LedgerDeployData memory config = getLedgerDeployData(env, network);
         address vaultManagerAddress = config.vaultManager;
         console.log("vaultManagerAddress: ", vaultManagerAddress);
         IVaultManager vaultManager = IVaultManager(vaultManagerAddress);
