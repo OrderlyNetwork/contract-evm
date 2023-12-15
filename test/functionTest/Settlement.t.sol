@@ -271,7 +271,7 @@ contract SettlementTest is Test {
             settledAmount: 2_000_000_000
         });
         vm.prank(address(operatorManager));
-        vm.expectRevert(abi.encodeWithSelector(ILedgerError.TotalSettleAmountNotMatch.selector, 2_000_000_000));
+        vm.expectRevert(abi.encodeWithSelector(IError.TotalSettleAmountNotMatch.selector, 2_000_000_000));
         ledger.executeSettlement({
             settlement: EventTypes.Settlement({
                 accountId: BOB,
@@ -297,7 +297,7 @@ contract SettlementTest is Test {
         vm.prank(address(operatorManager));
         vm.expectRevert(
             abi.encodeWithSelector(
-                ILedgerError.InsuranceTransferAmountInvalid.selector, 1_000_000_000, 3_000_000_000, -2_000_000_000
+                IError.InsuranceTransferAmountInvalid.selector, 1_000_000_000, 3_000_000_000, -2_000_000_000
             )
         );
         ledger.executeSettlement({
@@ -323,7 +323,7 @@ contract SettlementTest is Test {
             settledAmount: -2_000_000_000
         });
         vm.prank(address(operatorManager));
-        vm.expectRevert(ILedgerError.InsuranceTransferToSelf.selector);
+        vm.expectRevert(IError.InsuranceTransferToSelf.selector);
         ledger.executeSettlement({
             settlement: EventTypes.Settlement({
                 accountId: INSURANCE_FUND,

@@ -13,7 +13,7 @@ import "../interface/cctp/ITokenMessenger.sol";
 import "../interface/cctp/IMessageTransmitter.sol";
 
 /// @title Vault contract
-/// @author Orderly_Rubick
+/// @author Orderly_Rubick, Orderly_Zion
 /// @notice Vault is responsible for saving user's erc20 token.
 /// EACH CHAIN SHOULD HAVE ONE Vault CONTRACT.
 /// User can deposit erc20 (USDC) from Vault.
@@ -173,6 +173,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         depositFeeEnabled = _enabled;
     }
 
+    /// @notice The function to call deposit of CCManager contract
     function _deposit(address receiver, VaultTypes.VaultDepositFE calldata data) internal whenNotPaused {
         _validateDeposit(receiver, data);
         // avoid reentrancy, so `transferFrom` token at the beginning
@@ -193,12 +194,15 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         emit AccountDepositTo(data.accountId, receiver, depositId, data.tokenHash, data.tokenAmount);
     }
 
+    /// @notice The function to validate deposit data
     function _validateDeposit(address receiver, VaultTypes.VaultDepositFE calldata data) internal view {
         // check if tokenHash and brokerHash are allowed
         if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
         // check if accountId = keccak256(abi.encodePacked(brokerHash, receiver))
         if (!Utils.validateAccountId(data.accountId, data.brokerHash, receiver)) revert AccountIdInvalid();
+        // check if tokenAmount > 0
+        if (data.tokenAmount == 0) revert ZeroDeposit();
     }
 
     /// @notice user withdraw

@@ -18,7 +18,7 @@ contract UpdateSymbol is BaseScript, ConfigHelper {
         console.log("env: ", env);
         console.log("network: ", network);
 
-        LedgerDepolyData memory config = getLedgerDeployData(env, network);
+        LedgerDeployData memory config = getLedgerDeployData(env, network);
         address adminAddress = config.proxyAdmin;
         address vaultManagerAddress = config.vaultManager;
         console.log("adminAddress: ", adminAddress);

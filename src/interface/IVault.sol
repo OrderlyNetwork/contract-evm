@@ -13,6 +13,7 @@ interface IVault {
     error AddressZero();
     error EnumerableSetError();
     error ZeroDepositFee();
+    error ZeroDeposit();
 
     // @deprecated
     event AccountDeposit(
