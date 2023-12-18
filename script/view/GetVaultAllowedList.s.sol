@@ -16,7 +16,7 @@ contract GetVaultAllowedList is BaseScript, ConfigHelper {
         console.log("env: ", env);
         console.log("network: ", network);
 
-        VaultDepolyData memory config = getVaultDeployData(env, network);
+        VaultDeployData memory config = getVaultDeployData(env, network);
         address vaulAddress = config.vault;
         console.log("vaultAddress: ", vaulAddress);
         IVault vault = IVault(vaulAddress);

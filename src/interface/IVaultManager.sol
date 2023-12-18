@@ -3,9 +3,9 @@ pragma solidity ^0.8.18;
 
 import "./ILedgerComponent.sol";
 import "../library/types/RebalanceTypes.sol";
-import "./error/IVaultManagerError.sol";
+import "./error/IError.sol";
 
-interface IVaultManager is IVaultManagerError, ILedgerComponent {
+interface IVaultManager is IError, ILedgerComponent {
     function initialize() external;
 
     // event

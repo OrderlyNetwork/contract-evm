@@ -75,7 +75,7 @@ contract DeployLedger is BaseScript, ConfigHelper {
 
         // avoid stack too deep error
         {
-            LedgerDepolyData memory config = getLedgerDeployData(env, network);
+            LedgerDeployData memory config = getLedgerDeployData(env, network);
             address operatorAdminAddress = config.operatorAddress;
             console.log("operatorAdminAddress: ", operatorAdminAddress);
 

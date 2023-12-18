@@ -1,0 +1,22 @@
+{
+  "dev": {
+    "orderlyop": {
+      "zip": "0xDdE9B764E58EC26086621919F4388359715F0f84"
+    }
+  },
+  "qa": {
+    "orderlyop": {
+      "zip": "0x33076080b36a9827ead8016D102071df9eC2C89f"
+    }
+  },
+  "staging": {
+    "orderlyop": {
+      "zip": "0x3F13660d45080b7BD9c899298Ebe155904124EBa"
+    }
+  },
+  "mainnet": {
+    "orderlymain": {
+      "zip": "0xCC083CF647D6bfBdc4260d2bF2962737FC979438"
+    }
+  }
+}
