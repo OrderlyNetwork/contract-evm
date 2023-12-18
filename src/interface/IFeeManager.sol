@@ -4,8 +4,6 @@ pragma solidity ^0.8.18;
 import "./ILedgerComponent.sol";
 
 interface IFeeManager is ILedgerComponent {
-    error InvalidFeeCollectorType();
-
     // Fee collector type definition
     enum FeeCollectorType {
         None,
