@@ -168,10 +168,14 @@ Still the version 2 scripts is used for deployment. The deploy command is as fol
 ```shell
 # arb goerli
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_ARBITRUMGOERLI --verifier-url https://api-goerli.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
+# arb sepolia
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_ARBITRUMSEPOLIA --verifier-url https://api-sepolia.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
 # arb mainnet
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_ARBITRUM --verifier-url https://api.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
 # op goerli
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_OPGOERLI --verifier-url https://api-goerli-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
+# op sepolia
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_OPSEPOLIA --verifier-url https://api-sepolia-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
 # op mainnet
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_OP --verifier-url https://api-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
 ```
@@ -181,10 +185,14 @@ forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_OP --verifier-url
 ```shell
 # arb goerli
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_ARBITRUMGOERLI --verifier-url https://api-goerli.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
+# arb sepolia
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_ARBITRUMSEPOLIA --verifier-url https://api-sepolia.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
 # arb mainnet
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_ARBITRUM --verifier-url https://api.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
 # op goerli
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_OPGOERLI --verifier-url https://api-goerli-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
+# op sepolia
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_OPSEPOLIA --verifier-url https://api-sepolia-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
 # op mainnet
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_OP --verifier-url https://api-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
 ```
@@ -218,7 +226,6 @@ forge script script/vaultV2/UpgradeVault.s.sol -f $RPC_URL_OPGOERLI --broadcast 
 # op mainnet
 forge script script/vaultV2/UpgradeVault.s.sol -f $RPC_URL_OP --broadcast --verifier-url https://api-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
 ```
-
 
 ## Zip scripts
 
