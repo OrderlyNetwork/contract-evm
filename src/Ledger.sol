@@ -290,7 +290,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             } else if (account.balances[tokenHash] < withdraw.tokenAmount) {
                 // require balance enough
                 state = 1;
-            } else if (vaultManager.getBalance(tokenHash, withdraw.chainId) < withdraw.tokenAmount) {
+            } else if (vaultManager.getBalance(tokenHash, withdraw.chainId) < withdraw.tokenAmount - withdraw.fee) {
                 // require chain has enough balance
                 state = 2;
             } else if (!Signature.verifyWithdraw(withdraw.sender, withdraw)) {
