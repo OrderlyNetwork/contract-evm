@@ -11,6 +11,18 @@
       "proxyAdmin": "0xBfF90C01458f452225A8da88bfEB30c53a99562f",
       "usdc": "0xe05606174bac4A6364B31bd0eCA4bf4dD368f8C6",
       "vault": "0xe014a38501cF2B8139dED0b60Ed4FbD02C113b59"
+    },
+    "arbitrumsepolia": {
+      "multiSig": "0xFae9CAF31EeD9f6480262808920dA03eb7f76E7E",
+      "proxyAdmin": "0x8794E7260517B1766fc7b55cAfcd56e6bf08600e",
+      "usdc": "0x0000000000000000000000000000000000000000",
+      "vault": "0x3ac2Ba11Ca2f9f109d50fb1a46d4C23fCadbbef6"
+    },
+    "opsepolia": {
+      "multiSig": "0xFae9CAF31EeD9f6480262808920dA03eb7f76E7E",
+      "proxyAdmin": "0xEcb4abe96113c9caA3204e96C63C5377D02cb636",
+      "usdc": "0x0000000000000000000000000000000000000000",
+      "vault": "0x08a17582C4cCe303C37439341c6E6138Fb62304d"
     }
   },
   "qa": {
