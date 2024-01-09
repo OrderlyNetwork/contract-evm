@@ -20,7 +20,7 @@ library PerpTypesZip {
         uint8 symbolId;
         int128 tradeQty;
         uint128 executedPrice;
-        uint128 fee;
+        int128 fee;
         int128 sumUnitaryFundings;
         uint64 tradeId;
         uint64 matchId;
