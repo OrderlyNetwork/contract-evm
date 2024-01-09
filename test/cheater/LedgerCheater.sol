@@ -45,4 +45,12 @@ contract LedgerCheater is Ledger {
     {
         perpPosition = userLedger[accountId].perpPositions[symbolHash];
     }
+
+    function _newGlobalEventId() internal returns (uint64) {
+        return ++globalEventId;
+    }
+
+    function _newGlobalDepositId() internal returns (uint64) {
+        return ++globalDepositId;
+    }
 }

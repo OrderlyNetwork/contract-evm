@@ -120,6 +120,7 @@ interface ILedgerEvent {
     event ChangeVaultManager(address oldAddress, address newAddress);
     event ChangeMarketManager(address oldAddress, address newAddress);
     event ChangeFeeManager(address oldAddress, address newAddress);
+    event ChangeLedgerImplA(address oldAddress, address newAddress);
 
     // All events below are deprecated
     // Keep them for indexer backward compatibility
