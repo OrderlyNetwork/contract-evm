@@ -372,22 +372,22 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
     function _feeSwapPosition(
         AccountTypes.PerpPosition storage traderPosition,
         bytes32 symbol,
-        uint128 feeAmount,
+        int128 feeAmount,
         uint64 tradeId,
         int128 sumUnitaryFundings
     ) internal {
         if (feeAmount == 0) return;
         _perpFeeCollectorDeposit(symbol, feeAmount, tradeId, sumUnitaryFundings);
-        traderPosition.costPosition += feeAmount.toInt128();
+        traderPosition.costPosition += feeAmount;
     }
 
-    function _perpFeeCollectorDeposit(bytes32 symbol, uint128 amount, uint64 tradeId, int128 sumUnitaryFundings)
+    function _perpFeeCollectorDeposit(bytes32 symbol, int128 amount, uint64 tradeId, int128 sumUnitaryFundings)
         internal
     {
         bytes32 feeCollectorAccountId = feeManager.getFeeCollector(IFeeManager.FeeCollectorType.FuturesFeeCollector);
         AccountTypes.Account storage feeCollectorAccount = userLedger[feeCollectorAccountId];
         AccountTypes.PerpPosition storage feeCollectorPosition = feeCollectorAccount.perpPositions[symbol];
-        feeCollectorPosition.costPosition -= amount.toInt128();
+        feeCollectorPosition.costPosition -= amount;
         feeCollectorPosition.lastSumUnitaryFundings = sumUnitaryFundings;
         if (tradeId > feeCollectorAccount.lastPerpTradeId) {
             feeCollectorAccount.lastPerpTradeId = tradeId;
