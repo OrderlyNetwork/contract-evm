@@ -50,4 +50,5 @@ interface ILedger is IError, ILedgerEvent {
     function setVaultManager(address _vaultManagerAddress) external;
     function setMarketManager(address _marketManagerAddress) external;
     function setFeeManager(address _feeManagerAddress) external;
+    function setLedgerImplA(address _ledgerImplA) external;
 }

@@ -10,6 +10,7 @@ import "../src/MarketManager.sol";
 import "../src/FeeManager.sol";
 import "./mock/LedgerCrossChainManagerMock.sol";
 import "./cheater/LedgerCheater.sol";
+import "../src/LedgerImplA.sol";
 
 contract LedgerTest is Test {
     ProxyAdmin admin;
@@ -117,11 +118,12 @@ contract LedgerTest is Test {
         IFeeManager feeImpl = new FeeManager();
         IMarketManager marketImpl = new MarketManager();
 
-        operatorProxy = new TransparentUpgradeableProxy(address(operatorManagerImpl), address(admin), "");
-        vaultProxy = new TransparentUpgradeableProxy(address(vaultManagerImpl), address(admin), "");
-        ledgerProxy = new TransparentUpgradeableProxy(address(ledgerImpl), address(admin), "");
-        feeProxy = new TransparentUpgradeableProxy(address(feeImpl), address(admin), "");
-        marketProxy = new TransparentUpgradeableProxy(address(marketImpl), address(admin), "");
+        bytes memory initData = abi.encodeWithSignature("initialize()");
+        operatorProxy = new TransparentUpgradeableProxy(address(operatorManagerImpl), address(admin), initData);
+        vaultProxy = new TransparentUpgradeableProxy(address(vaultManagerImpl), address(admin), initData);
+        ledgerProxy = new TransparentUpgradeableProxy(address(ledgerImpl), address(admin), initData);
+        feeProxy = new TransparentUpgradeableProxy(address(feeImpl), address(admin), initData);
+        marketProxy = new TransparentUpgradeableProxy(address(marketImpl), address(admin), initData);
 
         operatorManager = IOperatorManager(address(operatorProxy));
         vaultManager = IVaultManager(address(vaultProxy));
@@ -129,17 +131,15 @@ contract LedgerTest is Test {
         feeManager = IFeeManager(address(feeProxy));
         marketManager = IMarketManager(address(marketProxy));
 
-        operatorManager.initialize();
-        vaultManager.initialize();
-        ledger.initialize();
-        feeManager.initialize();
-        marketManager.initialize();
+        // do not change the order
+        LedgerImplA ledgerImplA = new LedgerImplA();
 
         ledger.setOperatorManagerAddress(address(operatorManager));
         ledger.setCrossChainManager(address(ledgerCrossChainManager));
         ledger.setVaultManager(address(vaultManager));
         ledger.setFeeManager(address(feeManager));
         ledger.setMarketManager(address(marketManager));
+        ledger.setLedgerImplA(address(ledgerImplA));
 
         operatorManager.setOperator(operatorAddress);
         operatorManager.setLedger(address(ledger));

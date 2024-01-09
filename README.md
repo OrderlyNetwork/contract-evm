@@ -149,12 +149,14 @@ forge script script/ledgerV2/DeployNewOperatorManager.s.sol -f $RPC_URL_ORDERLYO
 forge script script/ledgerV2/DeployNewFeeManager.s.sol -f $RPC_URL_ORDERLYOP --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
 forge script script/ledgerV2/DeployNewVaultManager.s.sol -f $RPC_URL_ORDERLYOP --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
 forge script script/ledgerV2/DeployNewMarketManager.s.sol -f $RPC_URL_ORDERLYOP --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
+forge script script/ledgerV2/DeployNewLedgerImplA.s.sol -f $RPC_URL_ORDERLYOP --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
 # orderly mainnet
 forge script script/ledgerV2/DeployNewLedger.s.sol -f $RPC_URL_ORDERLYMAIN --broadcast --verifier-url https://explorer.orderly.network/api\? --verifier blockscout --verify
 forge script script/ledgerV2/DeployNewOperatorManager.s.sol -f $RPC_URL_ORDERLYMAIN --broadcast --verifier-url https://explorer.orderly.network/api\? --verifier blockscout --verify
 forge script script/ledgerV2/DeployNewFeeManager.s.sol -f $RPC_URL_ORDERLYMAIN --broadcast --verifier-url https://explorer.orderly.network/api\? --verifier blockscout --verify
 forge script script/ledgerV2/DeployNewVaultManager.s.sol -f $RPC_URL_ORDERLYMAIN --broadcast --verifier-url https://explorer.orderly.network/api\? --verifier blockscout --verify
 forge script script/ledgerV2/DeployNewMarketManager.s.sol -f $RPC_URL_ORDERLYMAIN --broadcast --verifier-url https://explorer.orderly.network/api\? --verifier blockscout --verify
+forge script script/ledgerV2/DeployNewLedgerImplA.s.sol -f $RPC_URL_ORDERLYMAIN --broadcast --verifier-url https://explorer.orderly.network/api\? --verifier blockscout --verify
 ```
 
 ## Vault scripts
