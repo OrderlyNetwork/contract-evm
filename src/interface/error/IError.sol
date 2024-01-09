@@ -5,6 +5,7 @@ pragma solidity ^0.8.18;
 interface IError {
     // Common Error
     error AddressZero();
+    error DelegatecallFail();
 
     // LedgerComponent Error
     error OnlyLedgerCanCall();
