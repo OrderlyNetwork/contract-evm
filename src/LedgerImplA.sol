@@ -359,6 +359,26 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
         );
     }
 
+    function executeFeeDistribution(EventTypes.FeeDistribution calldata feeDistribution, uint64 eventId)
+        external
+        override
+    {
+        AccountTypes.Account storage fromAccount = userLedger[feeDistribution.fromAccountId];
+        AccountTypes.Account storage toAccount = userLedger[feeDistribution.toAccountId];
+        fromAccount.subBalance(feeDistribution.tokenHash, feeDistribution.amount);
+        toAccount.addBalance(feeDistribution.tokenHash, feeDistribution.amount);
+        fromAccount.lastEngineEventId = eventId;
+        toAccount.lastEngineEventId = eventId;
+        // emit event
+        emit FeeDistribution(
+            _newGlobalEventId(),
+            feeDistribution.fromAccountId,
+            feeDistribution.toAccountId,
+            feeDistribution.amount,
+            feeDistribution.tokenHash
+        );
+    }
+
     function _newGlobalEventId() internal returns (uint64) {
         return ++globalEventId;
     }

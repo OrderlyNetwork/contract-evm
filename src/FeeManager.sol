@@ -12,6 +12,8 @@ contract FeeManager is IFeeManager, LedgerComponent {
     bytes32 public withdrawFeeCollector;
     // accountId
     bytes32 public futuresFeeCollector;
+    // broker fee accountId
+    mapping(bytes32 => bytes32) public brokerId2BrokerAccountId;
 
     constructor() {
         _disableInitializers();
@@ -49,5 +51,14 @@ contract FeeManager is IFeeManager, LedgerComponent {
         } else {
             revert InvalidFeeCollectorType();
         }
+    }
+
+    /// @notice Set the broker fee account id
+    /// @param brokerId The broker id
+    /// @param brokerAccountId The broker fee account id
+    function setBrokerAccountId(bytes32 brokerId, bytes32 brokerAccountId) external override onlyOwner {
+        if (brokerId == bytes32(0) || brokerAccountId == bytes32(0)) revert Bytes32Zero();
+        emit ChangeBrokerAccountId(brokerId2BrokerAccountId[brokerId], brokerAccountId);
+        brokerId2BrokerAccountId[brokerId] = brokerAccountId;
     }
 }

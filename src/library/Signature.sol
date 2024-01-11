@@ -8,7 +8,7 @@ import "./types/MarketTypes.sol";
 import "./types/RebalanceTypes.sol";
 
 /// @title Signature library
-/// @author Orderly_Rubick
+/// @author Orderly_Rubick, Orderly_Zion
 library Signature {
     function verifyWithdraw(address sender, EventTypes.WithdrawData memory data) internal view returns (bool) {
         bytes32 typeHash =
@@ -98,17 +98,38 @@ library Signature {
         uint64 timestamp;
     }
 
+    // WIP @Zion
+    struct DelegeteSignerSignature {
+        uint64 eventId; // flat map to this
+    }
+
+    // WIP @Zion
+    struct DelegeteWithdrawSignature {
+        uint64 eventId; // flat map to this
+    }
+
+    struct FeeDistributionSignature {
+        uint64 eventId; // flat map to this
+        bytes32 fromAccountId;
+        bytes32 toAccountId;
+        uint128 amount;
+        bytes32 tokenHash;
+    }
+
     struct EventUploadSignature {
         uint64 batchId;
         WithdrawDataSignature[] withdraws;
         SettlementSignature[] settlements;
         AdlSignature[] adls;
         LiquidationSignature[] liquidations;
+        FeeDistributionSignature[] feeDistributions;
+        DelegeteSignerSignature[] delegateSigners;
+        DelegeteWithdrawSignature[] delegateWithdraws;
     }
 
     function eventsUploadEncodeHash(EventTypes.EventUpload memory data) internal pure returns (bytes memory) {
-        uint8[] memory countArray = new uint8[](4);
-        uint8[] memory countArray2 = new uint8[](4);
+        uint8[] memory countArray = new uint8[](7);
+        uint8[] memory countArray2 = new uint8[](7);
         uint256 len = data.events.length;
         for (uint256 i = 0; i < len; i++) {
             countArray[data.events[i].bizType - 1]++;
@@ -118,7 +139,10 @@ library Signature {
             withdraws: new WithdrawDataSignature[](countArray[0]),
             settlements: new SettlementSignature[](countArray[1]),
             adls: new AdlSignature[](countArray[2]),
-            liquidations: new LiquidationSignature[](countArray[3])
+            liquidations: new LiquidationSignature[](countArray[3]),
+            feeDistributions: new FeeDistributionSignature[](countArray[4]),
+            delegateSigners: new DelegeteSignerSignature[](countArray[5]),
+            delegateWithdraws: new DelegeteWithdrawSignature[](countArray[6])
         });
         for (uint256 i = 0; i < len; i++) {
             EventTypes.EventUploadData memory eventUploadData = data.events[i];
@@ -182,15 +206,50 @@ library Signature {
                 });
                 eventUploadSignature.liquidations[countArray2[3]] = liquidationSignature;
                 countArray2[3]++;
+            } else if (eventUploadData.bizType == 5) {
+                EventTypes.FeeDistribution memory feeDistribution =
+                    abi.decode(eventUploadData.data, (EventTypes.FeeDistribution));
+                FeeDistributionSignature memory feeDistributionSignature = FeeDistributionSignature({
+                    eventId: eventUploadData.eventId,
+                    fromAccountId: feeDistribution.fromAccountId,
+                    toAccountId: feeDistribution.toAccountId,
+                    amount: feeDistribution.amount,
+                    tokenHash: feeDistribution.tokenHash
+                });
+                eventUploadSignature.feeDistributions[countArray2[6]] = feeDistributionSignature;
+                countArray2[4]++;
+            } else if (eventUploadData.bizType == 6) {
+                // WIP @Zion
+            } else if (eventUploadData.bizType == 7) {
+                // WIP @Zion
             }
         }
-        bytes memory encoded = abi.encode(
-            eventUploadSignature.batchId,
-            eventUploadSignature.withdraws,
-            eventUploadSignature.settlements,
-            eventUploadSignature.adls,
-            eventUploadSignature.liquidations
-        );
+        bytes memory encoded;
+        if (
+            eventUploadSignature.delegateSigners.length > 0 || eventUploadSignature.delegateWithdraws.length > 0
+                || eventUploadSignature.feeDistributions.length > 0
+        ) {
+            // v2 signature, only support [v1, feeDistributions, delegateSigners, delegateWithdraws]
+            encoded = abi.encode(
+                eventUploadSignature.batchId,
+                eventUploadSignature.withdraws,
+                eventUploadSignature.settlements,
+                eventUploadSignature.adls,
+                eventUploadSignature.liquidations,
+                eventUploadSignature.feeDistributions,
+                eventUploadSignature.delegateSigners,
+                eventUploadSignature.delegateWithdraws
+            );
+        } else {
+            // v1 signature, only support [withdraws, settlements, adls, liquidations]
+            encoded = abi.encode(
+                eventUploadSignature.batchId,
+                eventUploadSignature.withdraws,
+                eventUploadSignature.settlements,
+                eventUploadSignature.adls,
+                eventUploadSignature.liquidations
+            );
+        }
         return encoded;
     }
 
