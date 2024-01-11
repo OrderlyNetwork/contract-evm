@@ -115,6 +115,14 @@ interface ILedgerEvent {
         int128 sumUnitaryFundings
     );
 
+    event FeeDistribution(
+        uint64 indexed eventId,
+        bytes32 indexed fromAccountId,
+        bytes32 indexed toAccountId,
+        uint128 amount,
+        bytes32 tokenHash
+    );
+
     event ChangeOperatorManager(address oldAddress, address newAddress);
     event ChangeCrossChainManager(address oldAddress, address newAddress);
     event ChangeVaultManager(address oldAddress, address newAddress);

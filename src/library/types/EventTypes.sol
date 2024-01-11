@@ -86,4 +86,11 @@ library EventTypes {
         int128 sumUnitaryFundings;
         uint64 liquidationTransferId;
     }
+
+    struct FeeDistribution {
+        bytes32 fromAccountId;
+        bytes32 toAccountId;
+        uint128 amount;
+        bytes32 tokenHash;
+    }
 }
