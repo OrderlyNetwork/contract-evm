@@ -264,6 +264,14 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         _delegatecall(abi.encodeWithSelector(ILedgerImplA.executeAdl.selector, adl, eventId));
     }
 
+    function executeFeeDistribution(EventTypes.FeeDistribution calldata feeDistribution, uint64 eventId)
+        external
+        override
+        onlyOperatorManager
+    {
+        _delegatecall(abi.encodeWithSelector(ILedgerImplA.executeFeeDistribution.selector, feeDistribution, eventId));
+    }
+
     function executeRebalanceBurn(RebalanceTypes.RebalanceBurnUploadData calldata data)
         external
         override

@@ -22,4 +22,5 @@ interface ILedgerImplA is IError, ILedgerEvent {
     function executeSettlement(EventTypes.Settlement calldata ledger, uint64 eventId) external;
     function executeLiquidation(EventTypes.Liquidation calldata liquidation, uint64 eventId) external;
     function executeAdl(EventTypes.Adl calldata adl, uint64 eventId) external;
+    function executeFeeDistribution(EventTypes.FeeDistribution calldata feeDistribution, uint64 eventId) external;
 }
