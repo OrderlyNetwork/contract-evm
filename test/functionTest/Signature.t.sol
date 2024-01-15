@@ -465,6 +465,37 @@ contract SignatureTest is Test {
         assertEq(succ, true);
     }
 
+    // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/445056152/FeeDisutrubution+Event+Upload
+    function test_eventUploadEncodeHash_feeDistribution() public {
+        EventTypes.FeeDistribution memory fee0 = EventTypes.FeeDistribution({
+            fromAccountId: 0x9ff99a5d6cb71a3ef897b0fff5f5801af6dc5f72d8f1608e61409b8fc965bd68,
+            toAccountId: 0xc69f41c55c00e4d875b3e82eeb0fcda3de2090a10130baf3c1ffee0f2e7ce243,
+            amount: 1231245125,
+            tokenHash: 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa
+        });
+        EventTypes.FeeDistribution memory fee1 = EventTypes.FeeDistribution({
+            fromAccountId: 0xc69f41c55c00e4d875b3e82eeb0fcda3de2090a10130baf3c1ffee0f2e7ce243,
+            toAccountId: 0x9ff99a5d6cb71a3ef897b0fff5f5801af6dc5f72d8f1608e61409b8fc965bd68,
+            amount: 6435342234,
+            tokenHash: 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa
+        });
+
+        EventTypes.EventUploadData[] memory events = new EventTypes.EventUploadData[](2);
+        events[0] = EventTypes.EventUploadData({bizType: 5, eventId: 1274, data: abi.encode(fee0)});
+        events[1] = EventTypes.EventUploadData({bizType: 5, eventId: 1277, data: abi.encode(fee1)});
+        EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
+            events: events,
+            r: 0x26eb59ba41e0a9e1c729c8d9f7e766ee4213886e13dfa6d985151180ff3af41f,
+            s: 0x798c57e7dbf574c52a5583299c460ba70ef19482bec4c8fa2edbdaf01ab2fa95,
+            v: 0x1c,
+            count: 2,
+            batchId: 7888
+        });
+
+        bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
+        assertEq(succ, true);
+    }
+
     // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/401440769/Rebalance+Test+vector#Burn
     function test_rebalanceBurnUploadEncodeHash() public {
         RebalanceTypes.RebalanceBurnUploadData memory data = RebalanceTypes.RebalanceBurnUploadData({
