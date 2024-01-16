@@ -66,15 +66,15 @@
     },
     "arbitrumsepolia": {
       "multiSig": "0x7D1e7BeAd9fBb72e35Dc8E6d1966c2e57DbDA3F0",
-      "proxyAdmin": "0x0000000000000000000000000000000000000000",
+      "proxyAdmin": "0xa3BB1F1Aa238AF13528965f069fD0a4F1595d8e9",
       "usdc": "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
-      "vault": "0x0000000000000000000000000000000000000000"
+      "vault": "0x0EaC556c0C2321BA25b9DC01e4e3c95aD5CDCd2f"
     },
     "opsepolia": {
       "multiSig": "0x7D1e7BeAd9fBb72e35Dc8E6d1966c2e57DbDA3F0",
-      "proxyAdmin": "0x0000000000000000000000000000000000000000",
+      "proxyAdmin": "0xEfD0cbED3f520cb59c6Cf8cE428a44978C18F8Fb",
       "usdc": "0x5fd84259d66Cd46123540766Be93DFE6D43130D7",
-      "vault": "0x0000000000000000000000000000000000000000"
+      "vault": "0xEfF2896077B6ff95379EfA89Ff903598190805EC"
     }
   },
   "mainnet": {
