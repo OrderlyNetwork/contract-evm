@@ -180,6 +180,10 @@ forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_OPGOERLI --verifi
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_OPSEPOLIA --verifier-url https://api-sepolia-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
 # op mainnet
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_OP --verifier-url https://api-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
+# polygon mumbai
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_MUMBAI --verifier-url https://api-testnet.polygonscan.com/api --broadcast --verify --etherscan-api-key $POLYGON_ETHERSCAN_API_KEY
+# polygon mainnet
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_POLYGON --verifier-url https://api.polygonscan.com/api --broadcast --verify --etherscan-api-key $POLYGON_ETHERSCAN_API_KEY
 ```
 
 ### Deploy new implement command:
