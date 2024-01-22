@@ -193,6 +193,9 @@ forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_POLYGON --verifie
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_ARBITRUMGOERLI --verifier-url https://api-goerli.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
 # arb sepolia
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_ARBITRUMSEPOLIA --verifier-url https://api-sepolia.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
+# polygon mumbai
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_MUMBAI --verifier-url https://api-testnet.polygonscan.com/api --broadcast --verify --etherscan-api-key $POLYGON_ETHERSCAN_API_KEY
+
 # arb mainnet
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_ARBITRUM --verifier-url https://api.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
 # op goerli

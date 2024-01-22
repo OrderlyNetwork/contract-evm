@@ -379,6 +379,127 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
         );
     }
 
+    function executeDelegateSigner(EventTypes.DelegateSigner calldata delegateSigner, uint64 eventId)
+        external
+        override
+    {
+        // check if cefi has uploaded wrong info
+        if (!vaultManager.getAllowedBroker(delegateSigner.brokerHash)) revert BrokerNotAllowed();
+        if (delegateSigner.delegateContract == address(0)) revert ZeroDelegateContract();
+        if (delegateSigner.delegateSigner == address(0)) revert ZeroDelegateSigner();
+        if (delegateSigner.chainId == 0) revert ZeroChainId();
+
+        bytes32 accountId = Utils.calculateAccountId(delegateSigner.delegateContract, delegateSigner.brokerHash);
+
+        // only support one chain delegation
+        if (contractSigner[accountId].chainId != 0 && contractSigner[accountId].chainId != delegateSigner.chainId) {
+            revert DelegateChainIdNotMatch(accountId, contractSigner[accountId].chainId, delegateSigner.chainId);
+        }
+        AccountTypes.AccountDelegateSigner memory accountDelegateSigner =
+            AccountTypes.AccountDelegateSigner({chainId: delegateSigner.chainId, signer: delegateSigner.delegateSigner});
+
+        contractSigner[accountId] = accountDelegateSigner;
+        AccountTypes.Account storage account = userLedger[accountId];
+        account.lastEngineEventId = eventId;
+        emit DelegateSigner(
+            _newGlobalEventId(),
+            delegateSigner.chainId,
+            accountId,
+            delegateSigner.delegateContract,
+            delegateSigner.brokerHash,
+            delegateSigner.delegateSigner
+        );
+    }
+
+    function executeDelegateWithdrawAction(EventTypes.WithdrawData calldata withdraw, uint64 eventId)
+        external
+        override
+    {
+        // withdraw check
+        bytes32 brokerHash = Utils.calculateStringHash(withdraw.brokerId);
+        bytes32 tokenHash = Utils.calculateStringHash(withdraw.tokenSymbol);
+        if (!vaultManager.getAllowedBroker(brokerHash)) revert BrokerNotAllowed();
+        if (!vaultManager.getAllowedChainToken(tokenHash, withdraw.chainId)) {
+            revert TokenNotAllowed(tokenHash, withdraw.chainId);
+        }
+        if (!Utils.validateAccountId(withdraw.accountId, brokerHash, withdraw.sender)) {
+            revert AccountIdInvalid();
+        }
+        AccountTypes.Account storage account = userLedger[withdraw.accountId];
+        uint8 state = 0;
+        {
+            // avoid stack too deep
+            AccountTypes.AccountDelegateSigner storage accountDelegateSigner = contractSigner[withdraw.accountId];
+            uint128 maxWithdrawFee = vaultManager.getMaxWithdrawFee(tokenHash);
+            // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/326402549/Withdraw+Error+Code
+            if (account.lastWithdrawNonce >= withdraw.withdrawNonce) {
+                // require withdraw nonce inc
+                state = 101;
+            } else if (account.balances[tokenHash] < withdraw.tokenAmount) {
+                // require balance enough
+                state = 1;
+            } else if (vaultManager.getBalance(tokenHash, withdraw.chainId) < withdraw.tokenAmount - withdraw.fee) {
+                // require chain has enough balance
+                state = 2;
+            } else if (!Signature.verifyDelegateWithdraw(accountDelegateSigner.signer, withdraw)) {
+                // require signature verify
+                state = 4;
+            } else if (maxWithdrawFee > 0 && maxWithdrawFee < withdraw.fee) {
+                // require fee not exceed maxWithdrawFee
+                state = 5;
+            } else if (withdraw.receiver == address(0)) {
+                // require receiver not zero address
+                state = 6;
+            } else if (accountDelegateSigner.chainId != withdraw.chainId) {
+                // require chainId match
+                state = 7;
+            } else if (withdraw.receiver != withdraw.sender) {
+                // require sender = receiver
+                state = 8;
+            }
+        }
+        // check all assert, should not change any status
+
+        if (state != 0) {
+            emit AccountWithdrawFail(
+                withdraw.accountId,
+                withdraw.withdrawNonce,
+                _newGlobalEventId(),
+                brokerHash,
+                withdraw.sender,
+                withdraw.receiver,
+                withdraw.chainId,
+                tokenHash,
+                withdraw.tokenAmount,
+                withdraw.fee,
+                state
+            );
+            return;
+        }
+        // update status, should never fail
+        // frozen balance
+        // account should frozen `tokenAmount`, and vault should frozen `tokenAmount - fee`, because vault will payout `tokenAmount - fee`
+        account.frozenBalance(withdraw.withdrawNonce, tokenHash, withdraw.tokenAmount);
+        vaultManager.frozenBalance(tokenHash, withdraw.chainId, withdraw.tokenAmount - withdraw.fee);
+        account.lastEngineEventId = eventId;
+        // emit withdraw approve event
+
+        emit AccountWithdrawApprove(
+            withdraw.accountId,
+            withdraw.withdrawNonce,
+            _newGlobalEventId(),
+            brokerHash,
+            withdraw.sender,
+            withdraw.receiver,
+            withdraw.chainId,
+            tokenHash,
+            withdraw.tokenAmount,
+            withdraw.fee
+        );
+        // send cross-chain tx
+        ILedgerCrossChainManager(crossChainManagerAddress).withdraw(withdraw);
+    }
+
     function _newGlobalEventId() internal returns (uint64) {
         return ++globalEventId;
     }

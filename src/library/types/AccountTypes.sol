@@ -97,4 +97,9 @@ library AccountTypes {
         AccountTokenBalances[] tokenBalances;
         AccountPerpPositions[] perpPositions;
     }
+
+    struct AccountDelegateSigner {
+        uint256 chainId;
+        address signer;
+    }
 }

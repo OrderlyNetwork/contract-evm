@@ -123,6 +123,15 @@ interface ILedgerEvent {
         bytes32 tokenHash
     );
 
+    event DelegateSigner(
+        uint64 indexed eventId,
+        uint256 indexed chainId,
+        bytes32 indexed accountId,
+        address delegateContract,
+        bytes32 brokerHash,
+        address delegateSigner
+    );
+
     event ChangeOperatorManager(address oldAddress, address newAddress);
     event ChangeCrossChainManager(address oldAddress, address newAddress);
     event ChangeVaultManager(address oldAddress, address newAddress);
