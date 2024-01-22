@@ -247,10 +247,10 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
             ledger.executeFeeDistribution(abi.decode(data.data, (EventTypes.FeeDistribution)), data.eventId);
         } else if (bizType == 6) {
             // delegate signer
-            // WIP
+            ledger.executeDelegateSigner(abi.decode(data.data, (EventTypes.DelegateSigner)), data.eventId);
         } else if (bizType == 7) {
             // delegate withdraw
-            // WIP
+            ledger.executeDelegateWithdrawAction(abi.decode(data.data, (EventTypes.WithdrawData)), data.eventId);
         } else {
             revert InvalidBizType(bizType);
         }

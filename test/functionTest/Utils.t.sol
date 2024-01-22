@@ -6,9 +6,9 @@ import "../../src/library/Utils.sol";
 
 contract UtilsTest is Test {
     // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/304513342/Account+ID+Calculation
-    function test_getAccoundId() public {
+    function test_calculateAccountId() public {
         assertEq(
-            Utils.getAccoundId(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4, "ref_dex"),
+            Utils.getAccountId(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4, "ref_dex"),
             0x29783c8cfabffb495d176dda502c197c1ec61258c865c3a01c9573ad4934cf81
         );
     }
