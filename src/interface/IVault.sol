@@ -14,6 +14,8 @@ interface IVault {
     error EnumerableSetError();
     error ZeroDepositFee();
     error ZeroDeposit();
+    error ZeroCodeLength();
+    error NotZeroCodeLength();
 
     // @deprecated
     event AccountDeposit(
@@ -43,6 +45,14 @@ interface IVault {
         uint128 fee
     );
 
+    event AccountDelegate(
+        address indexed delegateContract,
+        bytes32 indexed brokerHash,
+        address indexed delegateSigner,
+        uint256 chainId,
+        uint256 blockNumber
+    );
+
     event SetAllowedToken(bytes32 indexed _tokenHash, bool _allowed);
     event SetAllowedBroker(bytes32 indexed _brokerHash, bool _allowed);
     event ChangeTokenAddressAndAllow(bytes32 indexed _tokenHash, address _tokenAddress);
@@ -55,6 +65,7 @@ interface IVault {
     function getDepositFee(address recevier, VaultTypes.VaultDepositFE calldata data) external view returns (uint256);
     function enableDepositFee(bool _enabled) external;
     function withdraw(VaultTypes.VaultWithdraw calldata data) external;
+    function delegateSigner(VaultTypes.VaultDelegate calldata data) external;
 
     // CCTP: functions for receive rebalance msg
     function rebalanceMint(RebalanceTypes.RebalanceMintCCData calldata data) external;
