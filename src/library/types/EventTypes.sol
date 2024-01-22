@@ -15,7 +15,7 @@ library EventTypes {
     }
 
     struct EventUploadData {
-        uint8 bizType; // 1 - withdraw, 2 - settlement, 3 - adl, 4 - liquidation
+        uint8 bizType; // 1 - withdraw, 2 - settlement, 3 - adl, 4 - liquidation, 5 - fee distribution, 6 - delegate signer, 7 - delegate withdraw
         uint64 eventId;
         bytes data;
     }
@@ -92,5 +92,12 @@ library EventTypes {
         bytes32 toAccountId;
         uint128 amount;
         bytes32 tokenHash;
+    }
+
+    struct DelegateSigner {
+        address delegateSigner;
+        address delegateContract;
+        bytes32 brokerHash;
+        uint256 chainId;
     }
 }
