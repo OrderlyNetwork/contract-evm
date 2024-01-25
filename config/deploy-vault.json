@@ -87,6 +87,12 @@
       "proxyAdmin": "0xEfD0cbED3f520cb59c6Cf8cE428a44978C18F8Fb",
       "usdc": "0x5fd84259d66Cd46123540766Be93DFE6D43130D7",
       "vault": "0xEfF2896077B6ff95379EfA89Ff903598190805EC"
+    },
+    "polygonmumbai": {
+      "multiSig": "0x7D1e7BeAd9fBb72e35Dc8E6d1966c2e57DbDA3F0",
+      "proxyAdmin": "0xAf0736bDE60E4Df8a0017839B35bed4895a52e93",
+      "usdc": "0x9999f7fea5938fd3b1e26a12c3f2fb024e194f97",
+      "vault": "0xB483f9D0bD47371B54087983214887c3Be103b92"
     }
   },
   "mainnet": {
@@ -101,6 +107,12 @@
       "proxyAdmin": "0xA2eA0a58b083c492AdC91A687FAc8B53AdB7c0Fd",
       "usdc": "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85",
       "vault": "0x816f722424B49Cf1275cc86DA9840Fbd5a6167e9"
+    },
+    "polygon": {
+      "multiSig": "0x4e834Ca9310d7710a409638A7aa70CB22F141Df3",
+      "proxyAdmin": "0x0000000000000000000000000000000000000000",
+      "usdc": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+      "vault": "0x0000000000000000000000000000000000000000"
     }
   }
 }
