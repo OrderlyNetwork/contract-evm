@@ -499,15 +499,15 @@ contract SignatureTest is Test {
     // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/459277365/DelegateSigner+event+upload
     function test_eventUploadEncodeHash_delegateSigner() public {
         EventTypes.DelegateSigner memory delegateSigner0 = EventTypes.DelegateSigner({
-            delegateSigner: 0xa757D29D25116a657F2929DE61BCcA6173f731fE,
-            delegateContract: 0xa3255bb283A607803791ba8A202262f4AB28b0B2,
+            delegateSigner: 0xa3255bb283A607803791ba8A202262f4AB28b0B2,
+            delegateContract: 0xa757D29D25116a657F2929DE61BCcA6173f731fE,
             brokerHash: 0x1723cb226c337a417a6022890bc5671ebb4db551db0273536bf1094edf39ed66,
             chainId: 42161
         });
 
         EventTypes.DelegateSigner memory delegateSigner1 = EventTypes.DelegateSigner({
-            delegateSigner: 0xa757D29D25116a657F2929DE61BCcA6173f731fE,
-            delegateContract: 0xa3255bb283A607803791ba8A202262f4AB28b0B2,
+            delegateSigner: 0xa3255bb283A607803791ba8A202262f4AB28b0B2,
+            delegateContract: 0xa757D29D25116a657F2929DE61BCcA6173f731fE,
             brokerHash: 0x1723cb226c337a417a6022890bc5671ebb4db551db0273536bf1094edf39ed66,
             chainId: 42162
         });
@@ -517,14 +517,62 @@ contract SignatureTest is Test {
         events[1] = EventTypes.EventUploadData({bizType: 6, eventId: 235, data: abi.encode(delegateSigner1)});
         EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
             events: events,
-            r: 0xccb5fb9d181ea77bbed2ddbd437178a87f3d65caecaec505ceb9439952868e64,
-            s: 0x3bf1af4f2797ebcd600fdbe5fdd3c81c73097a4b9a21f7df83bf8bf05050e2de,
-            v: 0x1c,
+            r: 0x485d4bda8c7ea56f553e486cbf311ab0575a257fa431b72c141a208fbed4eaca,
+            s: 0x683916616409b086f102e1b58c08bc324e3bf17ebdefc6389813f67f934f5554,
+            v: 0x1b,
             count: 2,
             batchId: 7888
         });
 
         bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
+        assertEq(succ, true);
+    }
+
+    // based on real data uploaded to OperatorManager contract
+    function test_eventUploadEncodeHash_delegateSigner1() public {
+        EventTypes.DelegateSigner memory delegateSigner0 = EventTypes.DelegateSigner({
+            delegateSigner: 0xDd3287043493E0a08d2B348397554096728B459c,
+            delegateContract: 0x65E6b31cC38aC83E0f11ACc67eaE5f7EFd31aB18,
+            brokerHash: 0x6ca2f644ef7bd6d75953318c7f2580014941e753b3c6d54da56b3bf75dd14dfc,
+            chainId: 11155420
+        });
+
+        EventTypes.DelegateSigner memory delegateSigner1 = EventTypes.DelegateSigner({
+            delegateSigner: 0xDd3287043493E0a08d2B348397554096728B459c,
+            delegateContract: 0x31c30d825a8A98C67C1c92b86e652f877435970b,
+            brokerHash: 0x6ca2f644ef7bd6d75953318c7f2580014941e753b3c6d54da56b3bf75dd14dfc,
+            chainId: 421614
+        });
+
+        EventTypes.DelegateSigner memory delegateSigner2 = EventTypes.DelegateSigner({
+            delegateSigner: 0x2bAC7A6771613440989432c9B3B9a45dDd15e657,
+            delegateContract: 0xa4394b62261061C629800C6D86D153A9F38f0cbB,
+            brokerHash: 0x6ca2f644ef7bd6d75953318c7f2580014941e753b3c6d54da56b3bf75dd14dfc,
+            chainId: 421614
+        });
+
+        EventTypes.DelegateSigner memory delegateSigner3 = EventTypes.DelegateSigner({
+            delegateSigner: 0x2bAC7A6771613440989432c9B3B9a45dDd15e657,
+            delegateContract: 0xa4394b62261061C629800C6D86D153A9F38f0cbB,
+            brokerHash: 0x083098c593f395bea1de45dda552d9f14e8fcb0be3faaa7a1903c5477d7ba7fd,
+            chainId: 421614
+        });
+
+        EventTypes.EventUploadData[] memory events = new EventTypes.EventUploadData[](4);
+        events[0] = EventTypes.EventUploadData({bizType: 6, eventId: 1439, data: abi.encode(delegateSigner0)});
+        events[1] = EventTypes.EventUploadData({bizType: 6, eventId: 1440, data: abi.encode(delegateSigner1)});
+        events[2] = EventTypes.EventUploadData({bizType: 6, eventId: 1441, data: abi.encode(delegateSigner2)});
+        events[3] = EventTypes.EventUploadData({bizType: 6, eventId: 1442, data: abi.encode(delegateSigner3)});
+        EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
+            events: events,
+            r: 0x12e4dfd5d7b7730b23a20461ac0585d8bae27b3efdd5bcaef0db1c7fe314f344,
+            s: 0x29e11bebc46a5ae183616f88a8b8278bb83f5927a66dd0bb390ab8ec46be2a54,
+            v: 0x1b,
+            count: 4,
+            batchId: 882
+        });
+        console2.logBytes(abi.encode(e1));
+        bool succ = Signature.eventsUploadEncodeHashVerify(e1, 0xDdDd1555A17d3Dad86748B883d2C1ce633A7cd88);
         assertEq(succ, true);
     }
 
@@ -563,8 +611,8 @@ contract SignatureTest is Test {
         });
 
         EventTypes.DelegateSigner memory delegateSigner0 = EventTypes.DelegateSigner({
-            delegateSigner: 0xa757D29D25116a657F2929DE61BCcA6173f731fE,
-            delegateContract: 0xa3255bb283A607803791ba8A202262f4AB28b0B2,
+            delegateSigner: 0xa3255bb283A607803791ba8A202262f4AB28b0B2,
+            delegateContract: 0xa757D29D25116a657F2929DE61BCcA6173f731fE,
             brokerHash: 0x1723cb226c337a417a6022890bc5671ebb4db551db0273536bf1094edf39ed66,
             chainId: 42162
         });
@@ -585,9 +633,9 @@ contract SignatureTest is Test {
 
         EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
             events: events,
-            r: 0x8ba797a87cf3ed8d06af3f194abfa332633f282b656c86cca1db21f4efc5c752,
-            s: 0x6092d3f1d539c9560298da319aa1e0970cb69bfdac8e17165f81124efdeafb71,
-            v: 0x1c,
+            r: 0x1843d7a15a61c3f6d9b23f322af959ec7c399d4db2acb6d38880abe37e256688,
+            s: 0x7aee366da8bf51c9a2f5312f64c660fc34c88db19d72203624a1ea27d1c75ac6,
+            v: 0x1b,
             count: 4,
             batchId: 7888
         });
