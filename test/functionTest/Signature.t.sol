@@ -571,7 +571,6 @@ contract SignatureTest is Test {
             count: 4,
             batchId: 882
         });
-        console2.logBytes(abi.encode(e1));
         bool succ = Signature.eventsUploadEncodeHashVerify(e1, 0xDdDd1555A17d3Dad86748B883d2C1ce633A7cd88);
         assertEq(succ, true);
     }
