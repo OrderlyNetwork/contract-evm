@@ -110,9 +110,9 @@
     },
     "polygon": {
       "multiSig": "0x4e834Ca9310d7710a409638A7aa70CB22F141Df3",
-      "proxyAdmin": "0x0000000000000000000000000000000000000000",
+      "proxyAdmin": "0xA2eA0a58b083c492AdC91A687FAc8B53AdB7c0Fd",
       "usdc": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
-      "vault": "0x0000000000000000000000000000000000000000"
+      "vault": "0x816f722424B49Cf1275cc86DA9840Fbd5a6167e9"
     }
   }
 }
