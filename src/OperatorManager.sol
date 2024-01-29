@@ -242,6 +242,15 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         } else if (bizType == 4) {
             // liquidation
             ledger.executeLiquidation(abi.decode(data.data, (EventTypes.Liquidation)), data.eventId);
+        } else if (bizType == 5) {
+            // fee disuribution
+            ledger.executeFeeDistribution(abi.decode(data.data, (EventTypes.FeeDistribution)), data.eventId);
+        } else if (bizType == 6) {
+            // delegate signer
+            ledger.executeDelegateSigner(abi.decode(data.data, (EventTypes.DelegateSigner)), data.eventId);
+        } else if (bizType == 7) {
+            // delegate withdraw
+            ledger.executeDelegateWithdrawAction(abi.decode(data.data, (EventTypes.WithdrawData)), data.eventId);
         } else {
             revert InvalidBizType(bizType);
         }
