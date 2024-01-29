@@ -149,12 +149,14 @@ forge script script/ledgerV2/DeployNewOperatorManager.s.sol -f $RPC_URL_ORDERLYO
 forge script script/ledgerV2/DeployNewFeeManager.s.sol -f $RPC_URL_ORDERLYOP --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
 forge script script/ledgerV2/DeployNewVaultManager.s.sol -f $RPC_URL_ORDERLYOP --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
 forge script script/ledgerV2/DeployNewMarketManager.s.sol -f $RPC_URL_ORDERLYOP --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
+forge script script/ledgerV2/DeployNewLedgerImplA.s.sol -f $RPC_URL_ORDERLYOP --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
 # orderly mainnet
 forge script script/ledgerV2/DeployNewLedger.s.sol -f $RPC_URL_ORDERLYMAIN --broadcast --verifier-url https://explorer.orderly.network/api\? --verifier blockscout --verify
 forge script script/ledgerV2/DeployNewOperatorManager.s.sol -f $RPC_URL_ORDERLYMAIN --broadcast --verifier-url https://explorer.orderly.network/api\? --verifier blockscout --verify
 forge script script/ledgerV2/DeployNewFeeManager.s.sol -f $RPC_URL_ORDERLYMAIN --broadcast --verifier-url https://explorer.orderly.network/api\? --verifier blockscout --verify
 forge script script/ledgerV2/DeployNewVaultManager.s.sol -f $RPC_URL_ORDERLYMAIN --broadcast --verifier-url https://explorer.orderly.network/api\? --verifier blockscout --verify
 forge script script/ledgerV2/DeployNewMarketManager.s.sol -f $RPC_URL_ORDERLYMAIN --broadcast --verifier-url https://explorer.orderly.network/api\? --verifier blockscout --verify
+forge script script/ledgerV2/DeployNewLedgerImplA.s.sol -f $RPC_URL_ORDERLYMAIN --broadcast --verifier-url https://explorer.orderly.network/api\? --verifier blockscout --verify
 ```
 
 ## Vault scripts
@@ -178,6 +180,10 @@ forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_OPGOERLI --verifi
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_OPSEPOLIA --verifier-url https://api-sepolia-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
 # op mainnet
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_OP --verifier-url https://api-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
+# polygon mumbai
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_MUMBAI --verifier-url https://api-testnet.polygonscan.com/api --broadcast --verify --etherscan-api-key $POLYGON_ETHERSCAN_API_KEY
+# polygon mainnet
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_POLYGON --verifier-url https://api.polygonscan.com/api --broadcast --verify --etherscan-api-key $POLYGON_ETHERSCAN_API_KEY
 ```
 
 ### Deploy new implement command:
@@ -187,6 +193,9 @@ forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_OP --verifier-url
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_ARBITRUMGOERLI --verifier-url https://api-goerli.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
 # arb sepolia
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_ARBITRUMSEPOLIA --verifier-url https://api-sepolia.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
+# polygon mumbai
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_MUMBAI --verifier-url https://api-testnet.polygonscan.com/api --broadcast --verify --etherscan-api-key $POLYGON_ETHERSCAN_API_KEY
+
 # arb mainnet
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_ARBITRUM --verifier-url https://api.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
 # op goerli

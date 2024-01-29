@@ -2,10 +2,14 @@
 pragma solidity ^0.8.18;
 
 /// @title Utils library
-/// @author Orderly_Rubick
+/// @author Orderly_Rubick Orderly_Zion
 library Utils {
-    function getAccoundId(address _userAddr, string memory _brokerId) internal pure returns (bytes32) {
-        return keccak256(abi.encode(_userAddr, keccak256(abi.encodePacked(_brokerId))));
+    function getAccountId(address _userAddr, string memory _brokerId) internal pure returns (bytes32) {
+        return keccak256(abi.encode(_userAddr, calculateStringHash(_brokerId)));
+    }
+
+    function calculateAccountId(address _userAddr, bytes32 _brokerHash) internal pure returns (bytes32) {
+        return keccak256(abi.encode(_userAddr, _brokerHash));
     }
 
     function calculateStringHash(string memory _str) internal pure returns (bytes32) {

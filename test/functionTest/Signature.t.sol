@@ -465,6 +465,183 @@ contract SignatureTest is Test {
         assertEq(succ, true);
     }
 
+    // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/445056152/FeeDisutrubution+Event+Upload
+    function test_eventUploadEncodeHash_feeDistribution() public {
+        EventTypes.FeeDistribution memory fee0 = EventTypes.FeeDistribution({
+            fromAccountId: 0x9ff99a5d6cb71a3ef897b0fff5f5801af6dc5f72d8f1608e61409b8fc965bd68,
+            toAccountId: 0xc69f41c55c00e4d875b3e82eeb0fcda3de2090a10130baf3c1ffee0f2e7ce243,
+            amount: 1231245125,
+            tokenHash: 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa
+        });
+        EventTypes.FeeDistribution memory fee1 = EventTypes.FeeDistribution({
+            fromAccountId: 0xc69f41c55c00e4d875b3e82eeb0fcda3de2090a10130baf3c1ffee0f2e7ce243,
+            toAccountId: 0x9ff99a5d6cb71a3ef897b0fff5f5801af6dc5f72d8f1608e61409b8fc965bd68,
+            amount: 6435342234,
+            tokenHash: 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa
+        });
+
+        EventTypes.EventUploadData[] memory events = new EventTypes.EventUploadData[](2);
+        events[0] = EventTypes.EventUploadData({bizType: 5, eventId: 1274, data: abi.encode(fee0)});
+        events[1] = EventTypes.EventUploadData({bizType: 5, eventId: 1277, data: abi.encode(fee1)});
+        EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
+            events: events,
+            r: 0x26eb59ba41e0a9e1c729c8d9f7e766ee4213886e13dfa6d985151180ff3af41f,
+            s: 0x798c57e7dbf574c52a5583299c460ba70ef19482bec4c8fa2edbdaf01ab2fa95,
+            v: 0x1c,
+            count: 2,
+            batchId: 7888
+        });
+
+        bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
+        assertEq(succ, true);
+    }
+
+    // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/459277365/DelegateSigner+event+upload
+    function test_eventUploadEncodeHash_delegateSigner() public {
+        EventTypes.DelegateSigner memory delegateSigner0 = EventTypes.DelegateSigner({
+            delegateSigner: 0xa3255bb283A607803791ba8A202262f4AB28b0B2,
+            delegateContract: 0xa757D29D25116a657F2929DE61BCcA6173f731fE,
+            brokerHash: 0x1723cb226c337a417a6022890bc5671ebb4db551db0273536bf1094edf39ed66,
+            chainId: 42161
+        });
+
+        EventTypes.DelegateSigner memory delegateSigner1 = EventTypes.DelegateSigner({
+            delegateSigner: 0xa3255bb283A607803791ba8A202262f4AB28b0B2,
+            delegateContract: 0xa757D29D25116a657F2929DE61BCcA6173f731fE,
+            brokerHash: 0x1723cb226c337a417a6022890bc5671ebb4db551db0273536bf1094edf39ed66,
+            chainId: 42162
+        });
+
+        EventTypes.EventUploadData[] memory events = new EventTypes.EventUploadData[](2);
+        events[0] = EventTypes.EventUploadData({bizType: 6, eventId: 234, data: abi.encode(delegateSigner0)});
+        events[1] = EventTypes.EventUploadData({bizType: 6, eventId: 235, data: abi.encode(delegateSigner1)});
+        EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
+            events: events,
+            r: 0x485d4bda8c7ea56f553e486cbf311ab0575a257fa431b72c141a208fbed4eaca,
+            s: 0x683916616409b086f102e1b58c08bc324e3bf17ebdefc6389813f67f934f5554,
+            v: 0x1b,
+            count: 2,
+            batchId: 7888
+        });
+
+        bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
+        assertEq(succ, true);
+    }
+
+    // based on real data uploaded to OperatorManager contract
+    function test_eventUploadEncodeHash_delegateSigner1() public {
+        EventTypes.DelegateSigner memory delegateSigner0 = EventTypes.DelegateSigner({
+            delegateSigner: 0xDd3287043493E0a08d2B348397554096728B459c,
+            delegateContract: 0x65E6b31cC38aC83E0f11ACc67eaE5f7EFd31aB18,
+            brokerHash: 0x6ca2f644ef7bd6d75953318c7f2580014941e753b3c6d54da56b3bf75dd14dfc,
+            chainId: 11155420
+        });
+
+        EventTypes.DelegateSigner memory delegateSigner1 = EventTypes.DelegateSigner({
+            delegateSigner: 0xDd3287043493E0a08d2B348397554096728B459c,
+            delegateContract: 0x31c30d825a8A98C67C1c92b86e652f877435970b,
+            brokerHash: 0x6ca2f644ef7bd6d75953318c7f2580014941e753b3c6d54da56b3bf75dd14dfc,
+            chainId: 421614
+        });
+
+        EventTypes.DelegateSigner memory delegateSigner2 = EventTypes.DelegateSigner({
+            delegateSigner: 0x2bAC7A6771613440989432c9B3B9a45dDd15e657,
+            delegateContract: 0xa4394b62261061C629800C6D86D153A9F38f0cbB,
+            brokerHash: 0x6ca2f644ef7bd6d75953318c7f2580014941e753b3c6d54da56b3bf75dd14dfc,
+            chainId: 421614
+        });
+
+        EventTypes.DelegateSigner memory delegateSigner3 = EventTypes.DelegateSigner({
+            delegateSigner: 0x2bAC7A6771613440989432c9B3B9a45dDd15e657,
+            delegateContract: 0xa4394b62261061C629800C6D86D153A9F38f0cbB,
+            brokerHash: 0x083098c593f395bea1de45dda552d9f14e8fcb0be3faaa7a1903c5477d7ba7fd,
+            chainId: 421614
+        });
+
+        EventTypes.EventUploadData[] memory events = new EventTypes.EventUploadData[](4);
+        events[0] = EventTypes.EventUploadData({bizType: 6, eventId: 1439, data: abi.encode(delegateSigner0)});
+        events[1] = EventTypes.EventUploadData({bizType: 6, eventId: 1440, data: abi.encode(delegateSigner1)});
+        events[2] = EventTypes.EventUploadData({bizType: 6, eventId: 1441, data: abi.encode(delegateSigner2)});
+        events[3] = EventTypes.EventUploadData({bizType: 6, eventId: 1442, data: abi.encode(delegateSigner3)});
+        EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
+            events: events,
+            r: 0x12e4dfd5d7b7730b23a20461ac0585d8bae27b3efdd5bcaef0db1c7fe314f344,
+            s: 0x29e11bebc46a5ae183616f88a8b8278bb83f5927a66dd0bb390ab8ec46be2a54,
+            v: 0x1b,
+            count: 4,
+            batchId: 882
+        });
+        bool succ = Signature.eventsUploadEncodeHashVerify(e1, 0xDdDd1555A17d3Dad86748B883d2C1ce633A7cd88);
+        assertEq(succ, true);
+    }
+
+    // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/459277365/DelegateSigner+event+upload
+    function test_eventUploadEncodeHash_delegateWitdraw() public {
+        EventTypes.WithdrawData memory withdraw0 = EventTypes.WithdrawData({
+            tokenAmount: 123,
+            fee: 5000,
+            chainId: 10086,
+            accountId: 0x1723cb226c337a417a6022890bc5671ebb4db551db0273536bf1094edf39ed63,
+            r: 0x0,
+            s: 0x0,
+            v: 0x0,
+            sender: 0x6a9961Ace9bF0C1B8B98ba11558A4125B1f5EA3f,
+            withdrawNonce: 9,
+            receiver: 0x6a9961Ace9bF0C1B8B98ba11558A4125B1f5EA3f,
+            timestamp: 1683270380530,
+            brokerId: "woo_dex",
+            tokenSymbol: "USDC"
+        });
+
+        EventTypes.WithdrawData memory delegateWithdraw0 = EventTypes.WithdrawData({
+            tokenAmount: 12356,
+            fee: 5001,
+            chainId: 10087,
+            accountId: 0x1723cb226c337a417a6022890bc5671ebb4db551db0273536bf1094edf39ed64,
+            r: 0x0,
+            s: 0x0,
+            v: 0x0,
+            sender: 0x6a9961Ace9bF0C1B8B98ba11558A4125B1f5EA3f,
+            withdrawNonce: 10,
+            receiver: 0x6a9961Ace9bF0C1B8B98ba11558A4125B1f5EA3f,
+            timestamp: 1683270380531,
+            brokerId: "woofi_dex",
+            tokenSymbol: "USDC"
+        });
+
+        EventTypes.DelegateSigner memory delegateSigner0 = EventTypes.DelegateSigner({
+            delegateSigner: 0xa3255bb283A607803791ba8A202262f4AB28b0B2,
+            delegateContract: 0xa757D29D25116a657F2929DE61BCcA6173f731fE,
+            brokerHash: 0x1723cb226c337a417a6022890bc5671ebb4db551db0273536bf1094edf39ed66,
+            chainId: 42162
+        });
+
+        EventTypes.FeeDistribution memory fee0 = EventTypes.FeeDistribution({
+            fromAccountId: 0xc69f41c55c00e4d875b3e82eeb0fcda3de2090a10130baf3c1ffee0f2e7ce243,
+            toAccountId: 0x9ff99a5d6cb71a3ef897b0fff5f5801af6dc5f72d8f1608e61409b8fc965bd68,
+            amount: 6435342234,
+            tokenHash: 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa
+        });
+
+        EventTypes.EventUploadData[] memory events = new EventTypes.EventUploadData[](4);
+
+        events[0] = EventTypes.EventUploadData({bizType: 1, eventId: 1, data: abi.encode(withdraw0)});
+        events[1] = EventTypes.EventUploadData({bizType: 7, eventId: 4, data: abi.encode(delegateWithdraw0)});
+        events[2] = EventTypes.EventUploadData({bizType: 6, eventId: 235, data: abi.encode(delegateSigner0)});
+        events[3] = EventTypes.EventUploadData({bizType: 5, eventId: 1277, data: abi.encode(fee0)});
+
+        EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
+            events: events,
+            r: 0x1843d7a15a61c3f6d9b23f322af959ec7c399d4db2acb6d38880abe37e256688,
+            s: 0x7aee366da8bf51c9a2f5312f64c660fc34c88db19d72203624a1ea27d1c75ac6,
+            v: 0x1b,
+            count: 4,
+            batchId: 7888
+        });
+        bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
+        assertEq(succ, true);
+    }
+
     // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/401440769/Rebalance+Test+vector#Burn
     function test_rebalanceBurnUploadEncodeHash() public {
         RebalanceTypes.RebalanceBurnUploadData memory data = RebalanceTypes.RebalanceBurnUploadData({

@@ -1,5 +1,5 @@
 {
     "env": "dev",
     "ledgerNetwork": "orderlyop",
-    "vaultNetwork": "arbitrumgoerli"
+    "vaultNetwork": "polygonmumbai"
 }
