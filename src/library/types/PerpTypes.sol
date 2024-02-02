@@ -21,7 +21,7 @@ library PerpTypes {
         int128 tradeQty;
         int128 notional;
         uint128 executedPrice;
-        uint128 fee;
+        int128 fee;
         int128 sumUnitaryFundings;
         uint64 tradeId;
         uint64 matchId;

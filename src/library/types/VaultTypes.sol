@@ -30,4 +30,9 @@ library VaultTypes {
         address receiver;
         uint64 withdrawNonce; // withdraw nonce
     }
+
+    struct VaultDelegate {
+        bytes32 brokerHash;
+        address delegateSigner;
+    }
 }

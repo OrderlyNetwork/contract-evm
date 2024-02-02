@@ -10,6 +10,7 @@ import "../../src/MarketManager.sol";
 import "../mock/LedgerCrossChainManagerMock.sol";
 import "../../src/FeeManager.sol";
 import "../cheater/LedgerCheater.sol";
+import "../../src/LedgerImplA.sol";
 
 contract LiquidationTest is Test {
     bytes32 constant BROKER_HASH = 0x083098c593f395bea1de45dda552d9f14e8fcb0be3faaa7a1903c5477d7ba7fd;
@@ -45,12 +46,14 @@ contract LiquidationTest is Test {
         ILedger ledgerImpl = new LedgerCheater();
         IFeeManager feeImpl = new FeeManager();
         IMarketManager marketImpl = new MarketManager();
+        LedgerImplA ledgerImplA = new LedgerImplA();
 
-        operatorProxy = new TransparentUpgradeableProxy(address(operatorManagerImpl), address(admin), "");
-        vaultProxy = new TransparentUpgradeableProxy(address(vaultManagerImpl), address(admin), "");
-        ledgerProxy = new TransparentUpgradeableProxy(address(ledgerImpl), address(admin), "");
-        feeProxy = new TransparentUpgradeableProxy(address(feeImpl), address(admin), "");
-        marketProxy = new TransparentUpgradeableProxy(address(marketImpl), address(admin), "");
+        bytes memory initData = abi.encodeWithSignature("initialize()");
+        operatorProxy = new TransparentUpgradeableProxy(address(operatorManagerImpl), address(admin), initData);
+        vaultProxy = new TransparentUpgradeableProxy(address(vaultManagerImpl), address(admin), initData);
+        ledgerProxy = new TransparentUpgradeableProxy(address(ledgerImpl), address(admin), initData);
+        feeProxy = new TransparentUpgradeableProxy(address(feeImpl), address(admin), initData);
+        marketProxy = new TransparentUpgradeableProxy(address(marketImpl), address(admin), initData);
 
         operatorManager = IOperatorManager(address(operatorProxy));
         vaultManager = IVaultManager(address(vaultProxy));
@@ -58,17 +61,12 @@ contract LiquidationTest is Test {
         feeManager = IFeeManager(address(feeProxy));
         marketManager = IMarketManager(address(marketProxy));
 
-        operatorManager.initialize();
-        vaultManager.initialize();
-        ledger.initialize();
-        feeManager.initialize();
-        marketManager.initialize();
-
         ledger.setOperatorManagerAddress(address(operatorManager));
         ledger.setCrossChainManager(address(ledgerCrossChainManager));
         ledger.setVaultManager(address(vaultManager));
         ledger.setFeeManager(address(feeManager));
         ledger.setMarketManager(address(marketManager));
+        ledger.setLedgerImplA(address(ledgerImplA));
 
         operatorManager.setOperator(operatorAddress);
         operatorManager.setLedger(address(ledger));
