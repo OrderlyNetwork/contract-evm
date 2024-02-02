@@ -91,7 +91,7 @@ interface ILedgerEvent {
         int128 tradeQty,
         int128 notional,
         uint128 executedPrice,
-        uint128 fee,
+        int128 fee,
         int128 sumUnitaryFundings,
         uint64 tradeId,
         uint64 matchId,
@@ -115,11 +115,29 @@ interface ILedgerEvent {
         int128 sumUnitaryFundings
     );
 
+    event FeeDistribution(
+        uint64 indexed eventId,
+        bytes32 indexed fromAccountId,
+        bytes32 indexed toAccountId,
+        uint128 amount,
+        bytes32 tokenHash
+    );
+
+    event DelegateSigner(
+        uint64 indexed eventId,
+        uint256 indexed chainId,
+        bytes32 indexed accountId,
+        address delegateContract,
+        bytes32 brokerHash,
+        address delegateSigner
+    );
+
     event ChangeOperatorManager(address oldAddress, address newAddress);
     event ChangeCrossChainManager(address oldAddress, address newAddress);
     event ChangeVaultManager(address oldAddress, address newAddress);
     event ChangeMarketManager(address oldAddress, address newAddress);
     event ChangeFeeManager(address oldAddress, address newAddress);
+    event ChangeLedgerImplA(address oldAddress, address newAddress);
 
     // All events below are deprecated
     // Keep them for indexer backward compatibility
@@ -183,5 +201,20 @@ interface ILedgerEvent {
         uint128 fee,
         uint256 blocktime,
         uint8 failReson
+    );
+    // @deprecated
+    event ProcessValidatedFutures(
+        bytes32 indexed accountId,
+        bytes32 indexed symbolHash,
+        bytes32 feeAssetHash,
+        int128 tradeQty,
+        int128 notional,
+        uint128 executedPrice,
+        uint128 fee,
+        int128 sumUnitaryFundings,
+        uint64 tradeId,
+        uint64 matchId,
+        uint64 timestamp,
+        bool side
     );
 }

@@ -5,6 +5,8 @@ pragma solidity ^0.8.18;
 interface IError {
     // Common Error
     error AddressZero();
+    error Bytes32Zero();
+    error DelegatecallFail();
 
     // LedgerComponent Error
     error OnlyLedgerCanCall();
@@ -27,6 +29,12 @@ interface IError {
     error TokenNotAllowed(bytes32 tokenHash, uint256 chainId);
     error BrokerNotAllowed();
     error SymbolNotAllowed();
+    error DelegateSignerNotMatch(bytes32 accountId, address savedSginer, address givenSigner);
+    error DelegateChainIdNotMatch(bytes32 accountId, uint256 savedChainId, uint256 givenChainId);
+    error DelegateReceiverNotMatch(address receiver, address delegateContract);
+    error ZeroChainId();
+    error ZeroDelegateSigner();
+    error ZeroDelegateContract();
 
     // OperatorManager Error
     error InvalidBizType(uint8 bizType);

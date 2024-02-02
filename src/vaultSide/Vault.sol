@@ -231,6 +231,15 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         );
     }
 
+    function delegateSigner(VaultTypes.VaultDelegate calldata data) public override {
+        if ((msg.sender).code.length == 0) revert ZeroCodeLength();
+        if ((data.delegateSigner).code.length != 0) revert NotZeroCodeLength();
+        if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
+
+        // emit delegate event
+        emit AccountDelegate(msg.sender, data.brokerHash, data.delegateSigner, block.chainid, block.number);
+    }
+
     /// @notice Update the depositId
     function _newDepositId() internal returns (uint64) {
         return ++depositId;

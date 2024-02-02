@@ -27,7 +27,9 @@ contract LedgerDataLayout {
     IFeeManager public feeManager;
     // An incresing global deposit Id for cross chain deposit
     uint64 public globalDepositId;
+    // A mapping from contract accountId to its delegate signer
+    mapping(bytes32 => AccountTypes.AccountDelegateSigner) public contractSigner;
 
     // The storage gap to prevent overwriting by proxy
-    uint256[44] private __gap;
+    uint256[43] private __gap;
 }
