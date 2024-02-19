@@ -18,6 +18,8 @@ contract OperatorManagerZip is
     IOperatorManagerZip,
     OperatorManagerZipDataLayout
 {
+    bytes32 constant HASH_OF_USDC = 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa;
+
     constructor() {
         _disableInitializers();
     }
@@ -76,7 +78,7 @@ contract OperatorManagerZip is
             decodedData.trades[i] = PerpTypes.FuturesTradeUpload({
                 accountId: zipData.accountId,
                 symbolHash: symbolId2Hash[zipData.symbolId],
-                feeAssetHash: 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa, // hash of "USDC"
+                feeAssetHash: HASH_OF_USDC,
                 tradeQty: zipData.tradeQty,
                 notional: calcNotional(zipData.tradeQty, zipData.executedPrice),
                 executedPrice: zipData.executedPrice,
@@ -89,6 +91,150 @@ contract OperatorManagerZip is
             });
         }
         IOperatorManager(operatorManager).futuresTradeUpload(decodedData);
+    }
+
+    function decodeEventUploadData(bytes calldata data) external override onlyOperator {
+        bytes memory raw = _decompressed(data);
+        EventTypesZip.EventUpload memory decoded = abi.decode(raw, (EventTypesZip.EventUpload));
+        EventTypes.EventUpload memory decodedData = EventTypes.EventUpload({
+            events: new EventTypes.EventUploadData[](decoded.count),
+            r: decoded.r,
+            s: decoded.s,
+            v: decoded.v,
+            count: decoded.count,
+            batchId: decoded.batchId
+        });
+        for (uint8 i = 0; i < decoded.count; i++) {
+            EventTypesZip.EventUploadData memory zipData = decoded.events[i];
+            if (zipData.bizType == 1 || zipData.bizType == 7) {
+                EventTypesZip.WithdrawData memory withdrawZip = abi.decode(zipData.data, (EventTypesZip.WithdrawData));
+                decodedData.events[i] = EventTypes.EventUploadData({
+                    bizType: zipData.bizType,
+                    eventId: zipData.eventId,
+                    data: abi.encode(
+                        EventTypes.WithdrawData({
+                            tokenAmount: withdrawZip.tokenAmount,
+                            fee: withdrawZip.fee,
+                            chainId: withdrawZip.chainId,
+                            accountId: withdrawZip.accountId,
+                            r: withdrawZip.r,
+                            s: withdrawZip.s,
+                            v: withdrawZip.v,
+                            sender: withdrawZip.sender,
+                            withdrawNonce: withdrawZip.withdrawNonce,
+                            receiver: withdrawZip.receiver,
+                            timestamp: withdrawZip.timestamp,
+                            brokerId: withdrawZip.brokerId,
+                            tokenSymbol: "USDC"
+                        })
+                        )
+                });
+            } else if (zipData.bizType == 2) {
+                EventTypesZip.Settlement memory settlementZip = abi.decode(zipData.data, (EventTypesZip.Settlement));
+                EventTypes.Settlement memory decodedSettlement = EventTypes.Settlement({
+                    accountId: settlementZip.accountId,
+                    settledAssetHash: symbolId2Hash[settlementZip.settledAssetId],
+                    insuranceAccountId: settlementZip.insuranceAccountId,
+                    settledAmount: settlementZip.settledAmount,
+                    insuranceTransferAmount: settlementZip.insuranceTransferAmount,
+                    timestamp: settlementZip.timestamp,
+                    settlementExecutions: new EventTypes.SettlementExecution[](settlementZip.settlementExecutions.length)
+                });
+                for (uint8 j = 0; j < settlementZip.settlementExecutions.length; j++) {
+                    EventTypesZip.SettlementExecution memory executionZip = settlementZip.settlementExecutions[j];
+                    decodedSettlement.settlementExecutions[j] = EventTypes.SettlementExecution({
+                        symbolHash: symbolId2Hash[executionZip.symbolId],
+                        markPrice: executionZip.markPrice,
+                        sumUnitaryFundings: executionZip.sumUnitaryFundings,
+                        settledAmount: executionZip.settledAmount
+                    });
+                }
+                decodedData.events[i] = EventTypes.EventUploadData({
+                    bizType: zipData.bizType,
+                    eventId: zipData.eventId,
+                    data: abi.encode(decodedSettlement)
+                });
+            } else if (zipData.bizType == 3) {
+                EventTypesZip.Adl memory adlZip = abi.decode(zipData.data, (EventTypesZip.Adl));
+                decodedData.events[i] = EventTypes.EventUploadData({
+                    bizType: zipData.bizType,
+                    eventId: zipData.eventId,
+                    data: abi.encode(
+                        EventTypes.Adl({
+                            accountId: adlZip.accountId,
+                            insuranceAccountId: adlZip.insuranceAccountId,
+                            symbolHash: symbolId2Hash[adlZip.symbolId],
+                            positionQtyTransfer: adlZip.positionQtyTransfer,
+                            costPositionTransfer: adlZip.costPositionTransfer,
+                            adlPrice: adlZip.adlPrice,
+                            sumUnitaryFundings: adlZip.sumUnitaryFundings,
+                            timestamp: adlZip.timestamp
+                        })
+                        )
+                });
+            } else if (zipData.bizType == 4) {
+                EventTypesZip.Liquidation memory liquidationZip = abi.decode(zipData.data, (EventTypesZip.Liquidation));
+                EventTypes.Liquidation memory decodedLiquidation = EventTypes.Liquidation({
+                    liquidatedAccountId: liquidationZip.liquidatedAccountId,
+                    insuranceAccountId: liquidationZip.insuranceAccountId,
+                    liquidatedAssetHash: symbolId2Hash[liquidationZip.liquidatedAssetId],
+                    insuranceTransferAmount: liquidationZip.insuranceTransferAmount,
+                    timestamp: liquidationZip.timestamp,
+                    liquidationTransfers: new EventTypes.LiquidationTransfer[](liquidationZip.liquidationTransfers.length)
+                });
+                for (uint8 j = 0; j < liquidationZip.liquidationTransfers.length; j++) {
+                    EventTypesZip.LiquidationTransfer memory transferZip = liquidationZip.liquidationTransfers[j];
+                    decodedLiquidation.liquidationTransfers[j] = EventTypes.LiquidationTransfer({
+                        liquidatorAccountId: transferZip.liquidatorAccountId,
+                        symbolHash: symbolId2Hash[transferZip.symbolId],
+                        positionQtyTransfer: transferZip.positionQtyTransfer,
+                        costPositionTransfer: transferZip.costPositionTransfer,
+                        liquidatorFee: transferZip.liquidatorFee,
+                        insuranceFee: transferZip.insuranceFee,
+                        liquidationFee: transferZip.liquidationFee,
+                        markPrice: transferZip.markPrice,
+                        sumUnitaryFundings: transferZip.sumUnitaryFundings,
+                        liquidationTransferId: transferZip.liquidationTransferId
+                    });
+                }
+                decodedData.events[i] = EventTypes.EventUploadData({
+                    bizType: zipData.bizType,
+                    eventId: zipData.eventId,
+                    data: abi.encode(decodedLiquidation)
+                });
+            } else if (zipData.bizType == 5) {
+                EventTypesZip.FeeDistribution memory feeDistributionZip =
+                    abi.decode(zipData.data, (EventTypesZip.FeeDistribution));
+                decodedData.events[i] = EventTypes.EventUploadData({
+                    bizType: zipData.bizType,
+                    eventId: zipData.eventId,
+                    data: abi.encode(
+                        EventTypes.FeeDistribution({
+                            fromAccountId: feeDistributionZip.fromAccountId,
+                            toAccountId: feeDistributionZip.toAccountId,
+                            amount: feeDistributionZip.amount,
+                            tokenHash: feeDistributionZip.tokenHash
+                        })
+                        )
+                });
+            } else if (zipData.bizType == 6) {
+                EventTypesZip.DelegateSigner memory delegateSignerZip =
+                    abi.decode(zipData.data, (EventTypesZip.DelegateSigner));
+                decodedData.events[i] = EventTypes.EventUploadData({
+                    bizType: zipData.bizType,
+                    eventId: zipData.eventId,
+                    data: abi.encode(
+                        EventTypes.DelegateSigner({
+                            delegateSigner: delegateSignerZip.delegateSigner,
+                            delegateContract: delegateSignerZip.delegateContract,
+                            brokerHash: delegateSignerZip.brokerHash,
+                            chainId: delegateSignerZip.chainId
+                        })
+                        )
+                });
+            }
+        }
+        IOperatorManager(operatorManager).eventUpload(decodedData);
     }
 
     function initSymbolId2Hash() external override onlyOwner {
@@ -114,6 +260,7 @@ contract OperatorManagerZip is
 
     // empty function, for generate ABI for struct `PerpTypesZip.FuturesTradeUploadDataZip`
     function placeholder(PerpTypesZip.FuturesTradeUploadDataZip calldata zip) external {}
+    function placeholder2(EventTypesZip.EventUpload calldata zip) external {}
 
     // internal function
     function calcNotional(int128 tradeQty, uint128 executedPrice) internal pure returns (int128) {
