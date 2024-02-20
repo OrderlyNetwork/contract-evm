@@ -133,7 +133,7 @@ contract OperatorManagerZip is
                 EventTypesZip.Settlement memory settlementZip = abi.decode(zipData.data, (EventTypesZip.Settlement));
                 EventTypes.Settlement memory decodedSettlement = EventTypes.Settlement({
                     accountId: settlementZip.accountId,
-                    settledAssetHash: symbolId2Hash[settlementZip.settledAssetId],
+                    settledAssetHash: settlementZip.settledAssetHash,
                     insuranceAccountId: settlementZip.insuranceAccountId,
                     settledAmount: settlementZip.settledAmount,
                     insuranceTransferAmount: settlementZip.insuranceTransferAmount,
@@ -177,7 +177,7 @@ contract OperatorManagerZip is
                 EventTypes.Liquidation memory decodedLiquidation = EventTypes.Liquidation({
                     liquidatedAccountId: liquidationZip.liquidatedAccountId,
                     insuranceAccountId: liquidationZip.insuranceAccountId,
-                    liquidatedAssetHash: symbolId2Hash[liquidationZip.liquidatedAssetId],
+                    liquidatedAssetHash: liquidationZip.liquidatedAssetHash,
                     insuranceTransferAmount: liquidationZip.insuranceTransferAmount,
                     timestamp: liquidationZip.timestamp,
                     liquidationTransfers: new EventTypes.LiquidationTransfer[](liquidationZip.liquidationTransfers.length)
