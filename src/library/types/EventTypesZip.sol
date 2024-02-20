@@ -40,7 +40,7 @@ library EventTypesZip {
 
     struct Settlement {
         bytes32 accountId;
-        uint8 settledAssetId;
+        bytes32 settledAssetHash;
         bytes32 insuranceAccountId;
         int128 settledAmount;
         uint128 insuranceTransferAmount;
@@ -69,7 +69,7 @@ library EventTypesZip {
     struct Liquidation {
         bytes32 liquidatedAccountId;
         bytes32 insuranceAccountId;
-        uint8 liquidatedAssetId;
+        bytes32 liquidatedAssetHash;
         uint128 insuranceTransferAmount;
         uint64 timestamp;
         LiquidationTransfer[] liquidationTransfers;
