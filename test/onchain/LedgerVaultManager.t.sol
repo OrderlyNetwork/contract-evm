@@ -5,7 +5,7 @@ import "forge-std/Test.sol";
 import "../../src/VaultManager.sol";
 import "../../script/utils/ConfigHelper.s.sol";
 
-contract OnchainGetLedgerAllowedList is ConfigHelper, Test {
+contract OnchainLedgerVaultManager is ConfigHelper, Test {
     uint256 mainnetFork;
     uint256 stagingFork;
     bytes32 constant BROKER_ID_1 = 0x6ca2f644ef7bd6d75953318c7f2580014941e753b3c6d54da56b3bf75dd14dfc; // woofi_pro
@@ -25,21 +25,21 @@ contract OnchainGetLedgerAllowedList is ConfigHelper, Test {
         stagingFork = vm.createFork(RPC_URL_ORDERLYOP);
     }
 
-    function test_onchain_brokerList_staging() external {
+    function test_onchain_vaultManager_staging() external {
         vm.selectFork(stagingFork);
         string memory env = "staging";
         string memory network = "orderlyop";
-        _test_onchain_brokerList(env, network);
+        _test_onchain_vaultManager(env, network);
     }
 
-    function test_onchain_brokerList_mainnet() external {
+    function test_onchain_vaultManager_mainnet() external {
         vm.selectFork(mainnetFork);
         string memory env = "mainnet";
         string memory network = "orderlymain";
-        _test_onchain_brokerList(env, network);
+        _test_onchain_vaultManager(env, network);
     }
 
-    function _test_onchain_brokerList(string memory env, string memory network) internal {
+    function _test_onchain_vaultManager(string memory env, string memory network) internal {
         LedgerDeployData memory config = getLedgerDeployData(env, network);
         address vaultManagerAddress = config.vaultManager;
         console.log("vaultManagerAddress: ", vaultManagerAddress);

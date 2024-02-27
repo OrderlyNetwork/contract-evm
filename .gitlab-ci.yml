@@ -2,7 +2,7 @@ stages:
   - test
 
 test-mr-job:
-  script: echo "Running tests for merge request (offline)"
+  script: echo "Running tests for merge request"
   stage: test
   image: ghcr.io/foundry-rs/foundry
   rules:
@@ -15,9 +15,12 @@ test-mr-job:
     - echo "Build with commit $CI_COMMIT_BRANCH!"
     - forge install
     - forge test --no-match-contract "(O|o)nchain"
+    - cp .env.example .env
+    - source .env
+    - forge test --match-contract "(O|o)nchain"
 
 test-schedule-job:
-  script: echo "Running tests for scheduled pipeline (both offline & online)"
+  script: echo "Running tests for scheduled pipeline"
   stage: test
   image: ghcr.io/foundry-rs/foundry
   rules:
