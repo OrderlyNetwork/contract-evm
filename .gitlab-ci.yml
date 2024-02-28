@@ -15,9 +15,6 @@ test-mr-job:
     - echo "Build with commit $CI_COMMIT_BRANCH!"
     - forge install
     - forge test --no-match-contract "(O|o)nchain"
-    - cp .env.example .env
-    - source .env
-    - forge test --match-contract "(O|o)nchain"
 
 test-schedule-job:
   script: echo "Running tests for scheduled pipeline"
@@ -32,7 +29,6 @@ test-schedule-job:
     - apk add --no-cache openssh
     - echo "Build with commit $CI_COMMIT_BRANCH!"
     - forge install
-    - forge test --no-match-contract "(O|o)nchain"
     - cp .env.example .env
     - source .env
     - forge test --match-contract "(O|o)nchain"
