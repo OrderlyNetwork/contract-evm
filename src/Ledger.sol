@@ -353,7 +353,9 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         (bool success, bytes memory returnData) = _getLedgerStorage().ledgerImplA.delegatecall(data);
         if (!success) {
             if (returnData.length > 0) {
-                revert(string(returnData));
+                assembly {
+                    revert(add(32, returnData), mload(returnData))
+                }
             } else {
                 revert DelegatecallFail();
             }
