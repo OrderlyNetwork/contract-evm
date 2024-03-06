@@ -1,7 +1,8 @@
 stages:
   - test
 
-test-job:
+test-mr-job:
+  script: echo "Running tests for merge request"
   stage: test
   image: ghcr.io/foundry-rs/foundry
   rules:
@@ -13,4 +14,21 @@ test-job:
     - apk add --no-cache openssh
     - echo "Build with commit $CI_COMMIT_BRANCH!"
     - forge install
-    - forge test
+    - forge test --no-match-contract "(O|o)nchain"
+
+test-schedule-job:
+  script: echo "Running tests for scheduled pipeline"
+  stage: test
+  image: ghcr.io/foundry-rs/foundry
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'schedule'
+  before_script:
+    - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/".insteadOf "git@gitlab.com:"
+  script:
+    - echo "Install build essentials"
+    - apk add --no-cache openssh
+    - echo "Build with commit $CI_COMMIT_BRANCH!"
+    - forge install
+    - cp .env.example .env
+    - source .env
+    - forge test --match-contract "(O|o)nchain"
