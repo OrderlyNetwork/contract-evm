@@ -121,19 +121,21 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
                 state = 101;
             } else if (account.balances[tokenHash] < withdraw.tokenAmount) {
                 // require balance enough
-                state = 1;
+                revert WithdrawBalanceNotEnough(account.balances[tokenHash], withdraw.tokenAmount);
             } else if (vaultManager.getBalance(tokenHash, withdraw.chainId) < withdraw.tokenAmount - withdraw.fee) {
                 // require chain has enough balance
-                state = 2;
+                revert WithdrawVaultBalanceNotEnough(
+                    vaultManager.getBalance(tokenHash, withdraw.chainId), withdraw.tokenAmount - withdraw.fee
+                );
             } else if (!Signature.verifyWithdraw(withdraw.sender, withdraw)) {
                 // require signature verify
                 state = 4;
             } else if (maxWithdrawFee > 0 && maxWithdrawFee < withdraw.fee) {
                 // require fee not exceed maxWithdrawFee
-                state = 5;
+                revert WithdrawFeeTooLarge(maxWithdrawFee, withdraw.fee);
             } else if (withdraw.receiver == address(0)) {
                 // require receiver not zero address
-                state = 6;
+                revert WithdrawToAddressZero();
             }
         }
         // check all assert, should not change any status
