@@ -35,6 +35,10 @@ interface IError {
     error ZeroChainId();
     error ZeroDelegateSigner();
     error ZeroDelegateContract();
+    error WithdrawBalanceNotEnough(uint128 balance, uint128 withdrawAmount);
+    error WithdrawVaultBalanceNotEnough(uint128 balance, uint128 withdrawAmount);
+    error WithdrawFeeTooLarge(uint128 maxFee, uint128 withdrawFee);
+    error WithdrawToAddressZero();
 
     // OperatorManager Error
     error InvalidBizType(uint8 bizType);
