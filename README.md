@@ -1,6 +1,6 @@
 # Introduction
 
-This repo is built with Foundry, including the scipts for test and deployment.
+This repo is built with Foundry, including the scripts for test and deployment.
 
 The major content is about the contracts for Orderly V2, including the Ledger and Vault contracts.
 
