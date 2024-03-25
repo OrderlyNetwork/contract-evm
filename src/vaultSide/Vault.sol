@@ -187,7 +187,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         // if deposit fee is enabled, user should pay fee in native token and the msg.value will be forwarded to CrossChainManager to pay for the layerzero cross-chain fee
         if (depositFeeEnabled) {
             if (msg.value == 0) revert ZeroDepositFee();
-            IVaultCrossChainManager(crossChainManagerAddress).depositWithFee{value: msg.value}(depositData);
+            IVaultCrossChainManager(crossChainManagerAddress).depositWithFee{value: msg.value}(msg.sender, depositData);
         } else {
             IVaultCrossChainManager(crossChainManagerAddress).deposit(depositData);
         }
