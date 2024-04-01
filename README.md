@@ -184,6 +184,10 @@ forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_OP --verifier-url
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_MUMBAI --verifier-url https://api-testnet.polygonscan.com/api --broadcast --verify --etherscan-api-key $POLYGON_ETHERSCAN_API_KEY
 # polygon mainnet
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_POLYGON --verifier-url https://api.polygonscan.com/api --broadcast --verify --etherscan-api-key $POLYGON_ETHERSCAN_API_KEY
+# base sepolia
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_BASESEPOLIA --verifier-url https://api-sepolia.basescan.org/api --broadcast --verify --etherscan-api-key $BASE_ETHERSCAN_API_KEY
+# base mainnet
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_BASE --verifier-url https://api.basescan.org/api --broadcast --verify --etherscan-api-key $BASE_ETHERSCAN_API_KEY
 ```
 
 ### Deploy new implement command:
@@ -205,6 +209,10 @@ forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_OP --verifier-url h
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_MUMBAI --verifier-url https://api-testnet.polygonscan.com/api --broadcast --verify --etherscan-api-key $POLYGON_ETHERSCAN_API_KEY
 # polygon mainnet
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_POLYGON --verifier-url https://ap.polygonscan.com/api --broadcast --verify --etherscan-api-key $POLYGON_ETHERSCAN_API_KEY
+# base sepolia
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_BASESEPOLIA --verifier-url https://api-sepolia.basescan.org/api --broadcast --verify --etherscan-api-key $BASE_ETHERSCAN_API_KEY
+# base mainnet
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_BASE --verifier-url https://api.basescan.org/api --broadcast --verify --etherscan-api-key $BASE_ETHERSCAN_API_KEY
 ```
 
 ### Set Cross-Chain Manager
