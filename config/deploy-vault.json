@@ -29,6 +29,12 @@
       "proxyAdmin": "0xEFCa93d6e7AD45c62B47aA01cafC2D0731B52F3e",
       "usdc": "0x9999f7fea5938fd3b1e26a12c3f2fb024e194f97",
       "vault": "0x56604D4097042f7950Eb8BFc58b0Dff072089070"
+    },
+    "basesepolia": {
+      "multiSig": "0xFae9CAF31EeD9f6480262808920dA03eb7f76E7E",
+      "proxyAdmin": "0x8910A067473C1800b371183124AEdC95684244DE",
+      "usdc": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "vault": "0x2A5b650A894409372DDeE241EDAC92d4152bE24d"
     }
   },
   "qa": {
@@ -61,6 +67,12 @@
       "proxyAdmin": "0x013a4fFc20d31a32BFDa5d6Ea79e5858aC34822f",
       "usdc": "0x9999f7fea5938fd3b1e26a12c3f2fb024e194f97",
       "vault": "0x7C4570Db29bF8dF8Aa0dBF6bdE637264F9E0Bd67"
+    },
+    "basesepolia": {
+      "multiSig": "0xc1465019B3e04602a50d34A558c6630Ac50f8fbb",
+      "proxyAdmin": "0x3ac2Ba11Ca2f9f109d50fb1a46d4C23fCadbbef6",
+      "usdc": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "vault": "0xEcb4abe96113c9caA3204e96C63C5377D02cb636"
     }
   },
   "staging": {
@@ -93,6 +105,12 @@
       "proxyAdmin": "0xAf0736bDE60E4Df8a0017839B35bed4895a52e93",
       "usdc": "0x9999f7fea5938fd3b1e26a12c3f2fb024e194f97",
       "vault": "0xB483f9D0bD47371B54087983214887c3Be103b92"
+    },
+    "basesepolia": {
+      "multiSig": "0x7D1e7BeAd9fBb72e35Dc8E6d1966c2e57DbDA3F0",
+      "proxyAdmin": "0xe014a38501cF2B8139dED0b60Ed4FbD02C113b59",
+      "usdc": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "vault": "0xdc7348975aE9334DbdcB944DDa9163Ba8406a0ec"
     }
   },
   "mainnet": {
@@ -112,6 +130,12 @@
       "multiSig": "0x4e834Ca9310d7710a409638A7aa70CB22F141Df3",
       "proxyAdmin": "0xA2eA0a58b083c492AdC91A687FAc8B53AdB7c0Fd",
       "usdc": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+      "vault": "0x816f722424B49Cf1275cc86DA9840Fbd5a6167e9"
+    },
+    "base": {
+      "multiSig": "0x4e834Ca9310d7710a409638A7aa70CB22F141Df3",
+      "proxyAdmin": "0xA2eA0a58b083c492AdC91A687FAc8B53AdB7c0Fd",
+      "usdc": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
       "vault": "0x816f722424B49Cf1275cc86DA9840Fbd5a6167e9"
     }
   }
