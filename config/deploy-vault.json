@@ -35,6 +35,12 @@
       "proxyAdmin": "0x8910A067473C1800b371183124AEdC95684244DE",
       "usdc": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
       "vault": "0x2A5b650A894409372DDeE241EDAC92d4152bE24d"
+    },
+    "polygonamoy": {
+      "multiSig": "0xFae9CAF31EeD9f6480262808920dA03eb7f76E7E",
+      "proxyAdmin": "0x8910A067473C1800b371183124AEdC95684244DE",
+      "usdc": "0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582",
+      "vault": "0x2A5b650A894409372DDeE241EDAC92d4152bE24d"
     }
   },
   "qa": {
@@ -73,6 +79,12 @@
       "proxyAdmin": "0x3ac2Ba11Ca2f9f109d50fb1a46d4C23fCadbbef6",
       "usdc": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
       "vault": "0xEcb4abe96113c9caA3204e96C63C5377D02cb636"
+    },
+    "polygonamoy": {
+      "multiSig": "0xc1465019B3e04602a50d34A558c6630Ac50f8fbb",
+      "proxyAdmin": "0x4922872C26Befa37AdcA287fF68106013C82FeeD",
+      "usdc": "0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582",
+      "vault": "0x835E970110E4a46BCA21A7551FEaA5F532F72701"
     }
   },
   "staging": {
@@ -111,6 +123,12 @@
       "proxyAdmin": "0xe014a38501cF2B8139dED0b60Ed4FbD02C113b59",
       "usdc": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
       "vault": "0xdc7348975aE9334DbdcB944DDa9163Ba8406a0ec"
+    },
+    "polygonamoy": {
+      "multiSig": "0x7D1e7BeAd9fBb72e35Dc8E6d1966c2e57DbDA3F0",
+      "proxyAdmin": "0x08a17582C4cCe303C37439341c6E6138Fb62304d",
+      "usdc": "0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582",
+      "vault": "0xDf3A1a266BCc75B88Ce9b786DF521F8DaeD5b08b"
     }
   },
   "mainnet": {
