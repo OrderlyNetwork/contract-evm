@@ -168,20 +168,18 @@ The contracts on Vault side is deployed on EVM-compatiable chains, such as Arbit
 Still the version 2 scripts is used for deployment. The deploy command is as follows:
 
 ```shell
-# arb goerli
-forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_ARBITRUMGOERLI --verifier-url https://api-goerli.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
 # arb sepolia
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_ARBITRUMSEPOLIA --verifier-url https://api-sepolia.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
 # arb mainnet
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_ARBITRUM --verifier-url https://api.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
-# op goerli
-forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_OPGOERLI --verifier-url https://api-goerli-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
 # op sepolia
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_OPSEPOLIA --verifier-url https://api-sepolia-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
 # op mainnet
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_OP --verifier-url https://api-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
-# polygon mumbai
+# @deprecated polygon mumbai
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_MUMBAI --verifier-url https://api-testnet.polygonscan.com/api --broadcast --verify --etherscan-api-key $POLYGON_ETHERSCAN_API_KEY
+# polygon amoy
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_POLYGONAMOY --broadcast
 # polygon mainnet
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_POLYGON --verifier-url https://api.polygonscan.com/api --broadcast --verify --etherscan-api-key $POLYGON_ETHERSCAN_API_KEY
 # base sepolia
@@ -193,56 +191,24 @@ forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_BASE --verifier-u
 ### Deploy new implement command:
 
 ```shell
-# arb goerli
-forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_ARBITRUMGOERLI --verifier-url https://api-goerli.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
 # arb sepolia
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_ARBITRUMSEPOLIA --verifier-url https://api-sepolia.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
 # arb mainnet
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_ARBITRUM --verifier-url https://api.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
-# op goerli
-forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_OPGOERLI --verifier-url https://api-goerli-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
 # op sepolia
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_OPSEPOLIA --verifier-url https://api-sepolia-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
 # op mainnet
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_OP --verifier-url https://api-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
-# polygon mumbai
+# @deprecated polygon mumbai
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_MUMBAI --verifier-url https://api-testnet.polygonscan.com/api --broadcast --verify --etherscan-api-key $POLYGON_ETHERSCAN_API_KEY
+# polygon amoy
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_POLYGONAMOY --broadcast
 # polygon mainnet
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_POLYGON --verifier-url https://ap.polygonscan.com/api --broadcast --verify --etherscan-api-key $POLYGON_ETHERSCAN_API_KEY
 # base sepolia
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_BASESEPOLIA --verifier-url https://api-sepolia.basescan.org/api --broadcast --verify --etherscan-api-key $BASE_ETHERSCAN_API_KEY
 # base mainnet
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_BASE --verifier-url https://api.basescan.org/api --broadcast --verify --etherscan-api-key $BASE_ETHERSCAN_API_KEY
-```
-
-### Set Cross-Chain Manager
-
-Once the contracts on Vault side are deployed, the Cross-Chain Manager should be set for Vault contract. The command to set Cross-Chain Manager is as follows:
-
-```shell
-# arb goerli
-forge script script/ledgerV2/SetCrossChainManager.s.sol -f $RPC_URL_ARBITRUMGOERLI --broadcast
-# arb mainnet
-forge script script/ledgerV2/SetCrossChainManager.s.sol -f $RPC_URL_ARBITRUM --broadcast
-# op goerli
-forge script script/ledgerV2/SetCrossChainManager.s.sol -f $RPC_URL_OPGOERLI --broadcast
-# op mainnet
-forge script script/ledgerV2/SetCrossChainManager.s.sol -f $RPC_URL_OP --broadcast
-```
-
-### Upgrade command:
-
-The upgrade model is the same as Ledger side, the upgrade command is as follows:
-
-```shell
-# arb goerli
-forge script script/vaultV2/UpgradeVault.s.sol -f $RPC_URL_ARBITRUMGOERLI --broadcast --verifier-url https://api-goerli.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
-# arb mainnet
-forge script script/vaultV2/UpgradeVault.s.sol -f $RPC_URL_ARBITRUM --broadcast --verifier-url https://api.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
-# op goerli
-forge script script/vaultV2/UpgradeVault.s.sol -f $RPC_URL_OPGOERLI --broadcast --verifier-url https://api-goerli-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
-# op mainnet
-forge script script/vaultV2/UpgradeVault.s.sol -f $RPC_URL_OP --broadcast --verifier-url https://api-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
 ```
 
 ## Zip scripts
