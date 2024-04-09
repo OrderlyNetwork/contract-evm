@@ -214,10 +214,12 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         // avoid reentrancy, so `transfer` token at the end
         IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
         uint128 amount = data.tokenAmount - data.fee;
-        // avoid revert if transfer to zero address.
+        require(tokenAddress.balanceOf(address(this)) >= amount, "Vault: insufficient balance");
+        // avoid revert if transfer to zero address or blacklist.
         /// @notice This check condition should always be true because cc promise that
-        if (data.receiver != address(0)) {
-            // avoid non-standard ERC20 tranfer bug
+        if (!_validReceiver(data.receiver, address(tokenAddress))) {
+            emit WithdrawFailed(address(tokenAddress), data.receiver, amount);
+        } else {
             tokenAddress.safeTransfer(data.receiver, amount);
         }
         // emit withdraw event
@@ -231,6 +233,28 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
             data.tokenAmount,
             data.fee
         );
+    }
+
+    /// @notice validate if the receiver address is zero or in the blacklist
+    function _validReceiver(address _receiver, address _token) internal view returns (bool) {
+        if (_receiver == address(0)) {
+            return false;
+        } else if (_isBlackListed(_receiver, _token)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /// @notice check if the receiver is in the blacklist in case the token contract has the blacklist function
+    function _isBlackListed(address _receiver, address _token) internal view returns (bool) {
+        bytes memory data = abi.encodeWithSignature("isBlackListed(address)", _receiver);
+        (bool success, bytes memory result) = _token.staticcall(data);
+        if (success) {
+            return abi.decode(result, (bool));
+        } else {
+            return false;
+        }
     }
 
     function delegateSigner(VaultTypes.VaultDelegate calldata data) public override {
