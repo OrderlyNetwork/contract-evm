@@ -26,7 +26,7 @@ contract OnchainVault is ConfigHelper, Test {
     string constant RPC_URL_OP = "https://optimism-mainnet.infura.io/v3/";
     string constant RPC_URL_OPSEPOLIA = "https://optimism-sepolia.infura.io/v3/";
     string constant RPC_URL_POLYGON = "https://polygon-mainnet.infura.io/v3/";
-    string constant RPC_URL_MUMBAI = "https://polygon-mumbai.infura.io/v3/";
+    // string constant RPC_URL_MUMBAI = "https://polygon-mumbai.infura.io/v3/";
 
     address constant USDC_ADDRESS = 0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d;
     address constant VAULT_ADDRESS = 0x3ac2Ba11Ca2f9f109d50fb1a46d4C23fCadbbef6;
@@ -48,7 +48,7 @@ contract OnchainVault is ConfigHelper, Test {
         mainnetPolygonFork = vm.createFork(string.concat(RPC_URL_POLYGON, INFURA_KEY));
         stagingArbitrumFork = vm.createFork(string.concat(RPC_URL_ARBITRUMSEPOLIA, INFURA_KEY));
         stagingOptimismFork = vm.createFork(string.concat(RPC_URL_OPSEPOLIA, INFURA_KEY));
-        stagingPolygonFork = vm.createFork(string.concat(RPC_URL_MUMBAI, INFURA_KEY));
+        // stagingPolygonFork = vm.createFork(string.concat(RPC_URL_MUMBAI, INFURA_KEY));
     }
 
     function test_onchain_vault_arbitrum_staging() external {
@@ -65,12 +65,13 @@ contract OnchainVault is ConfigHelper, Test {
         _test_onchain_vault(env, network);
     }
 
-    function test_onchain_vault_polygon_staging() external {
-        vm.selectFork(stagingPolygonFork);
-        string memory env = "staging";
-        string memory network = "polygonmumbai";
-        _test_onchain_vault(env, network);
-    }
+    // TODO mumbai is deprecated, use amoy instead
+    // function test_onchain_vault_polygon_staging() external {
+    //     vm.selectFork(stagingPolygonFork);
+    //     string memory env = "staging";
+    //     string memory network = "polygonmumbai";
+    //     _test_onchain_vault(env, network);
+    // }
 
     function test_onchain_vault_arbitrum_mainnet() external {
         vm.selectFork(mainnetArbitrumFork);
@@ -129,7 +130,7 @@ contract OnchainVault is ConfigHelper, Test {
     }
 
     function test_onchain_zero_withdraw() public {
-        vm.createSelectFork(string.concat(RPC_URL_ARBITRUMSEPOLIA, INFURA_KEY));
+        vm.selectFork(stagingArbitrumFork);
         VaultTypes.VaultWithdraw memory zeroWithdrawData = VaultTypes.VaultWithdraw({
             accountId: Utils.calculateAccountId(ZERO_ADDRESS, WOOFI_RPO_BROKER_ID),
             sender: SENDER_ADDRESS,
