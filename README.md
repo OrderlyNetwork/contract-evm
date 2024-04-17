@@ -204,7 +204,7 @@ forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_MUMBAI --verifier-u
 # polygon amoy
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_POLYGONAMOY --broadcast
 # polygon mainnet
-forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_POLYGON --verifier-url https://ap.polygonscan.com/api --broadcast --verify --etherscan-api-key $POLYGON_ETHERSCAN_API_KEY
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_POLYGON --verifier-url https://api.polygonscan.com/api --broadcast --verify --etherscan-api-key $POLYGON_ETHERSCAN_API_KEY
 # base sepolia
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_BASESEPOLIA --verifier-url https://api-sepolia.basescan.org/api --broadcast --verify --etherscan-api-key $BASE_ETHERSCAN_API_KEY
 # base mainnet
