@@ -206,6 +206,27 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
         );
     }
 
+    function accountWithdrawFail(AccountTypes.AccountWithdraw calldata withdraw) external override {
+        AccountTypes.Account storage account = userLedger[withdraw.accountId];
+        // revert frozen balance
+        account.unfrozenBalance(withdraw.withdrawNonce, withdraw.tokenHash, withdraw.tokenAmount);
+        vaultManager.unfrozenBalance(withdraw.tokenHash, withdraw.chainId, withdraw.tokenAmount - withdraw.fee);
+        uint8 state = 201;
+        emit AccountWithdrawFail(
+            withdraw.accountId,
+            withdraw.withdrawNonce,
+            _newGlobalEventId(),
+            withdraw.brokerHash,
+            withdraw.sender,
+            withdraw.receiver,
+            withdraw.chainId,
+            withdraw.tokenHash,
+            withdraw.tokenAmount,
+            withdraw.fee,
+            state
+        );
+    }
+
     function executeSettlement(EventTypes.Settlement calldata settlement, uint64 eventId) external override {
         // check total settle amount zero
         int128 totalSettleAmount = 0;

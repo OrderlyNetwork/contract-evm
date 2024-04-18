@@ -236,6 +236,10 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         _delegatecall(abi.encodeWithSelector(ILedgerImplA.executeWithdrawAction.selector, withdraw, eventId));
     }
 
+    function accountWithdrawFail(AccountTypes.AccountWithdraw memory withdraw) public override onlyOwner {
+        _delegatecall(abi.encodeWithSelector(ILedgerImplA.accountWithdrawFail.selector, withdraw));
+    }
+
     function accountWithDrawFinish(AccountTypes.AccountWithdraw calldata withdraw)
         external
         override
