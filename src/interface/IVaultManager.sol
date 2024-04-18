@@ -38,6 +38,7 @@ interface IVaultManager is IError, ILedgerComponent {
 
     // frozen & finish frozen
     function frozenBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) external;
+    function unfrozenBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) external;
     function finishFrozenBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) external;
 
     // allow broker
