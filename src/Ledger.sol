@@ -365,4 +365,21 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
             }
         }
     }
+
+    // should fix withdrawFinish stuck due to reorg on staging
+    // this function can be only once because of unfrozenBalance check, so no worry about multiple call
+    function hotfix() external onlyOwner {
+        AccountTypes.AccountWithdraw memory withdraw = AccountTypes.AccountWithdraw({
+            accountId: 0xe65fed75c1e4f2c317ca5561a92c4a88588216506ca47e794659a41bfba6ef01,
+            sender: 0xd51C5283b8727206bf9Be2b2DB4e5673EfAF519C,
+            receiver: 0xd51C5283b8727206bf9Be2b2DB4e5673EfAF519C,
+            brokerHash: 0x083098c593f395bea1de45dda552d9f14e8fcb0be3faaa7a1903c5477d7ba7fd,
+            tokenHash: 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa,
+            tokenAmount: 3000000000,
+            fee: 3500000,
+            chainId: 421614,
+            withdrawNonce: 5
+        });
+        accountWithdrawFail(withdraw);
+    }
 }
