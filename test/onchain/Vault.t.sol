@@ -26,7 +26,7 @@ contract OnchainVault is ConfigHelper, Test {
     string constant RPC_URL_OP = "https://optimism-mainnet.infura.io/v3/";
     string constant RPC_URL_OPSEPOLIA = "https://optimism-sepolia.infura.io/v3/";
     string constant RPC_URL_POLYGON = "https://polygon-mainnet.infura.io/v3/";
-    string constant RPC_URL_MUMBAI = "https://polygon-mumbai.infura.io/v3/";
+    // string constant RPC_URL_MUMBAI = "https://polygon-mumbai.infura.io/v3/";
 
     address constant USDC_ADDRESS = 0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d;
     address constant VAULT_ADDRESS = 0x3ac2Ba11Ca2f9f109d50fb1a46d4C23fCadbbef6;
@@ -48,7 +48,7 @@ contract OnchainVault is ConfigHelper, Test {
         mainnetPolygonFork = vm.createFork(string.concat(RPC_URL_POLYGON, INFURA_KEY));
         stagingArbitrumFork = vm.createFork(string.concat(RPC_URL_ARBITRUMSEPOLIA, INFURA_KEY));
         stagingOptimismFork = vm.createFork(string.concat(RPC_URL_OPSEPOLIA, INFURA_KEY));
-        stagingPolygonFork = vm.createFork(string.concat(RPC_URL_MUMBAI, INFURA_KEY));
+        // stagingPolygonFork = vm.createFork(string.concat(RPC_URL_MUMBAI, INFURA_KEY));
     }
 
     function test_onchain_vault_arbitrum_staging() external {
@@ -65,12 +65,13 @@ contract OnchainVault is ConfigHelper, Test {
         _test_onchain_vault(env, network);
     }
 
-    function test_onchain_vault_polygon_staging() external {
-        vm.selectFork(stagingPolygonFork);
-        string memory env = "staging";
-        string memory network = "polygonmumbai";
-        _test_onchain_vault(env, network);
-    }
+    // TODO mumbai is deprecated, use amoy instead
+    // function test_onchain_vault_polygon_staging() external {
+    //     vm.selectFork(stagingPolygonFork);
+    //     string memory env = "staging";
+    //     string memory network = "polygonmumbai";
+    //     _test_onchain_vault(env, network);
+    // }
 
     function test_onchain_vault_arbitrum_mainnet() external {
         vm.selectFork(mainnetArbitrumFork);
@@ -129,7 +130,7 @@ contract OnchainVault is ConfigHelper, Test {
     }
 
     function test_onchain_zero_withdraw() public {
-        vm.createSelectFork(string.concat(RPC_URL_ARBITRUMSEPOLIA, INFURA_KEY));
+        vm.selectFork(stagingArbitrumFork);
         VaultTypes.VaultWithdraw memory zeroWithdrawData = VaultTypes.VaultWithdraw({
             accountId: Utils.calculateAccountId(ZERO_ADDRESS, WOOFI_RPO_BROKER_ID),
             sender: SENDER_ADDRESS,
@@ -150,7 +151,7 @@ contract OnchainVault is ConfigHelper, Test {
 
     function testRevert_onchain_blacklisted_withdraw() public {
         Blacklistable usdc = Blacklistable(USDC_ADDRESS);
-        uint256 BEFORE_FIXED = 8845399;
+        uint256 BEFORE_FIXED = 6588930; // the initial impl of vault with proper initial state: https://sepolia.arbiscan.io/tx/0x344795a97801ef5cb13077174f32304d9b59330c3716a2dbf7cb31b27cf411f5#eventlog
 
         vm.createSelectFork(string.concat(RPC_URL_ARBITRUMSEPOLIA, INFURA_KEY), BEFORE_FIXED);
 
@@ -176,10 +177,38 @@ contract OnchainVault is ConfigHelper, Test {
         vm.stopPrank();
     }
 
-    function test_onchain_backlisted_withdraw() public {
+    function testRevert_onchain_backlisted_withdraw_bugcall() public {
         Blacklistable usdc = Blacklistable(USDC_ADDRESS);
 
-        uint256 AFTER_FIXED = 28941996;
+        uint256 AFTER_FIXED = 31588492; // the upgrade with a bug function (isBlanckListed) call: https://sepolia.arbiscan.io/tx/0x07cfb76697304af9bdc2047c51c1524fb34c3cd932b3f4d86de77d17c7441e21#eventlog
+        vm.createSelectFork(string.concat(RPC_URL_ARBITRUMSEPOLIA, INFURA_KEY), AFTER_FIXED);
+
+        vm.startPrank(BLACKLISTER);
+        usdc.blacklist(BLACKLISTED_ADDRESS);
+        vm.stopPrank();
+
+        VaultTypes.VaultWithdraw memory blacklistedWithdrawData = VaultTypes.VaultWithdraw({
+            accountId: Utils.calculateAccountId(BLACKLISTED_ADDRESS, WOOFI_RPO_BROKER_ID),
+            sender: SENDER_ADDRESS,
+            receiver: BLACKLISTED_ADDRESS,
+            brokerHash: WOOFI_RPO_BROKER_ID,
+            tokenHash: USDC_TOKEN_HASH,
+            tokenAmount: TOKEN_AMOUNT,
+            fee: FEE_AMOUNT,
+            withdrawNonce: WITHDRAW_NONCE
+        });
+
+        vm.mockCall(address(CC_MANAGER_ADDRESS), abi.encodeWithSelector(IVault.withdraw.selector), abi.encode());
+        vm.startPrank(CC_MANAGER_ADDRESS);
+        vm.expectRevert(bytes("Blacklistable: account is blacklisted"));
+        onchainVault.withdraw(blacklistedWithdrawData);
+        vm.stopPrank();
+    }
+
+    function test_onchain_blacklisted_withdraw() public {
+        Blacklistable usdc = Blacklistable(USDC_ADDRESS);
+
+        uint256 AFTER_FIXED = 34603790; // the upgrade with correct blacklist check: https://sepolia.arbiscan.io/tx/0x93125928845deb0b2122646fe80b8f8631d30b70977b451a49fcd6bd18ab2630#eventlog
         vm.createSelectFork(string.concat(RPC_URL_ARBITRUMSEPOLIA, INFURA_KEY), AFTER_FIXED);
 
         vm.startPrank(BLACKLISTER);
