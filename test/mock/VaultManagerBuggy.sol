@@ -84,4 +84,6 @@ contract VaultManagerBuggy is IVaultManager, LedgerComponent {
         override
         returns (RebalanceTypes.RebalanceStatus memory)
     {}
+
+    function unfrozenBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) external override {}
 }

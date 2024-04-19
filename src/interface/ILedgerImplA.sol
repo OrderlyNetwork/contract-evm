@@ -15,6 +15,8 @@ interface ILedgerImplA is IError, ILedgerEvent {
     // Functions called by cross chain manager on Ledger side
     function accountDeposit(AccountTypes.AccountDeposit calldata data) external;
     function accountWithDrawFinish(AccountTypes.AccountWithdraw calldata withdraw) external;
+    // Called by admin to revert failed withdraw
+    function accountWithdrawFail(AccountTypes.AccountWithdraw calldata withdraw) external;
 
     // Functions called by operator manager to executre actions
     function executeProcessValidatedFutures(PerpTypes.FuturesTradeUpload calldata trade) external;

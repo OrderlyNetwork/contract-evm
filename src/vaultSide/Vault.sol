@@ -239,7 +239,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     function _validReceiver(address _receiver, address _token) internal view returns (bool) {
         if (_receiver == address(0)) {
             return false;
-        } else if (_isBlackListed(_receiver, _token)) {
+        } else if (_isBlacklisted(_receiver, _token)) {
             return false;
         } else {
             return true;
@@ -247,8 +247,8 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     }
 
     /// @notice check if the receiver is in the blacklist in case the token contract has the blacklist function
-    function _isBlackListed(address _receiver, address _token) internal view returns (bool) {
-        bytes memory data = abi.encodeWithSignature("isBlackListed(address)", _receiver);
+    function _isBlacklisted(address _receiver, address _token) internal view returns (bool) {
+        bytes memory data = abi.encodeWithSignature("isBlacklisted(address)", _receiver);
         (bool success, bytes memory result) = _token.staticcall(data);
         if (success) {
             return abi.decode(result, (bool));

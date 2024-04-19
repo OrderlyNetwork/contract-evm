@@ -61,6 +61,15 @@ contract VaultManager is IVaultManager, LedgerComponent {
         tokenFrozenBalanceOnchain[_tokenHash][_chainId] += _deltaBalance;
     }
 
+    function unfrozenBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance)
+        external
+        override
+        onlyLedger
+    {
+        tokenBalanceOnchain[_tokenHash][_chainId] += _deltaBalance;
+        tokenFrozenBalanceOnchain[_tokenHash][_chainId] -= _deltaBalance;
+    }
+
     function finishFrozenBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance)
         external
         override
