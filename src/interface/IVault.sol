@@ -16,6 +16,7 @@ interface IVault {
     error ZeroDeposit();
     error ZeroCodeLength();
     error NotZeroCodeLength();
+    error DepositExceedLimit();
 
     // @deprecated
     event AccountDeposit(
@@ -57,6 +58,7 @@ interface IVault {
     event SetAllowedBroker(bytes32 indexed _brokerHash, bool _allowed);
     event ChangeTokenAddressAndAllow(bytes32 indexed _tokenHash, address _tokenAddress);
     event ChangeCrossChainManager(address oldAddress, address newAddress);
+    event ChangeDepositLimit(address indexed _tokenAddress, uint256 _limit);
     event WithdrawFailed(address indexed token, address indexed receiver, uint256 amount);
 
     function initialize() external;
@@ -76,6 +78,7 @@ interface IVault {
 
     // admin call
     function setCrossChainManager(address _crossChainManagerAddress) external;
+    function setDepositLimit(address _tokenAddress, uint256 _limit) external;
     function emergencyPause() external;
     function emergencyUnpause() external;
 

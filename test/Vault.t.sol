@@ -168,4 +168,50 @@ contract VaultTest is Test {
         assertEq(vault.getAllowedToken(TOKEN_HASH), address(tUSDC));
         assertEq(vault.getAllowedBroker(BROKER_HASH), true);
     }
+
+    function test_depositExceedLimit_0() public {
+        vault.setDepositLimit(address(tUSDC), AMOUNT);
+
+        vm.startPrank(SENDER);
+        tUSDC.mint(SENDER, AMOUNT);
+        tUSDC.approve(address(vault), AMOUNT);
+        vault.deposit(depositData);
+        vm.stopPrank();
+
+        vault.setDepositLimit(address(tUSDC), AMOUNT * 2);
+
+        vm.startPrank(SENDER);
+        tUSDC.mint(SENDER, AMOUNT);
+        tUSDC.approve(address(vault), AMOUNT);
+        vault.deposit(depositData);
+        vm.stopPrank();
+    }
+
+    function testRevert_depositExceedLimit_1() public {
+        vault.setDepositLimit(address(tUSDC), AMOUNT - 1);
+
+        vm.startPrank(SENDER);
+        tUSDC.mint(SENDER, AMOUNT);
+        tUSDC.approve(address(vault), AMOUNT);
+        vm.expectRevert(IVault.DepositExceedLimit.selector);
+        vault.deposit(depositData);
+        vm.stopPrank();
+    }
+
+    function testRevert_depositExceedLimit_2() public {
+        vault.setDepositLimit(address(tUSDC), AMOUNT + 1);
+
+        vm.startPrank(SENDER);
+        tUSDC.mint(SENDER, AMOUNT);
+        tUSDC.approve(address(vault), AMOUNT);
+        vault.deposit(depositData);
+        vm.stopPrank();
+
+        vm.startPrank(SENDER);
+        tUSDC.mint(SENDER, AMOUNT);
+        tUSDC.approve(address(vault), AMOUNT);
+        vm.expectRevert(IVault.DepositExceedLimit.selector);
+        vault.deposit(depositData);
+        vm.stopPrank();
+    }
 }
