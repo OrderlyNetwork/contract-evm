@@ -41,6 +41,12 @@
       "proxyAdmin": "0x8910A067473C1800b371183124AEdC95684244DE",
       "usdc": "0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582",
       "vault": "0x2A5b650A894409372DDeE241EDAC92d4152bE24d"
+    },
+    "mantlesepolia": {
+      "multiSig": "0xFae9CAF31EeD9f6480262808920dA03eb7f76E7E",
+      "proxyAdmin": "0xD756A519b8f7B9609Ea61d44804dE79931A0c547",
+      "usdc": "0xAcab8129E2cE587fD203FD770ec9ECAFA2C88080",
+      "vault": "0x3CAA46F94610BDa1C60267a364d2E154E677BdF9"
     }
   },
   "qa": {
@@ -85,6 +91,12 @@
       "proxyAdmin": "0x4922872C26Befa37AdcA287fF68106013C82FeeD",
       "usdc": "0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582",
       "vault": "0x835E970110E4a46BCA21A7551FEaA5F532F72701"
+    },
+    "mantlesepolia": {
+      "multiSig": "0xc1465019B3e04602a50d34A558c6630Ac50f8fbb",
+      "proxyAdmin": "0xEcb4abe96113c9caA3204e96C63C5377D02cb636",
+      "usdc": "0xAcab8129E2cE587fD203FD770ec9ECAFA2C88080",
+      "vault": "0x08a17582C4cCe303C37439341c6E6138Fb62304d"
     }
   },
   "staging": {
@@ -129,6 +141,12 @@
       "proxyAdmin": "0x08a17582C4cCe303C37439341c6E6138Fb62304d",
       "usdc": "0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582",
       "vault": "0xDf3A1a266BCc75B88Ce9b786DF521F8DaeD5b08b"
+    },
+    "mantlesepolia": {
+      "multiSig": "0x7D1e7BeAd9fBb72e35Dc8E6d1966c2e57DbDA3F0",
+      "proxyAdmin": "0xdc7348975aE9334DbdcB944DDa9163Ba8406a0ec",
+      "usdc": "0xAcab8129E2cE587fD203FD770ec9ECAFA2C88080",
+      "vault": "0xfb0E5f3D16758984E668A3d76f0963710E775503"
     }
   },
   "mainnet": {
@@ -155,6 +173,12 @@
       "proxyAdmin": "0xA2eA0a58b083c492AdC91A687FAc8B53AdB7c0Fd",
       "usdc": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
       "vault": "0x816f722424B49Cf1275cc86DA9840Fbd5a6167e9"
+    },
+    "mantle": {
+      "multiSig": "0x4e834Ca9310d7710a409638A7aa70CB22F141Df3",
+      "proxyAdmin": "0xcccccccccccccccccccccccccccccccccccccccc",
+      "usdc": "0xcccccccccccccccccccccccccccccccccccccccc",
+      "vault": "0xcccccccccccccccccccccccccccccccccccccccc"
     }
   }
 }
