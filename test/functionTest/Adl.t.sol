@@ -12,6 +12,7 @@ import "../mock/LedgerCrossChainManagerMock.sol";
 import "../cheater/LedgerCheater.sol";
 import "../../src/LedgerImplA.sol";
 
+// https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/253624710/ADL+Testcases
 contract AdlTest is Test {
     bytes32 constant BROKER_HASH = 0x083098c593f395bea1de45dda552d9f14e8fcb0be3faaa7a1903c5477d7ba7fd;
     bytes32 constant TOKEN_HASH = 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa;
