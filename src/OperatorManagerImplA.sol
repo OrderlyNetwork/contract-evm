@@ -133,6 +133,12 @@ contract OperatorManagerImplA is IOperatorManagerImplA, OwnableUpgradeable, Oper
         } else if (bizType == 7) {
             // delegate withdraw
             ledger.executeDelegateWithdrawAction(abi.decode(data.data, (EventTypes.WithdrawData)), data.eventId);
+        } else if (bizType == 8) {
+            // adl v2
+            ledger.executeAdlV2(abi.decode(data.data, (EventTypes.AdlV2)), data.eventId);
+        } else if (bizType == 9) {
+            // liquidation v2
+            ledger.executeLiquidationV2(abi.decode(data.data, (EventTypes.LiquidationV2)), data.eventId);
         } else {
             revert InvalidBizType(bizType);
         }
