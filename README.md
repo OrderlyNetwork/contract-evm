@@ -188,7 +188,7 @@ forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_BASE --verifier-u
 # mantle sepolia
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_MANTLESEPOLIA --verifier-url https://api-sepolia.mantlescan.xyz/api --broadcast --verify --etherscan-api-key $MANTLE_ETHERSCAN_API_KEY --skip-simulation
 # mantle mainnet
-forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_MANTLE --verifier-url https://api.mantlescan.xyz/api --verifier blockscout --verify --skip-simulation
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_MANTLE --verifier-url https://api.mantlescan.xyz/api --broadcast --verify --etherscan-api-key $MANTLE_ETHERSCAN_API_KEY --skip-simulation
 ```
 
 ### Deploy new implement command:
@@ -213,7 +213,7 @@ forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_BASE --verifier-url
 # mantle sepolia
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_MANTLESEPOLIA --broadcast --verifier-url https://explorer.sepolia.mantle.xyz/api\? --verifier blockscout --verify --skip-simulation
 # mantle mainnet
-forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_MANTLE --verifier-url https://explorer.mantle.xyz/api\? --verifier blockscout --verify --skip-simulation
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_MANTLE --verifier-url https://api.mantlescan.xyz/api --broadcast --verify --etherscan-api-key $MANTLE_ETHERSCAN_API_KEY --skip-simulation
 ```
 
 ## Zip scripts
