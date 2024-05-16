@@ -176,9 +176,9 @@
     },
     "mantle": {
       "multiSig": "0x4e834Ca9310d7710a409638A7aa70CB22F141Df3",
-      "proxyAdmin": "0xcccccccccccccccccccccccccccccccccccccccc",
-      "usdc": "0xcccccccccccccccccccccccccccccccccccccccc",
-      "vault": "0xcccccccccccccccccccccccccccccccccccccccc"
+      "proxyAdmin": "0xA2eA0a58b083c492AdC91A687FAc8B53AdB7c0Fd",
+      "usdc": "0x09bc4e0d864854c6afb6eb9a9cdf58ac190d0df9",
+      "vault": "0x816f722424B49Cf1275cc86DA9840Fbd5a6167e9"
     }
   }
 }
