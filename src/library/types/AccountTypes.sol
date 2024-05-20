@@ -36,8 +36,12 @@ library AccountTypes {
         uint64 lastPerpTradeId;
         // last engine event id
         uint64 lastEngineEventId;
-        // last deposit event id
+        // @deprecated last deposit event id
         uint64 lastDepositEventId;
+        // last deposit src chain id
+        uint64 lastDepositSrcChainId;
+        // last deposit src chain nonce
+        uint64 lastDepositSrcChainNonce;
     }
 
     struct AccountDeposit {
@@ -96,6 +100,8 @@ library AccountTypes {
         uint64 lastDepositEventId;
         AccountTokenBalances[] tokenBalances;
         AccountPerpPositions[] perpPositions;
+        uint64 lastDepositSrcChainId;
+        uint64 lastDepositSrcChainNonce;
     }
 
     struct AccountDelegateSigner {
