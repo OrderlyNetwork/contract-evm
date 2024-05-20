@@ -15,10 +15,6 @@ contract OperatorManagerImplA is IOperatorManagerImplA, OwnableUpgradeable, Oper
         _disableInitializers();
     }
 
-    function initialize() external override initializer {
-        __Ownable_init();
-    }
-
     /// @notice Operator ping to update last operator interaction timestamp
     function operatorPing() external override {
         _innerPing();
