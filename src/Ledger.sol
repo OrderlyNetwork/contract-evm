@@ -194,7 +194,9 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
                 lastEngineEventId: account.lastEngineEventId,
                 lastDepositEventId: account.lastDepositEventId,
                 tokenBalances: tokenInner,
-                perpPositions: symbolInner
+                perpPositions: symbolInner,
+                lastDepositSrcChainId: account.lastDepositSrcChainId,
+                lastDepositSrcChainNonce: account.lastDepositSrcChainNonce
             });
         }
     }
