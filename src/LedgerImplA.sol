@@ -27,10 +27,6 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
         _disableInitializers();
     }
 
-    function initialize() external override initializer {
-        __Ownable_init();
-    }
-
     /// Interface implementation
 
     /// @notice The cross chain manager will call this function to notify the deposit event to the Ledger contract
