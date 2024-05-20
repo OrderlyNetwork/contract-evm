@@ -10,8 +10,6 @@ import "./error/IError.sol";
 import "./IOperatorManagerEvent.sol";
 
 interface IOperatorManagerImplA is IError, IOperatorManagerEvent {
-    function initialize() external;
-
     // operator call futures trade upload
     function futuresTradeUpload(PerpTypes.FuturesTradeUploadData calldata data) external;
     // operator call event upload
