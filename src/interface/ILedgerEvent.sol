@@ -75,12 +75,31 @@ interface ILedgerEvent {
         uint64 lastEngineEventId
     );
 
+    event AdlResultV2(
+        uint64 indexed eventId,
+        bytes32 indexed accountId,
+        bytes32 symbolHash,
+        int128 positionQtyTransfer,
+        int128 costPositionTransfer,
+        uint128 adlPrice,
+        int128 sumUnitaryFundings,
+        uint64 lastEngineEventId
+    );
+
     event LiquidationResult(
         uint64 indexed eventId,
         bytes32 indexed liquidatedAccountId,
         bytes32 indexed insuranceAccountId,
         bytes32 liquidatedAssetHash,
         uint128 insuranceTransferAmount,
+        uint64 lastEngineEventId
+    );
+
+    event LiquidationResultV2(
+        uint64 indexed eventId,
+        bytes32 indexed accountId,
+        bytes32 liquidatedAssetHash,
+        int128 insuranceTransferAmount,
         uint64 lastEngineEventId
     );
 
@@ -111,6 +130,16 @@ interface ILedgerEvent {
         int128 liquidatorFee,
         int128 insuranceFee,
         int128 liquidationFee,
+        uint128 markPrice,
+        int128 sumUnitaryFundings
+    );
+
+    event LiquidationTransferV2(
+        bytes32 indexed accountId,
+        bytes32 indexed symbolHash,
+        int128 positionQtyTransfer,
+        int128 costPositionTransfer,
+        int128 fee,
         uint128 markPrice,
         int128 sumUnitaryFundings
     );

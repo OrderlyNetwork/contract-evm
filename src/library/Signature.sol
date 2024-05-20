@@ -120,6 +120,18 @@ library Signature {
         uint64 timestamp;
     }
 
+    struct AdlV2Signature {
+        uint64 eventId; // flat map to this
+        bytes32 accountId;
+        bytes32 symbolHash;
+        int128 positionQtyTransfer;
+        int128 costPositionTransfer;
+        uint128 adlPrice;
+        int128 sumUnitaryFundings;
+        uint64 timestamp;
+        bool isInsuranceAccount;
+    }
+
     struct LiquidationSignature {
         uint64 eventId; // flat map to this
         bytes32 liquidatedAccountId;
@@ -128,6 +140,16 @@ library Signature {
         bytes32 liquidatedAssetHash;
         EventTypes.LiquidationTransfer[] liquidationTransfers;
         uint64 timestamp;
+    }
+
+    struct LiquidationV2Signature {
+        uint64 eventId; // flat map to this
+        bytes32 accountId;
+        bytes32 liquidatedAssetHash;
+        int128 insuranceTransferAmount;
+        uint64 timestamp;
+        bool isInsuranceAccount;
+        EventTypes.LiquidationTransferV2[] liquidationTransfers;
     }
 
     struct FeeDistributionSignature {
@@ -154,6 +176,8 @@ library Signature {
         LiquidationSignature[] liquidations;
         FeeDistributionSignature[] feeDistributions;
         DelegeteSignerSignature[] delegateSigners;
+        AdlV2Signature[] adlV2s;
+        LiquidationV2Signature[] liquidationV2s;
     }
 
     function eventsUploadEncodeHash(EventTypes.EventUpload memory data) internal pure returns (bytes memory) {
@@ -161,20 +185,24 @@ library Signature {
         // countArray[0]: withdraws, countArray[1]: settlements, countArray[2]: adls, countArray[3]: liquidations, countArray[4]: feeDistributions, countArray[5]: delegateSigners, countArray[6]: delegateWithdraws
         // countArray2 is used to count the number of each filed signature structure inside EventUploadSignature, because the event withdraw and event delegateWith share the common  WithdrawDataSignature[],
         // so we have `withdraws: new WithdrawDataSignature[](countArray[0]+countArray[6])` when initializing eventUploadSignature
-        uint8[] memory countArray = new uint8[](7);
-        uint8[] memory countArray2 = new uint8[](7); // 0: withdraws + delegate, 1: settlements, 2: adls, 3: liquidations, 4: feeDistributions, 5: delegateSigners 6: null
+        // 0: withdraws + delegate, 1: settlements, 2: adls, 3: liquidations
+        // 4: feeDistributions, 5: delegateSigners, 6: null, 7: adlV2s, 8: liquidationV2s
+        uint8[] memory countArray = new uint8[](9);
+        uint8[] memory countArray2 = new uint8[](9);
         uint256 len = data.events.length;
         for (uint256 i = 0; i < len; i++) {
             countArray[data.events[i].bizType - 1]++;
         }
         EventUploadSignature memory eventUploadSignature = EventUploadSignature({
             batchId: data.batchId,
-            withdraws: new WithdrawDataSignature[](countArray[0]+countArray[6]),
+            withdraws: new WithdrawDataSignature[](countArray[0] + countArray[6]),
             settlements: new SettlementSignature[](countArray[1]),
             adls: new AdlSignature[](countArray[2]),
             liquidations: new LiquidationSignature[](countArray[3]),
             feeDistributions: new FeeDistributionSignature[](countArray[4]),
-            delegateSigners: new DelegeteSignerSignature[](countArray[5])
+            delegateSigners: new DelegeteSignerSignature[](countArray[5]),
+            adlV2s: new AdlV2Signature[](countArray[7]),
+            liquidationV2s: new LiquidationV2Signature[](countArray[8])
         });
 
         for (uint256 i = 0; i < len; i++) {
@@ -263,11 +291,56 @@ library Signature {
                 });
                 eventUploadSignature.delegateSigners[countArray2[5]] = delegeteSignerSignature;
                 countArray2[5]++;
+            } else if (eventUploadData.bizType == 8) {
+                EventTypes.AdlV2 memory adlV2 = abi.decode(eventUploadData.data, (EventTypes.AdlV2));
+                AdlV2Signature memory adlV2Signature = AdlV2Signature({
+                    eventId: eventUploadData.eventId,
+                    accountId: adlV2.accountId,
+                    symbolHash: adlV2.symbolHash,
+                    positionQtyTransfer: adlV2.positionQtyTransfer,
+                    costPositionTransfer: adlV2.costPositionTransfer,
+                    adlPrice: adlV2.adlPrice,
+                    sumUnitaryFundings: adlV2.sumUnitaryFundings,
+                    timestamp: adlV2.timestamp,
+                    isInsuranceAccount: adlV2.isInsuranceAccount
+                });
+                eventUploadSignature.adlV2s[countArray2[7]] = adlV2Signature;
+                countArray2[7]++;
+            } else if (eventUploadData.bizType == 9) {
+                EventTypes.LiquidationV2 memory liquidationV2 =
+                    abi.decode(eventUploadData.data, (EventTypes.LiquidationV2));
+                LiquidationV2Signature memory liquidationV2Signature = LiquidationV2Signature({
+                    eventId: eventUploadData.eventId,
+                    accountId: liquidationV2.accountId,
+                    liquidatedAssetHash: liquidationV2.liquidatedAssetHash,
+                    insuranceTransferAmount: liquidationV2.insuranceTransferAmount,
+                    timestamp: liquidationV2.timestamp,
+                    isInsuranceAccount: liquidationV2.isInsuranceAccount,
+                    liquidationTransfers: liquidationV2.liquidationTransfers
+                });
+                eventUploadSignature.liquidationV2s[countArray2[8]] = liquidationV2Signature;
+                countArray2[8]++;
+            } else {
+                // should never happen
+                revert("Invalid bizType");
             }
         }
         bytes memory encoded;
-        if (eventUploadSignature.delegateSigners.length > 0) {
-            // v3 signature, only support [v2 delegateSigners]
+        if (eventUploadSignature.adlV2s.length > 0 || eventUploadSignature.liquidationV2s.length > 0) {
+            // v4 signature, only support [v3, adlV2s, liquidationV2s]
+            encoded = abi.encode(
+                eventUploadSignature.batchId,
+                eventUploadSignature.withdraws,
+                eventUploadSignature.settlements,
+                eventUploadSignature.adls,
+                eventUploadSignature.liquidations,
+                eventUploadSignature.feeDistributions,
+                eventUploadSignature.delegateSigners,
+                eventUploadSignature.adlV2s,
+                eventUploadSignature.liquidationV2s
+            );
+        } else if (eventUploadSignature.delegateSigners.length > 0) {
+            // v3 signature, only support [v2, delegateSigners]
             encoded = abi.encode(
                 eventUploadSignature.batchId,
                 eventUploadSignature.withdraws,

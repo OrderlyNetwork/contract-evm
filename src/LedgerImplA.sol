@@ -21,13 +21,10 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
     using AccountTypeHelper for AccountTypes.Account;
     using AccountTypePositionHelper for AccountTypes.PerpPosition;
     using SafeCastHelper for *;
+    using SafeCast for uint256;
 
     constructor() {
         _disableInitializers();
-    }
-
-    function initialize() external override initializer {
-        __Ownable_init();
     }
 
     /// Interface implementation
@@ -55,6 +52,8 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
         vaultManager.addBalance(data.tokenHash, data.srcChainId, data.tokenAmount);
         uint64 tmpGlobalEventId = _newGlobalEventId(); // gas saving
         account.lastDepositEventId = tmpGlobalEventId;
+        account.lastDepositSrcChainId = data.srcChainId.toUint64();
+        account.lastDepositSrcChainNonce = data.srcChainDepositNonce;
         // emit deposit event
         emit AccountDeposit(
             data.accountId,
@@ -341,6 +340,42 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
         );
     }
 
+    function executeLiquidationV2(EventTypes.LiquidationV2 calldata liquidation, uint64 eventId) external override {
+        AccountTypes.Account storage account = userLedger[liquidation.accountId];
+
+        if (liquidation.insuranceTransferAmount != 0) {
+            uint128 absoluteAmt = liquidation.insuranceTransferAmount.abs();
+            if (liquidation.insuranceTransferAmount > 0) {
+                account.addBalance(liquidation.liquidatedAssetHash, absoluteAmt);
+            } else {
+                account.subBalance(liquidation.liquidatedAssetHash, absoluteAmt);
+            }
+        }
+        uint256 length = liquidation.liquidationTransfers.length;
+        for (uint256 i = 0; i < length; i++) {
+            EventTypes.LiquidationTransferV2 calldata liquidationTransfer = liquidation.liquidationTransfers[i];
+            _liquidationLiquidateV2(account, liquidationTransfer, !liquidation.isInsuranceAccount);
+            emit LiquidationTransferV2(
+                liquidation.accountId,
+                liquidationTransfer.symbolHash,
+                liquidationTransfer.positionQtyTransfer,
+                liquidationTransfer.costPositionTransfer,
+                liquidationTransfer.fee,
+                liquidationTransfer.markPrice,
+                liquidationTransfer.sumUnitaryFundings
+            );
+        }
+        account.lastEngineEventId = eventId;
+        // emit event
+        emit LiquidationResultV2(
+            _newGlobalEventId(),
+            liquidation.accountId,
+            liquidation.liquidatedAssetHash,
+            liquidation.insuranceTransferAmount,
+            eventId
+        );
+    }
+
     function executeAdl(EventTypes.Adl calldata adl, uint64 eventId) external override {
         if (!vaultManager.getAllowedSymbol(adl.symbolHash)) revert SymbolNotAllowed();
         AccountTypes.Account storage account = userLedger[adl.accountId];
@@ -373,6 +408,39 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
             _newGlobalEventId(),
             adl.accountId,
             adl.insuranceAccountId,
+            adl.symbolHash,
+            adl.positionQtyTransfer,
+            adl.costPositionTransfer,
+            adl.adlPrice,
+            adl.sumUnitaryFundings,
+            eventId
+        );
+    }
+
+    function executeAdlV2(EventTypes.AdlV2 calldata adl, uint64 eventId) external override {
+        if (!vaultManager.getAllowedSymbol(adl.symbolHash)) revert SymbolNotAllowed();
+        AccountTypes.Account storage account = userLedger[adl.accountId];
+        AccountTypes.PerpPosition storage position = account.perpPositions[adl.symbolHash];
+
+        int128 tmpUserPositionQty = position.positionQty; // gas saving
+        if (tmpUserPositionQty == 0) revert UserPerpPositionQtyZero(adl.accountId, adl.symbolHash);
+        if (adl.positionQtyTransfer.abs() > tmpUserPositionQty.abs()) {
+            revert InsurancePositionQtyInvalid(adl.positionQtyTransfer, tmpUserPositionQty);
+        }
+
+        position.chargeFundingFee(adl.sumUnitaryFundings);
+        if (!adl.isInsuranceAccount) {
+            position.calAverageEntryPrice(adl.positionQtyTransfer, adl.adlPrice.toInt128(), -adl.costPositionTransfer);
+        }
+        position.positionQty += adl.positionQtyTransfer;
+        position.costPosition += adl.costPositionTransfer;
+        position.lastExecutedPrice = adl.adlPrice;
+        position.lastAdlPrice = adl.adlPrice;
+        account.lastEngineEventId = eventId;
+
+        emit AdlResultV2(
+            _newGlobalEventId(),
+            adl.accountId,
             adl.symbolHash,
             adl.positionQtyTransfer,
             adl.costPositionTransfer,
@@ -615,6 +683,29 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
         liquidatedPosition.lastExecutedPrice = liquidationTransfer.markPrice;
         if (liquidatedPosition.isFullSettled()) {
             delete liquidatedAccount.perpPositions[liquidationTransfer.symbolHash];
+        }
+    }
+
+    function _liquidationLiquidateV2(
+        AccountTypes.Account storage liquidationAccount,
+        EventTypes.LiquidationTransferV2 calldata liquidationTransfer,
+        bool needCalAvg
+    ) internal {
+        AccountTypes.PerpPosition storage liquidationPosition =
+            liquidationAccount.perpPositions[liquidationTransfer.symbolHash];
+        liquidationPosition.chargeFundingFee(liquidationTransfer.sumUnitaryFundings);
+        if (needCalAvg) {
+            liquidationPosition.calAverageEntryPrice(
+                liquidationTransfer.positionQtyTransfer,
+                liquidationTransfer.markPrice.toInt128(),
+                -liquidationTransfer.costPositionTransfer - liquidationTransfer.fee
+            );
+        }
+        liquidationPosition.positionQty += liquidationTransfer.positionQtyTransfer;
+        liquidationPosition.costPosition += liquidationTransfer.costPositionTransfer + liquidationTransfer.fee;
+        liquidationPosition.lastExecutedPrice = liquidationTransfer.markPrice;
+        if (liquidationPosition.isFullSettled()) {
+            delete liquidationAccount.perpPositions[liquidationTransfer.symbolHash];
         }
     }
 
