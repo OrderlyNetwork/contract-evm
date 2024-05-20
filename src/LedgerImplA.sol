@@ -21,6 +21,7 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
     using AccountTypeHelper for AccountTypes.Account;
     using AccountTypePositionHelper for AccountTypes.PerpPosition;
     using SafeCastHelper for *;
+    using SafeCast for uint256;
 
     constructor() {
         _disableInitializers();
@@ -55,6 +56,8 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
         vaultManager.addBalance(data.tokenHash, data.srcChainId, data.tokenAmount);
         uint64 tmpGlobalEventId = _newGlobalEventId(); // gas saving
         account.lastDepositEventId = tmpGlobalEventId;
+        account.lastDepositSrcChainId = data.srcChainId.toUint64();
+        account.lastDepositSrcChainNonce = data.srcChainDepositNonce;
         // emit deposit event
         emit AccountDeposit(
             data.accountId,
