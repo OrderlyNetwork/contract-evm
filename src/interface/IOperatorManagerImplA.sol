@@ -9,9 +9,7 @@ import "../library/types/RebalanceTypes.sol";
 import "./error/IError.sol";
 import "./IOperatorManagerEvent.sol";
 
-interface IOperatorManager is IError, IOperatorManagerEvent {
-    function initialize() external;
-
+interface IOperatorManagerImplA is IError, IOperatorManagerEvent {
     // operator call futures trade upload
     function futuresTradeUpload(PerpTypes.FuturesTradeUploadData calldata data) external;
     // operator call event upload
@@ -24,19 +22,4 @@ interface IOperatorManager is IError, IOperatorManagerEvent {
     function rebalanceMintUpload(RebalanceTypes.RebalanceMintUploadData calldata) external;
     // operator call ping
     function operatorPing() external;
-
-    // check if engine down
-    function checkEngineDown() external returns (bool);
-
-    // admin call
-    function setOperator(address _operatorAddress) external;
-    function setLedger(address _ledger) external;
-    function setMarketManager(address _marketManagerAddress) external;
-    function setEngineSpotTradeUploadAddress(address _engineSpotTradeUploadAddress) external;
-    function setEnginePerpTradeUploadAddress(address _enginePerpTradeUploadAddress) external;
-    function setEngineEventUploadAddress(address _engineEventUploadAddress) external;
-    function setEngineMarketUploadAddress(address _engineMarketUploadAddress) external;
-    function setEngineRebalanceUploadAddress(address _engineRebalanceUploadAddress) external;
-    function setOperatorManagerZipAddress(address _operatorManagerZipAddress) external;
-    function setOperatorManagerImplA(address _operatorManagerImplA) external;
 }

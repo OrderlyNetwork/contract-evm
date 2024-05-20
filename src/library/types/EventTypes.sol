@@ -65,6 +65,17 @@ library EventTypes {
         uint64 timestamp;
     }
 
+    struct AdlV2 {
+        bytes32 accountId;
+        bytes32 symbolHash;
+        int128 positionQtyTransfer;
+        int128 costPositionTransfer;
+        uint128 adlPrice;
+        int128 sumUnitaryFundings;
+        uint64 timestamp;
+        bool isInsuranceAccount;
+    }
+
     struct Liquidation {
         bytes32 liquidatedAccountId;
         bytes32 insuranceAccountId;
@@ -85,6 +96,24 @@ library EventTypes {
         uint128 markPrice;
         int128 sumUnitaryFundings;
         uint64 liquidationTransferId;
+    }
+
+    struct LiquidationV2 {
+        bytes32 accountId;
+        bytes32 liquidatedAssetHash;
+        int128 insuranceTransferAmount;
+        uint64 timestamp;
+        bool isInsuranceAccount;
+        LiquidationTransferV2[] liquidationTransfers;
+    }
+
+    struct LiquidationTransferV2 {
+        bytes32 symbolHash;
+        int128 positionQtyTransfer;
+        int128 costPositionTransfer;
+        int128 fee;
+        uint128 markPrice;
+        int128 sumUnitaryFundings;
     }
 
     struct FeeDistribution {

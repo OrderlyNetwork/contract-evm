@@ -40,9 +40,6 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         }
     }
 
-    // TODO ledgerImpl1, LedgerImpl2 addresses start here
-    // usage: `ledgerImpl1.delegatecall(abi.encodeWithSelector(ILedger.accountDeposit.selector, data));`
-
     /// @notice require operator
     modifier onlyOperatorManager() {
         if (msg.sender != operatorManagerAddress) revert OnlyOperatorCanCall();
@@ -70,7 +67,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
     }
 
     /// @notice Set the address of ledgerImplA contract
-    function setLedgerImplA(address _ledgerImplA) public override onlyOwner nonZeroAddress(_ledgerImplA) {
+    function setLedgerImplA(address _ledgerImplA) external override onlyOwner nonZeroAddress(_ledgerImplA) {
         emit ChangeLedgerImplA(_getLedgerStorage().ledgerImplA, _ledgerImplA);
         _getLedgerStorage().ledgerImplA = _ledgerImplA;
     }
@@ -78,7 +75,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
     /// @notice Set the address of operatorManager contract
     /// @param _operatorManagerAddress new operatorManagerAddress
     function setOperatorManagerAddress(address _operatorManagerAddress)
-        public
+        external
         override
         onlyOwner
         nonZeroAddress(_operatorManagerAddress)
@@ -90,7 +87,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
     /// @notice Set the address of crossChainManager on Ledger side
     /// @param _crossChainManagerAddress  new crossChainManagerAddress
     function setCrossChainManager(address _crossChainManagerAddress)
-        public
+        external
         override
         onlyOwner
         nonZeroAddress(_crossChainManagerAddress)
@@ -102,7 +99,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
     /// @notice Set the address of vaultManager contract
     /// @param _vaultManagerAddress new vaultManagerAddress
     function setVaultManager(address _vaultManagerAddress)
-        public
+        external
         override
         onlyOwner
         nonZeroAddress(_vaultManagerAddress)
@@ -114,7 +111,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
     /// @notice Set the address of marketManager contract
     /// @param _marketManagerAddress new marketManagerAddress
     function setMarketManager(address _marketManagerAddress)
-        public
+        external
         override
         onlyOwner
         nonZeroAddress(_marketManagerAddress)
@@ -125,7 +122,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
 
     /// @notice Set the address of feeManager contract
     /// @param _feeManagerAddress new feeManagerAddress
-    function setFeeManager(address _feeManagerAddress) public override onlyOwner nonZeroAddress(_feeManagerAddress) {
+    function setFeeManager(address _feeManagerAddress) external override onlyOwner nonZeroAddress(_feeManagerAddress) {
         emit ChangeFeeManager(address(feeManager), _feeManagerAddress);
         feeManager = IFeeManager(_feeManagerAddress);
     }
@@ -136,7 +133,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
     /// @param tokenHash tokenHash to query
     /// @return uint128 frozen value
     function getFrozenWithdrawNonce(bytes32 accountId, uint64 withdrawNonce, bytes32 tokenHash)
-        public
+        external
         view
         override
         returns (uint128)
@@ -197,13 +194,15 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
                 lastEngineEventId: account.lastEngineEventId,
                 lastDepositEventId: account.lastDepositEventId,
                 tokenBalances: tokenInner,
-                perpPositions: symbolInner
+                perpPositions: symbolInner,
+                lastDepositSrcChainId: account.lastDepositSrcChainId,
+                lastDepositSrcChainNonce: account.lastDepositSrcChainNonce
             });
         }
     }
 
     function batchGetUserLedger(bytes32[] calldata accountIds)
-        public
+        external
         view
         returns (AccountTypes.AccountSnapshot[] memory)
     {
@@ -236,7 +235,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         _delegatecall(abi.encodeWithSelector(ILedgerImplA.executeWithdrawAction.selector, withdraw, eventId));
     }
 
-    function accountWithdrawFail(AccountTypes.AccountWithdraw memory withdraw) public override onlyOwner {
+    function accountWithdrawFail(AccountTypes.AccountWithdraw memory withdraw) external override onlyOwner {
         _delegatecall(abi.encodeWithSelector(ILedgerImplA.accountWithdrawFail.selector, withdraw));
     }
 
@@ -264,8 +263,20 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         _delegatecall(abi.encodeWithSelector(ILedgerImplA.executeLiquidation.selector, liquidation, eventId));
     }
 
+    function executeLiquidationV2(EventTypes.LiquidationV2 calldata liquidation, uint64 eventId)
+        external
+        override
+        onlyOperatorManager
+    {
+        _delegatecall(abi.encodeWithSelector(ILedgerImplA.executeLiquidationV2.selector, liquidation, eventId));
+    }
+
     function executeAdl(EventTypes.Adl calldata adl, uint64 eventId) external override onlyOperatorManager {
         _delegatecall(abi.encodeWithSelector(ILedgerImplA.executeAdl.selector, adl, eventId));
+    }
+
+    function executeAdlV2(EventTypes.AdlV2 calldata adl, uint64 eventId) external override onlyOperatorManager {
+        _delegatecall(abi.encodeWithSelector(ILedgerImplA.executeAdlV2.selector, adl, eventId));
     }
 
     function executeFeeDistribution(EventTypes.FeeDistribution calldata feeDistribution, uint64 eventId)
