@@ -42,6 +42,9 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     // MessageTransmitterContract for CCTP
     address public messageTransmitterContract;
 
+    // A set to record deposit limit for each token. 0 means unlimited
+    mapping(address => uint256) public tokenAddress2DepositLimit;
+
     /// @notice Require only cross-chain manager can call
     modifier onlyCrossChainManager() {
         if (msg.sender != crossChainManagerAddress) revert OnlyCrossChainManagerCanCall();
@@ -72,6 +75,12 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     {
         emit ChangeCrossChainManager(crossChainManagerAddress, _crossChainManagerAddress);
         crossChainManagerAddress = _crossChainManagerAddress;
+    }
+
+    /// @notice Set deposit limit for a token
+    function setDepositLimit(address _tokenAddress, uint256 _limit) public override onlyOwner {
+        tokenAddress2DepositLimit[_tokenAddress] = _limit;
+        emit ChangeDepositLimit(_tokenAddress, _limit);
     }
 
     /// @notice Add contract address for an allowed token given the tokenHash
@@ -178,6 +187,14 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         _validateDeposit(receiver, data);
         // avoid reentrancy, so `transferFrom` token at the beginning
         IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
+        // check deposit limit
+        if (
+            tokenAddress2DepositLimit[address(tokenAddress)] != 0
+                && data.tokenAmount + tokenAddress.balanceOf(address(this))
+                    > tokenAddress2DepositLimit[address(tokenAddress)]
+        ) {
+            revert DepositExceedLimit();
+        }
         // avoid non-standard ERC20 tranferFrom bug
         tokenAddress.safeTransferFrom(msg.sender, address(this), data.tokenAmount);
         // cross-chain tx to ledger

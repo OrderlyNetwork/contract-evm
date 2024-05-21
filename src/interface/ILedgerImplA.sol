@@ -10,8 +10,6 @@ import "./error/IError.sol";
 import "./ILedgerEvent.sol";
 
 interface ILedgerImplA is IError, ILedgerEvent {
-    function initialize() external;
-
     // Functions called by cross chain manager on Ledger side
     function accountDeposit(AccountTypes.AccountDeposit calldata data) external;
     function accountWithDrawFinish(AccountTypes.AccountWithdraw calldata withdraw) external;
@@ -23,7 +21,9 @@ interface ILedgerImplA is IError, ILedgerEvent {
     function executeWithdrawAction(EventTypes.WithdrawData calldata withdraw, uint64 eventId) external;
     function executeSettlement(EventTypes.Settlement calldata ledger, uint64 eventId) external;
     function executeLiquidation(EventTypes.Liquidation calldata liquidation, uint64 eventId) external;
+    function executeLiquidationV2(EventTypes.LiquidationV2 calldata liquidation, uint64 eventId) external;
     function executeAdl(EventTypes.Adl calldata adl, uint64 eventId) external;
+    function executeAdlV2(EventTypes.AdlV2 calldata adl, uint64 eventId) external;
     function executeFeeDistribution(EventTypes.FeeDistribution calldata feeDistribution, uint64 eventId) external;
     function executeDelegateSigner(EventTypes.DelegateSigner calldata delegateSigner, uint64 eventId) external;
     function executeDelegateWithdrawAction(EventTypes.WithdrawData calldata withdraw, uint64 eventId) external;

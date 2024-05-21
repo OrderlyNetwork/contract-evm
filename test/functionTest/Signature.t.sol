@@ -671,12 +671,120 @@ contract SignatureTest is Test {
             mintChainId: 421613,
             messageBytes: abi.encodePacked(
                 hex"000000000000000300000000000000000000033800000000000000000000000012dcfd3fe2e9eac2859fd1ed86d2ab8c5a2f9352000000000000000000000000d0c3da58f55358142b8d3e06c1c30c5c6114efe8000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000fd064a18f3bf249cf1f87fc203e90d8f650f2d63000000000000000000000000dd3287043493e0a08d2b348397554096728b459c00000000000000000000000000000000000000000000000000000000004c4b40000000000000000000000000dd3287043493e0a08d2b348397554096728b459c"
-                ),
+            ),
             messageSignature: abi.encodePacked(
                 hex"b8ccbb12d7cda9ca09dabf2440b18e731475ec613689fb3ac4469d09eeef18fe0bf53b8818780a643dc9e191de321504139a748df7ea037b51094fa0a6dadda91ba8b856e7d1af15c56af225a3bc442c6f46f48ac17d46a30711027d3019f4a40e3d55a507fdf11a4265031940ff54f6971139de1622827c5fee33e4ee82d7f07d1b"
-                )
+            )
         });
         bool succ = Signature.rebalanceMintUploadEncodeHashVerify(data, addr);
+        assertEq(succ, true);
+    }
+
+    // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/592216065/Signature+UT
+    function test_eventUploadEncodeHash_adlV2() public {
+        EventTypes.AdlV2 memory a1 = EventTypes.AdlV2({
+            accountId: 0x9e4337fd086c18f6ce84c0da27101b26754a9ea7be95ec96645b987f04bcc2b2,
+            symbolHash: 0xb5ec44c9e46c5ae2fa0473eb8c466c97ec83dd5f4eddf66f31e83b512cff503c,
+            positionQtyTransfer: -10000000,
+            costPositionTransfer: -1070650,
+            adlPrice: 1070650000,
+            sumUnitaryFundings: -97240000000000,
+            timestamp: 1714080967339,
+            isInsuranceAccount: false
+        });
+        EventTypes.AdlV2 memory a2 = EventTypes.AdlV2({
+            accountId: 0x3ddab80a29e873d689134a4550573672eff87aaf91d3533b5bc8f2d350a38b15,
+            symbolHash: 0xb5ec44c9e46c5ae2fa0473eb8c466c97ec83dd5f4eddf66f31e83b512cff503c,
+            positionQtyTransfer: 10000000,
+            costPositionTransfer: 1070650,
+            adlPrice: 1070650000,
+            sumUnitaryFundings: -97240000000000,
+            timestamp: 1714080967339,
+            isInsuranceAccount: true
+        });
+        EventTypes.EventUploadData[] memory events = new EventTypes.EventUploadData[](2);
+        events[0] = EventTypes.EventUploadData({bizType: 8, eventId: 2, data: abi.encode(a1)});
+        events[1] = EventTypes.EventUploadData({bizType: 8, eventId: 3, data: abi.encode(a2)});
+        EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
+            events: events,
+            r: 0x114bdef0a63cd924c56ebe7e865cafaffbcb89c6c01f664f3ce81832280282fb,
+            s: 0x057f7c7919a60e0c8fb7f45fee8b59923f12fda3cc9baa1c70ff2a2568254729,
+            v: 0x1b,
+            count: 2,
+            batchId: 7888
+        });
+
+        bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
+        assertEq(succ, true);
+    }
+
+    // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/592216065/Signature+UT
+    function test_eventUploadEncodeHash_liquidationV2() public {
+        EventTypes.LiquidationTransferV2[] memory lt1 = new EventTypes.LiquidationTransferV2[](1);
+        lt1[0] = EventTypes.LiquidationTransferV2({
+            symbolHash: 0x2f1991e99a4e22a9e95ff1b67aee336b4047dc47612e36674fa23eb8c6017f2e,
+            positionQtyTransfer: 254000000,
+            costPositionTransfer: 402465540,
+            fee: 14086294,
+            markPrice: 15845100000,
+            sumUnitaryFundings: 40376000000000000
+        });
+        EventTypes.LiquidationV2 memory l1 = EventTypes.LiquidationV2({
+            accountId: 0x1975f1115c58292ef321f4055e122b47e60605f4a7ce6491b33afa91060db353,
+            liquidatedAssetHash: 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa,
+            insuranceTransferAmount: 0,
+            timestamp: 1715043413487,
+            isInsuranceAccount: false,
+            liquidationTransfers: lt1
+        });
+        EventTypes.LiquidationTransferV2[] memory lt2 = new EventTypes.LiquidationTransferV2[](1);
+        lt2[0] = EventTypes.LiquidationTransferV2({
+            symbolHash: 0x2f1991e99a4e22a9e95ff1b67aee336b4047dc47612e36674fa23eb8c6017f2e,
+            positionQtyTransfer: -254000000,
+            costPositionTransfer: -402465540,
+            fee: -7043147,
+            markPrice: 15845100000,
+            sumUnitaryFundings: 40376000000000000
+        });
+        EventTypes.LiquidationV2 memory l2 = EventTypes.LiquidationV2({
+            accountId: 0xb87c3c901e7df194587586825861c6593ea418156e21ca7521e3806d163e7b5b,
+            liquidatedAssetHash: 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa,
+            insuranceTransferAmount: 0,
+            timestamp: 1715043413487,
+            isInsuranceAccount: false,
+            liquidationTransfers: lt2
+        });
+        EventTypes.LiquidationTransferV2[] memory lt3 = new EventTypes.LiquidationTransferV2[](1);
+        lt3[0] = EventTypes.LiquidationTransferV2({
+            symbolHash: 0x2f1991e99a4e22a9e95ff1b67aee336b4047dc47612e36674fa23eb8c6017f2e,
+            positionQtyTransfer: 0,
+            costPositionTransfer: 0,
+            fee: -7043147,
+            markPrice: 15845100000,
+            sumUnitaryFundings: 40376000000000000
+        });
+        EventTypes.LiquidationV2 memory l3 = EventTypes.LiquidationV2({
+            accountId: 0xd22bfed15458474d0d4a85dda2b889f47169c0adfca0be5cca0303537b87cd40,
+            liquidatedAssetHash: 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa,
+            insuranceTransferAmount: 0,
+            timestamp: 1715043413487,
+            isInsuranceAccount: true,
+            liquidationTransfers: lt3
+        });
+        EventTypes.EventUploadData[] memory events = new EventTypes.EventUploadData[](3);
+        events[0] = EventTypes.EventUploadData({bizType: 9, eventId: 2, data: abi.encode(l1)});
+        events[1] = EventTypes.EventUploadData({bizType: 9, eventId: 3, data: abi.encode(l2)});
+        events[2] = EventTypes.EventUploadData({bizType: 9, eventId: 4, data: abi.encode(l3)});
+        EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
+            events: events,
+            r: 0x3e9b16940a576f215be3375bfc764caf65a05f9ab629c9dfb78981459d631170,
+            s: 0x65f0f7aeb82cb27e4dfc89d242369e039d96d50c682f5855858d92d9b74f3f9e,
+            v: 0x1b,
+            count: 3,
+            batchId: 7888
+        });
+
+        bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
         assertEq(succ, true);
     }
 }
