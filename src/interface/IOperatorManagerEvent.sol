@@ -8,6 +8,7 @@ interface IOperatorManagerEvent {
     event ChangeOperator(uint8 indexed types, address oldAddress, address newAddress);
     event ChangeMarketManager(address oldAddress, address newAddress);
     event ChangeLedger(address oldAddress, address newAddress);
+    event ChangeOperatorImplA(address oldAddress, address newAddress);
     event RebalanceBurnUpload(uint64 indexed rebalanceId);
     event RebalanceMintUpload(uint64 indexed rebalanceId);
 

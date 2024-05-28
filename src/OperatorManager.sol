@@ -139,6 +139,7 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         onlyOwner
         nonZeroAddress(_operatorManagerImplA)
     {
+        emit ChangeOperatorImplA(_getOperatorManagerStorage().operatorManagerImplA, _operatorManagerImplA);
         _getOperatorManagerStorage().operatorManagerImplA = _operatorManagerImplA;
     }
 
