@@ -47,6 +47,18 @@
       "proxyAdmin": "0xD756A519b8f7B9609Ea61d44804dE79931A0c547",
       "usdc": "0xAcab8129E2cE587fD203FD770ec9ECAFA2C88080",
       "vault": "0x3CAA46F94610BDa1C60267a364d2E154E677BdF9"
+    },
+    "sepolia": {
+      "multiSig": "0xFae9CAF31EeD9f6480262808920dA03eb7f76E7E",
+      "proxyAdmin": "0x91243E4876D6c39554987cfD9d022Abe60252652",
+      "usdc": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+      "vault": "0x1A26FBE7A6Dc6c12b8E10CD703b0c520Ee996B15"
+    },
+    "avalanchefuji": {
+      "multiSig": "0xFae9CAF31EeD9f6480262808920dA03eb7f76E7E",
+      "proxyAdmin": "0x694713fBeE0D942923D25E72948ed92d08a3cDf2",
+      "usdc": "0x5425890298aed601595a70ab815c96711a31bc65",
+      "vault": "0x695Cb2ab1b2Db899F8B653B36eF865D13E6809a8"
     }
   },
   "qa": {
@@ -97,6 +109,18 @@
       "proxyAdmin": "0xEcb4abe96113c9caA3204e96C63C5377D02cb636",
       "usdc": "0xAcab8129E2cE587fD203FD770ec9ECAFA2C88080",
       "vault": "0x08a17582C4cCe303C37439341c6E6138Fb62304d"
+    },
+    "sepolia": {
+      "multiSig": "0xc1465019B3e04602a50d34A558c6630Ac50f8fbb",
+      "proxyAdmin": "0x0FF2537214614d82335B1621a0bEBECA41045662",
+      "usdc": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+      "vault": "0xd5164A5a83c64E59F842bC091E06614b84D95fF5"
+    },
+    "avalanchefuji": {
+      "multiSig": "0xc1465019B3e04602a50d34A558c6630Ac50f8fbb",
+      "proxyAdmin": "0x4EC52Fc0a8A501D0F67B27dc51d46D175c6AA8aB",
+      "usdc": "0x5425890298aed601595a70ab815c96711a31bc65",
+      "vault": "0xb960E6329a75716ea11090B6B42580d3004dab77"
     }
   },
   "staging": {
@@ -147,6 +171,18 @@
       "proxyAdmin": "0xdc7348975aE9334DbdcB944DDa9163Ba8406a0ec",
       "usdc": "0xAcab8129E2cE587fD203FD770ec9ECAFA2C88080",
       "vault": "0xfb0E5f3D16758984E668A3d76f0963710E775503"
+    },
+    "sepolia": {
+      "multiSig": "0x7D1e7BeAd9fBb72e35Dc8E6d1966c2e57DbDA3F0",
+      "proxyAdmin": "0xa3BB1F1Aa238AF13528965f069fD0a4F1595d8e9",
+      "usdc": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+      "vault": "0x0EaC556c0C2321BA25b9DC01e4e3c95aD5CDCd2f"
+    },
+    "avalanchefuji": {
+      "multiSig": "0x7D1e7BeAd9fBb72e35Dc8E6d1966c2e57DbDA3F0",
+      "proxyAdmin": "0xB483f9D0bD47371B54087983214887c3Be103b92",
+      "usdc": "0x5425890298aed601595a70ab815c96711a31bc65",
+      "vault": "0xAB6c8F6245B67421302AAe30AcEB10E00c30F463"
     }
   },
   "mainnet": {
@@ -178,6 +214,18 @@
       "multiSig": "0x4e834Ca9310d7710a409638A7aa70CB22F141Df3",
       "proxyAdmin": "0xA2eA0a58b083c492AdC91A687FAc8B53AdB7c0Fd",
       "usdc": "0x09bc4e0d864854c6afb6eb9a9cdf58ac190d0df9",
+      "vault": "0x816f722424B49Cf1275cc86DA9840Fbd5a6167e9"
+    },
+    "ethereum": {
+      "multiSig": "0x4e834Ca9310d7710a409638A7aa70CB22F141Df3",
+      "proxyAdmin": "0xA2eA0a58b083c492AdC91A687FAc8B53AdB7c0Fd",
+      "usdc": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "vault": "0x816f722424B49Cf1275cc86DA9840Fbd5a6167e9"
+    },
+    "avalanche": {
+      "multiSig": "0x4e834Ca9310d7710a409638A7aa70CB22F141Df3",
+      "proxyAdmin": "0xA2eA0a58b083c492AdC91A687FAc8B53AdB7c0Fd",
+      "usdc": "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
       "vault": "0x816f722424B49Cf1275cc86DA9840Fbd5a6167e9"
     }
   }
