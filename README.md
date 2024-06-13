@@ -190,6 +190,14 @@ forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_BASE --verifier-u
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_MANTLESEPOLIA --verifier-url https://api-sepolia.mantlescan.xyz/api --broadcast --verify --etherscan-api-key $MANTLE_ETHERSCAN_API_KEY --skip-simulation
 # mantle mainnet
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_MANTLE --verifier-url https://api.mantlescan.xyz/api --broadcast --verify --etherscan-api-key $MANTLE_ETHERSCAN_API_KEY --skip-simulation
+# ethereum sepolia
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_SEPOLIA --verifier-url https://api-sepolia.etherscan.io/api --broadcast --verify --etherscan-api-key $ETHERSCAN_API_KEY
+# ethereum mainnet
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_ETHEREUM --verifier-url https://api.etherscan.io/api --broadcast --verify --etherscan-api-key $ETHERSCAN_API_KEY
+# avax fuji
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_FUJI --broadcast --verifier-url 'https://api.routescan.io/v2/network/testnet/evm/43113/etherscan' --verify --etherscan-api-key "verifyContract"
+# avax mainnet
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_AVAX --broadcast --verifier-url 'https://api.routescan.io/v2/network/mainnet/evm/43114/etherscan' --verify --etherscan-api-key "verifyContract"
 ```
 
 ### Deploy new implement command:
