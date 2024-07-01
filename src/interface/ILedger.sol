@@ -22,6 +22,7 @@ interface ILedger is IError, ILedgerEvent {
 
     // Functions called by operator manager to executre actions
     function executeProcessValidatedFutures(PerpTypes.FuturesTradeUpload calldata trade) external;
+    function executeProcessValidatedFuturesBatch(PerpTypes.FuturesTradeUpload[] calldata trades) external;
     function executeWithdrawAction(EventTypes.WithdrawData calldata withdraw, uint64 eventId) external;
     function executeSettlement(EventTypes.Settlement calldata ledger, uint64 eventId) external;
     function executeLiquidation(EventTypes.Liquidation calldata liquidation, uint64 eventId) external;
@@ -58,4 +59,5 @@ interface ILedger is IError, ILedgerEvent {
     function setMarketManager(address _marketManagerAddress) external;
     function setFeeManager(address _feeManagerAddress) external;
     function setLedgerImplA(address _ledgerImplA) external;
+    function setLedgerImplB(address _ledgerImplB) external;
 }
