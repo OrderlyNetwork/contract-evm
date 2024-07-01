@@ -80,14 +80,7 @@ contract OperatorManagerImplA is IOperatorManagerImplA, OwnableUpgradeable, Oper
         if (!succ) revert SignatureNotMatch();
 
         // process each validated perp trades
-        for (uint256 i = 0; i < data.count; i++) {
-            _processValidatedFutures(trades[i]);
-        }
-    }
-
-    /// @notice Cross-Contract call to Ledger contract to process each validated perp future trades
-    function _processValidatedFutures(PerpTypes.FuturesTradeUpload calldata trade) internal {
-        ledger.executeProcessValidatedFutures(trade);
+        ledger.executeProcessValidatedFuturesBatch(trades);
     }
 
     /// @notice Function to verify Engine signature for event upload data, if validated then Ledger contract will be called to execute the event process

@@ -14,6 +14,7 @@ import "./library/typesHelper/AccountTypeHelper.sol";
 import "./library/typesHelper/AccountTypePositionHelper.sol";
 import "./library/typesHelper/SafeCastHelper.sol";
 import "./interface/ILedgerImplA.sol";
+import "./interface/ILedgerImplB.sol";
 
 /// @title Ledger contract
 /// @author Orderly_Rubick
@@ -29,6 +30,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
     struct LedgerStorage {
         // Because of EIP170 size limit, the implementation should be split to impl contracts
         address ledgerImplA;
+        address ledgerImplB;
     }
 
     // keccak256(abi.encode(uint256(keccak256("orderly.Ledger")) - 1)) & ~bytes32(uint256(0xff))
@@ -70,6 +72,12 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
     function setLedgerImplA(address _ledgerImplA) external override onlyOwner nonZeroAddress(_ledgerImplA) {
         emit ChangeLedgerImplA(_getLedgerStorage().ledgerImplA, _ledgerImplA);
         _getLedgerStorage().ledgerImplA = _ledgerImplA;
+    }
+
+    /// @notice Set the address of ledgerImplB contract
+    function setLedgerImplB(address _ledgerImplB) external override onlyOwner nonZeroAddress(_ledgerImplB) {
+        emit ChangeLedgerImplB(_getLedgerStorage().ledgerImplB, _ledgerImplB);
+        _getLedgerStorage().ledgerImplB = _ledgerImplB;
     }
 
     /// @notice Set the address of operatorManager contract
@@ -216,7 +224,9 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
     /// @notice The cross chain manager will call this function to notify the deposit event to the Ledger contract
     /// @param data account deposit data
     function accountDeposit(AccountTypes.AccountDeposit calldata data) external override onlyCrossChainManager {
-        _delegatecall(abi.encodeWithSelector(ILedgerImplA.accountDeposit.selector, data));
+        _delegatecall(
+            abi.encodeWithSelector(ILedgerImplA.accountDeposit.selector, data), _getLedgerStorage().ledgerImplA
+        );
     }
 
     function executeProcessValidatedFutures(PerpTypes.FuturesTradeUpload calldata trade)
@@ -224,7 +234,21 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         override
         onlyOperatorManager
     {
-        _delegatecall(abi.encodeWithSelector(ILedgerImplA.executeProcessValidatedFutures.selector, trade));
+        _delegatecall(
+            abi.encodeWithSelector(ILedgerImplA.executeProcessValidatedFutures.selector, trade),
+            _getLedgerStorage().ledgerImplA
+        );
+    }
+
+    function executeProcessValidatedFuturesBatch(PerpTypes.FuturesTradeUpload[] calldata trades)
+        external
+        override
+        onlyOperatorManager
+    {
+        _delegatecall(
+            abi.encodeWithSelector(ILedgerImplB.executeProcessValidatedFuturesBatch.selector, trades),
+            _getLedgerStorage().ledgerImplB
+        );
     }
 
     function executeWithdrawAction(EventTypes.WithdrawData calldata withdraw, uint64 eventId)
@@ -232,11 +256,16 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         override
         onlyOperatorManager
     {
-        _delegatecall(abi.encodeWithSelector(ILedgerImplA.executeWithdrawAction.selector, withdraw, eventId));
+        _delegatecall(
+            abi.encodeWithSelector(ILedgerImplA.executeWithdrawAction.selector, withdraw, eventId),
+            _getLedgerStorage().ledgerImplA
+        );
     }
 
     function accountWithdrawFail(AccountTypes.AccountWithdraw memory withdraw) external override onlyOwner {
-        _delegatecall(abi.encodeWithSelector(ILedgerImplA.accountWithdrawFail.selector, withdraw));
+        _delegatecall(
+            abi.encodeWithSelector(ILedgerImplA.accountWithdrawFail.selector, withdraw), _getLedgerStorage().ledgerImplA
+        );
     }
 
     function accountWithDrawFinish(AccountTypes.AccountWithdraw calldata withdraw)
@@ -244,7 +273,10 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         override
         onlyCrossChainManager
     {
-        _delegatecall(abi.encodeWithSelector(ILedgerImplA.accountWithDrawFinish.selector, withdraw));
+        _delegatecall(
+            abi.encodeWithSelector(ILedgerImplA.accountWithDrawFinish.selector, withdraw),
+            _getLedgerStorage().ledgerImplA
+        );
     }
 
     function executeSettlement(EventTypes.Settlement calldata settlement, uint64 eventId)
@@ -252,7 +284,10 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         override
         onlyOperatorManager
     {
-        _delegatecall(abi.encodeWithSelector(ILedgerImplA.executeSettlement.selector, settlement, eventId));
+        _delegatecall(
+            abi.encodeWithSelector(ILedgerImplA.executeSettlement.selector, settlement, eventId),
+            _getLedgerStorage().ledgerImplA
+        );
     }
 
     function executeLiquidation(EventTypes.Liquidation calldata liquidation, uint64 eventId)
@@ -260,7 +295,10 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         override
         onlyOperatorManager
     {
-        _delegatecall(abi.encodeWithSelector(ILedgerImplA.executeLiquidation.selector, liquidation, eventId));
+        _delegatecall(
+            abi.encodeWithSelector(ILedgerImplA.executeLiquidation.selector, liquidation, eventId),
+            _getLedgerStorage().ledgerImplA
+        );
     }
 
     function executeLiquidationV2(EventTypes.LiquidationV2 calldata liquidation, uint64 eventId)
@@ -268,15 +306,22 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         override
         onlyOperatorManager
     {
-        _delegatecall(abi.encodeWithSelector(ILedgerImplA.executeLiquidationV2.selector, liquidation, eventId));
+        _delegatecall(
+            abi.encodeWithSelector(ILedgerImplA.executeLiquidationV2.selector, liquidation, eventId),
+            _getLedgerStorage().ledgerImplA
+        );
     }
 
     function executeAdl(EventTypes.Adl calldata adl, uint64 eventId) external override onlyOperatorManager {
-        _delegatecall(abi.encodeWithSelector(ILedgerImplA.executeAdl.selector, adl, eventId));
+        _delegatecall(
+            abi.encodeWithSelector(ILedgerImplA.executeAdl.selector, adl, eventId), _getLedgerStorage().ledgerImplA
+        );
     }
 
     function executeAdlV2(EventTypes.AdlV2 calldata adl, uint64 eventId) external override onlyOperatorManager {
-        _delegatecall(abi.encodeWithSelector(ILedgerImplA.executeAdlV2.selector, adl, eventId));
+        _delegatecall(
+            abi.encodeWithSelector(ILedgerImplA.executeAdlV2.selector, adl, eventId), _getLedgerStorage().ledgerImplA
+        );
     }
 
     function executeFeeDistribution(EventTypes.FeeDistribution calldata feeDistribution, uint64 eventId)
@@ -284,7 +329,10 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         override
         onlyOperatorManager
     {
-        _delegatecall(abi.encodeWithSelector(ILedgerImplA.executeFeeDistribution.selector, feeDistribution, eventId));
+        _delegatecall(
+            abi.encodeWithSelector(ILedgerImplA.executeFeeDistribution.selector, feeDistribution, eventId),
+            _getLedgerStorage().ledgerImplA
+        );
     }
 
     function executeDelegateSigner(EventTypes.DelegateSigner calldata delegateSigner, uint64 eventId)
@@ -292,7 +340,10 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         override
         onlyOperatorManager
     {
-        _delegatecall(abi.encodeWithSelector(ILedgerImplA.executeDelegateSigner.selector, delegateSigner, eventId));
+        _delegatecall(
+            abi.encodeWithSelector(ILedgerImplA.executeDelegateSigner.selector, delegateSigner, eventId),
+            _getLedgerStorage().ledgerImplA
+        );
     }
 
     function executeDelegateWithdrawAction(EventTypes.WithdrawData calldata delegateWithdraw, uint64 eventId)
@@ -301,7 +352,8 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         onlyOperatorManager
     {
         _delegatecall(
-            abi.encodeWithSelector(ILedgerImplA.executeDelegateWithdrawAction.selector, delegateWithdraw, eventId)
+            abi.encodeWithSelector(ILedgerImplA.executeDelegateWithdrawAction.selector, delegateWithdraw, eventId),
+            _getLedgerStorage().ledgerImplA
         );
     }
 
@@ -364,8 +416,8 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
     }
 
     // inner function for delegatecall
-    function _delegatecall(bytes memory data) private {
-        (bool success, bytes memory returnData) = _getLedgerStorage().ledgerImplA.delegatecall(data);
+    function _delegatecall(bytes memory data, address impl) private {
+        (bool success, bytes memory returnData) = impl.delegatecall(data);
         if (!success) {
             if (returnData.length > 0) {
                 assembly {
