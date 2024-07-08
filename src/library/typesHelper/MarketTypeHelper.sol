@@ -34,6 +34,10 @@ library MarketTypeHelper {
         _perpMarketCfg.indexPriceOrderly = _indexPriceOrderly;
     }
 
+    function setStorkPrice(MarketTypes.PerpMarketCfg storage _perpMarketCfg, uint128 _storkPrice) internal {
+        _perpMarketCfg.storkPrice = _storkPrice;
+    }
+
     function setSumUnitaryFundings(MarketTypes.PerpMarketCfg storage _perpMarketCfg, int128 _sumUnitaryFundings)
         internal
     {
