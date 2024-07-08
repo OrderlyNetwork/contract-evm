@@ -387,18 +387,20 @@ contract SignatureTest is Test {
         perpPrices[0] = MarketTypes.PerpPrice({
             indexPrice: 100000777,
             markPrice: 100000888,
+            storkPrice: 100000999,
             symbolHash: 0x7e83089239db756ee233fa8972addfea16ae653db0f692e4851aed546b21caeb,
             timestamp: 1580794149123
         });
         perpPrices[1] = MarketTypes.PerpPrice({
             indexPrice: 100000123,
             markPrice: 100000456,
+            storkPrice: 100000789,
             symbolHash: 0x5a8133e52befca724670dbf2cade550c522c2410dd5b1189df675e99388f509d,
             timestamp: 1580794149789
         });
         MarketTypes.UploadPerpPrice memory data = MarketTypes.UploadPerpPrice({
-            r: 0x641756217ae53e90d718b1c25222939cf081fc36156c6638bad9758b640f1207,
-            s: 0x4df04d08e92e39bf0042f775da00456472f6932b02b79f11c80c4f19d2c37f70,
+            r: 0xf4538cfff871a94c4dd839c8405c591046fde29ea6fab639f2bed0e196abdbd1,
+            s: 0x54a5af1302d848c79b9d178fcd80602651dae88b2af39787aee7b777f7542847,
             v: 0x1c,
             maxTimestamp: 1580794149789,
             perpPrices: perpPrices

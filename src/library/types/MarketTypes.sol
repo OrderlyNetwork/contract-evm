@@ -13,6 +13,7 @@ library MarketTypes {
         int128 sumUnitaryFundings;
         uint256 lastMarkPriceUpdated;
         uint256 lastFundingUpdated;
+        uint128 storkPrice;
     }
 
     struct UploadPerpPrice {
@@ -35,6 +36,7 @@ library MarketTypes {
         bytes32 symbolHash;
         uint128 indexPrice;
         uint128 markPrice;
+        uint128 storkPrice;
         uint64 timestamp;
     }
 
