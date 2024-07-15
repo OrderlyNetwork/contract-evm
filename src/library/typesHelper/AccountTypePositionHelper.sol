@@ -92,6 +92,45 @@ library AccountTypePositionHelper {
         position.openingCost = halfUp16_8(openingCost, 1e8);
     }
 
+    /// @dev similar to the above function, but with an additional parameter `positionQty` equal to `position.positionQty`
+    function calAverageEntryPrice(
+        AccountTypes.PerpPosition storage position,
+        int128 positionQty,
+        int128 qty,
+        int128 price,
+        int128 liquidationQuoteDiff
+    ) internal {
+        if (qty == 0) {
+            return;
+        }
+        int128 currentHolding = positionQty + qty;
+        if (currentHolding == 0) {
+            position.averageEntryPrice = 0;
+            position.openingCost = 0;
+            return;
+        }
+        // precision 16 = 6 + 10
+        int128 quoteDiff = liquidationQuoteDiff != 0 ? liquidationQuoteDiff * 1e10 : -qty * price;
+        // precision 16 = 8 + 8
+        int128 openingCost = position.openingCost * 1e8;
+        if (positionQty * currentHolding > 0) {
+            if (qty * positionQty > 0) {
+                openingCost += quoteDiff;
+            } else {
+                int128 v = halfUp24_8_i256(int256(openingCost) * int256(qty), positionQty);
+                openingCost += v;
+            }
+        } else {
+            openingCost = halfUp24_8_i256(int256(quoteDiff) * int256(currentHolding), qty);
+        }
+        if (currentHolding > 0) {
+            position.averageEntryPrice = halfDown16_8(-openingCost, currentHolding).toUint128();
+        } else {
+            position.averageEntryPrice = halfUp16_8(-openingCost, currentHolding).toUint128();
+        }
+        position.openingCost = halfUp16_8(openingCost, 1e8);
+    }
+
     /// @notice dividend has move right 24 precisions, divisor move right 8
     function halfUp24_8(int128 dividend, int128 divisor) internal pure returns (int128) {
         // to eliminate effects of dividend extra move right 8 precision in outer

@@ -30,6 +30,10 @@ contract MarketManager is IMarketManager, LedgerComponent, OperatorManagerCompon
             MarketTypes.PerpMarketCfg storage cfg = perpMarketCfg[perpPrice.symbolHash];
             cfg.setIndexPriceOrderly(perpPrice.indexPrice);
             cfg.setMarkPrice(perpPrice.markPrice);
+            // 0 means null, ignore that
+            if (perpPrice.storkPrice > 0) {
+                cfg.setStorkPrice(perpPrice.storkPrice);
+            }
             cfg.setLastMarkPriceUpdated(perpPrice.timestamp);
         }
         emit MarketData(data.maxTimestamp);
