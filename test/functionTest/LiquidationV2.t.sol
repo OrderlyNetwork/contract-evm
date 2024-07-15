@@ -94,19 +94,6 @@ contract LiquidationV2Test is Test {
 
         marketManager.setOperatorManagerAddress(address(operatorManager));
         marketManager.setLedgerAddress(address(ledger));
-        marketManager.setPerpMarketCfg(
-            SYMBOL_HASH_BTC_USDC,
-            MarketTypes.PerpMarketCfg({
-                baseMaintenanceMargin: 1,
-                baseInitialMargin: 1,
-                liquidationFeeMax: 1,
-                markPrice: 1,
-                indexPriceOrderly: 1,
-                sumUnitaryFundings: 1,
-                lastMarkPriceUpdated: 1,
-                lastFundingUpdated: 1
-            })
-        );
 
         ledgerCrossChainManager.setLedger(address(ledger));
         ledgerCrossChainManager.setOperatorManager(address(operatorManager));
