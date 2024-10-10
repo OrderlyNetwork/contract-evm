@@ -42,12 +42,24 @@ library AccountTypes {
         uint64 lastDepositSrcChainId;
         // last deposit src chain nonce
         uint64 lastDepositSrcChainNonce;
+        // solana account public key
+        bytes32 solAccountPubKey;
     }
 
     struct AccountDeposit {
         bytes32 accountId;
         bytes32 brokerHash;
         address userAddress;
+        bytes32 tokenHash;
+        uint256 srcChainId;
+        uint128 tokenAmount;
+        uint64 srcChainDepositNonce;
+    }
+
+    struct AccountDepositSol {
+        bytes32 accountId;
+        bytes32 brokerHash;
+        bytes32 pubkey;
         bytes32 tokenHash;
         uint256 srcChainId;
         uint128 tokenAmount;

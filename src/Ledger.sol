@@ -15,6 +15,7 @@ import "./library/typesHelper/AccountTypePositionHelper.sol";
 import "./library/typesHelper/SafeCastHelper.sol";
 import "./interface/ILedgerImplA.sol";
 import "./interface/ILedgerImplB.sol";
+import "./interface/ILedgerImplC.sol";
 
 /// @title Ledger contract
 /// @author Orderly_Rubick
@@ -31,6 +32,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         // Because of EIP170 size limit, the implementation should be split to impl contracts
         address ledgerImplA;
         address ledgerImplB;
+        address ledgerImplC;
     }
 
     // keccak256(abi.encode(uint256(keccak256("orderly.Ledger")) - 1)) & ~bytes32(uint256(0xff))
@@ -51,6 +53,12 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
     /// @notice require crossChainManager
     modifier onlyCrossChainManager() {
         if (msg.sender != crossChainManagerAddress) revert OnlyCrossChainManagerCanCall();
+        _;
+    }
+
+    /// @notice require crossChainManagerV2
+    modifier onlyCrossChainManagerV2() {
+        if (msg.sender != crossChainManagerV2Address) revert OnlyCrossChainManagerV2CanCall();
         _;
     }
 
@@ -80,6 +88,12 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         _getLedgerStorage().ledgerImplB = _ledgerImplB;
     }
 
+    /// @notice Set the address of ledgerImplC contract
+    function setLedgerImplC(address _ledgerImplC) external override onlyOwner nonZeroAddress(_ledgerImplC) {
+        emit ChangeLedgerImplC(_getLedgerStorage().ledgerImplC, _ledgerImplC);
+        _getLedgerStorage().ledgerImplC = _ledgerImplC;
+    }
+
     /// @notice Set the address of operatorManager contract
     /// @param _operatorManagerAddress new operatorManagerAddress
     function setOperatorManagerAddress(address _operatorManagerAddress)
@@ -102,6 +116,18 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
     {
         emit ChangeCrossChainManager(crossChainManagerAddress, _crossChainManagerAddress);
         crossChainManagerAddress = _crossChainManagerAddress;
+    }
+
+    /// @notice Set the address of crossChainManagerV2 on Ledger side
+    /// @param _crossChainManagerV2Address  new crossChainManagerV2Address
+    function setCrossChainManagerV2(address _crossChainManagerV2Address)
+        external
+        override
+        onlyOwner
+        nonZeroAddress(_crossChainManagerV2Address)
+    {
+        emit ChangeCrossChainManagerV2(crossChainManagerV2Address, _crossChainManagerV2Address);
+        crossChainManagerV2Address = _crossChainManagerV2Address;
     }
 
     /// @notice Set the address of vaultManager contract
@@ -229,6 +255,16 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         );
     }
 
+    function accountDepositSol(AccountTypes.AccountDepositSol calldata data)
+        external
+        override
+        onlyCrossChainManagerV2
+    {
+        _delegatecall(
+            abi.encodeWithSelector(ILedgerImplC.accountDepositSol.selector, data), _getLedgerStorage().ledgerImplC
+        );
+    }
+
     function executeProcessValidatedFutures(PerpTypes.FuturesTradeUpload calldata trade)
         external
         override
@@ -259,6 +295,17 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         _delegatecall(
             abi.encodeWithSelector(ILedgerImplA.executeWithdrawAction.selector, withdraw, eventId),
             _getLedgerStorage().ledgerImplA
+        );
+    }
+
+    function executeWithdrawSolAction(EventTypes.WithdrawDataSol calldata withdraw, uint64 eventId)
+        external
+        override
+        onlyOperatorManager
+    {
+        _delegatecall(
+            abi.encodeWithSelector(ILedgerImplC.executeWithdrawSolAction.selector, withdraw, eventId),
+            _getLedgerStorage().ledgerImplC
         );
     }
 

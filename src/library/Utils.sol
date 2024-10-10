@@ -24,7 +24,19 @@ library Utils {
         return keccak256(abi.encode(_userAddress, _brokerHash)) == _accountId;
     }
 
+    function validateAccountId(bytes32 _accountId, bytes32 _brokerHash, bytes32 _userAddress)
+        internal
+        pure
+        returns (bool)
+    {
+        return keccak256(abi.encode(_userAddress, _brokerHash)) == _accountId;
+    }
+
     function toBytes32(address addr) internal pure returns (bytes32) {
         return bytes32(abi.encode(addr));
+    }
+
+    function bytes32ToBytes(bytes32 _bytes32) internal pure returns (bytes memory) {
+        return abi.encodePacked(_bytes32);
     }
 }
