@@ -15,7 +15,8 @@ import "./library/typesHelper/AccountTypeHelper.sol";
 import "./library/typesHelper/AccountTypePositionHelper.sol";
 import "./library/typesHelper/SafeCastHelper.sol";
 
-/// @title Ledger contract, implementation part A contract, for resolve EIP170 limit
+/// @title Ledger contract, implementation part B contract, for resolve EIP170 limit
+/// @notice This contract saves gas for method `executeProcessValidatedFuturesBatch` by using transient storage
 /// @author Orderly_Rubick
 contract LedgerImplB is ILedgerImplB, OwnableUpgradeable, LedgerDataLayout {
     using AccountTypeHelper for AccountTypes.Account;

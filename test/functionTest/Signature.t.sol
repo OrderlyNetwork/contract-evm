@@ -789,4 +789,75 @@ contract SignatureTest is Test {
         bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
         assertEq(succ, true);
     }
+
+    // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/723288229/SolWithdraw+Upload
+    function test_eventUploadEncodeHash_withdrawSol() public {
+        EventTypes.WithdrawData memory w1 = EventTypes.WithdrawData({
+            tokenAmount: 123,
+            fee: 5000,
+            chainId: 10086,
+            accountId: 0x1723cb226c337a417a6022890bc5671ebb4db551db0273536bf1094edf39ed63,
+            r: 0x0,
+            s: 0x0,
+            v: 0x0,
+            sender: 0x6a9961Ace9bF0C1B8B98ba11558A4125B1f5EA3f,
+            withdrawNonce: 9,
+            receiver: 0x6a9961Ace9bF0C1B8B98ba11558A4125B1f5EA3f,
+            timestamp: 1683270380530,
+            brokerId: "woo_dex",
+            tokenSymbol: "USDC"
+        });
+        EventTypes.WithdrawDataSol memory w2 = EventTypes.WithdrawDataSol({
+            tokenAmount: 12356,
+            fee: 5001,
+            chainId: 902902902,
+            accountId: 0xc9b4f2bb0e18cd952f4219d39d9321c860128f8ea74aabe953e110020cb10324,
+            r: 0x0,
+            s: 0x0,
+            sender: 0x320e86426dd1e11d1eb90ec448cdd74b019cd7d30b14c7faa7f35d0aa2226f1c,
+            withdrawNonce: 10,
+            receiver: 0x320e86426dd1e11d1eb90ec448cdd74b019cd7d30b14c7faa7f35d0aa2226f1c,
+            timestamp: 1683270380531,
+            brokerId: "woofi_pro",
+            tokenSymbol: "USDC"
+        });
+
+        EventTypes.EventUploadData[] memory events = new EventTypes.EventUploadData[](2);
+        events[0] = EventTypes.EventUploadData({bizType: 1, eventId: 1, data: abi.encode(w1)});
+        events[1] = EventTypes.EventUploadData({bizType: 10, eventId: 4, data: abi.encode(w2)});
+        EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
+            events: events,
+            r: 0xd4607b5b0355c1298d4b2f5a815f41fade87bfd185778a12f832f02a8cdb8534,
+            s: 0x69714ac2fd7a47500f90344b26ad163561cce1e25146f9e585d9cb1d572f1cda,
+            v: 0x1b,
+            count: 2,
+            batchId: 7888
+        });
+
+        bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
+        assertEq(succ, true);
+    }
+
+    function test_solanaWithdraw() public {
+        bytes32 hashStruct = keccak256(
+            abi.encode(
+                keccak256(abi.encodePacked("woofi_pro")),
+                keccak256(abi.encodePacked("USDC")),
+                902902902,
+                0x320e86426dd1e11d1eb90ec448cdd74b019cd7d30b14c7faa7f35d0aa2226f1c,
+                3000000,
+                2,
+                1721702072212,
+                Signature.HASH_ORDERLY_NETWORK // salt
+            )
+        );
+        bytes32 k = hex"320e86426dd1e11d1eb90ec448cdd74b019cd7d30b14c7faa7f35d0aa2226f1c";
+        bytes32 r = hex"afcf6cc18086132fa4cec878b8ff2a0c5373eef178b032f2774cd481d1d63cb5";
+        bytes32 s = hex"223e61115210e0c03ed46dbe1916d6118c2624ab648086dc19a7f332a8eef90e";
+        bytes memory m = Bytes32ToAsciiBytes.bytes32ToAsciiBytes(hashStruct);
+        bytes32 mAnswer = hex"2f7399516014a7ae683d54a97293deb2265f5efab1feeb6cbb2c5977e0183bb1";
+        assertEq(hashStruct, mAnswer);
+        bool isSucc = Ed25519.verify(k, r, s, m);
+        assertTrue(isSucc);
+    }
 }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8;
 
-library Ed25519 {
+library Ed25519FixedMsg {
     // Computes (v^(2^250-1), v^11) mod p
     function pow22501(uint256 v) private pure returns (uint256 p22501, uint256 p11) {
         p11 = mulmod(v, v, 0x7fffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffed);

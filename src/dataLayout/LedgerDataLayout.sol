@@ -29,7 +29,9 @@ contract LedgerDataLayout {
     uint64 public globalDepositId;
     // A mapping from contract accountId to its delegate signer
     mapping(bytes32 => AccountTypes.AccountDelegateSigner) public contractSigner;
+    // crossChainManagerV2Address, for lzv2
+    address public crossChainManagerV2Address;
 
     // The storage gap to prevent overwriting by proxy
-    uint256[43] private __gap;
+    uint256[42] private __gap;
 }
