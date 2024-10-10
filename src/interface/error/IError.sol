@@ -19,6 +19,7 @@ interface IError {
     // Ledger Error
     error OnlyOperatorCanCall();
     error OnlyCrossChainManagerCanCall();
+    error OnlyCrossChainManagerV2CanCall();
     error TotalSettleAmountNotMatch(int128 amount);
     error BalanceNotEnough(uint128 balance, int128 amount);
     error InsuranceTransferToSelf();

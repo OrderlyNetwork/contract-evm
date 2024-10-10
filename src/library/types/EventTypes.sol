@@ -37,6 +37,22 @@ library EventTypes {
         string tokenSymbol; // only this field is string, others should be bytes32 hashedTokenSymbol
     }
 
+    // WithdrawDataSol
+    struct WithdrawDataSol {
+        uint128 tokenAmount;
+        uint128 fee;
+        uint256 chainId; // target withdraw chain
+        bytes32 accountId;
+        bytes32 r;
+        bytes32 s;
+        bytes32 sender;
+        bytes32 receiver;
+        uint64 withdrawNonce;
+        uint64 timestamp;
+        string brokerId; // only this field is string, others should be bytes32 hashedBrokerId
+        string tokenSymbol; // only this field is string, others should be bytes32 hashedTokenSymbol
+    }
+
     struct Settlement {
         bytes32 accountId;
         bytes32 settledAssetHash;

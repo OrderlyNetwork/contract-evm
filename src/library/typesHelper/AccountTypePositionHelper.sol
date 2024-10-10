@@ -9,6 +9,8 @@ import "./SafeCastHelper.sol";
 /// @title AccountTypePositionHelper library
 /// @author Orderly_Rubick
 library AccountTypePositionHelper {
+    error QtyZero();
+
     using SafeCastHelper for *;
 
     int128 constant FUNDING_MOVE_RIGHT_PRECISIONS = 1e17; // 1e17
@@ -129,6 +131,47 @@ library AccountTypePositionHelper {
             position.averageEntryPrice = halfUp16_8(-openingCost, currentHolding).toUint128();
         }
         position.openingCost = halfUp16_8(openingCost, 1e8);
+    }
+
+    /// @dev similar to the above function, but with two additional parameters
+    /// `positionQty` equal to `position.positionQty`
+    /// `openingCostOld` equal to `position.openingCost`
+    function calAverageEntryPrice(
+        int128 positionQty,
+        int128 openingCostOld,
+        int128 qty,
+        int128 price,
+        int128 liquidationQuoteDiff
+    ) internal pure returns (uint128 averageEntryPrice, int128 openingCost) {
+        if (qty == 0) {
+            revert QtyZero();
+        }
+        int128 currentHolding = positionQty + qty;
+        if (currentHolding == 0) {
+            averageEntryPrice = 0;
+            openingCost = 0;
+            return (averageEntryPrice, openingCost);
+        }
+        // precision 16 = 6 + 10
+        int128 quoteDiff = liquidationQuoteDiff != 0 ? liquidationQuoteDiff * 1e10 : -qty * price;
+        // precision 16 = 8 + 8
+        openingCost = openingCostOld * 1e8;
+        if (positionQty * currentHolding > 0) {
+            if (qty * positionQty > 0) {
+                openingCost += quoteDiff;
+            } else {
+                int128 v = halfUp24_8_i256(int256(openingCost) * int256(qty), positionQty);
+                openingCost += v;
+            }
+        } else {
+            openingCost = halfUp24_8_i256(int256(quoteDiff) * int256(currentHolding), qty);
+        }
+        if (currentHolding > 0) {
+            averageEntryPrice = halfDown16_8(-openingCost, currentHolding).toUint128();
+        } else {
+            averageEntryPrice = halfUp16_8(-openingCost, currentHolding).toUint128();
+        }
+        openingCost = halfUp16_8(openingCost, 1e8);
     }
 
     /// @notice dividend has move right 24 precisions, divisor move right 8

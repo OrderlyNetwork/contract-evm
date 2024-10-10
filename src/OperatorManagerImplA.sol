@@ -79,13 +79,8 @@ contract OperatorManagerImplA is IOperatorManagerImplA, OwnableUpgradeable, Oper
         bool succ = Signature.perpUploadEncodeHashVerify(data, enginePerpTradeUploadAddress);
         if (!succ) revert SignatureNotMatch();
 
-        // process each event upload
-        for (uint256 i = 0; i < data.count; i++) {
-            ledger.executeProcessValidatedFutures(trades[i]);
-        }
-        // TODO: use batch process instead
-        // // process each validated perp trades
-        // ledger.executeProcessValidatedFuturesBatch(trades);
+        // process each validated perp trades
+        ledger.executeProcessValidatedFuturesBatch(trades);
     }
 
     /// @notice Function to verify Engine signature for event upload data, if validated then Ledger contract will be called to execute the event process
@@ -133,6 +128,9 @@ contract OperatorManagerImplA is IOperatorManagerImplA, OwnableUpgradeable, Oper
         } else if (bizType == 9) {
             // liquidation v2
             ledger.executeLiquidationV2(abi.decode(data.data, (EventTypes.LiquidationV2)), data.eventId);
+        } else if (bizType == 10) {
+            // withdraw sol
+            ledger.executeWithdrawSolAction(abi.decode(data.data, (EventTypes.WithdrawDataSol)), data.eventId);
         } else {
             revert InvalidBizType(bizType);
         }

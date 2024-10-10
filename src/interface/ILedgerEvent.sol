@@ -49,7 +49,7 @@ interface ILedgerEvent {
         bytes32 tokenHash,
         uint128 tokenAmount,
         uint128 fee,
-        uint8 failReson
+        uint8 failReason
     );
 
     event SettlementResult(
@@ -163,11 +163,52 @@ interface ILedgerEvent {
 
     event ChangeOperatorManager(address oldAddress, address newAddress);
     event ChangeCrossChainManager(address oldAddress, address newAddress);
+    event ChangeCrossChainManagerV2(address oldAddress, address newAddress);
     event ChangeVaultManager(address oldAddress, address newAddress);
     event ChangeMarketManager(address oldAddress, address newAddress);
     event ChangeFeeManager(address oldAddress, address newAddress);
     event ChangeLedgerImplA(address oldAddress, address newAddress);
     event ChangeLedgerImplB(address oldAddress, address newAddress);
+    event ChangeLedgerImplC(address oldAddress, address newAddress);
+
+    // for Solana
+    event AccountRegister(bytes32 indexed accountId, bytes32 indexed brokerId, bytes32 indexed pubkey);
+    event AccountDepositSol(
+        bytes32 indexed accountId,
+        uint64 indexed depositNonce,
+        uint64 indexed eventId,
+        bytes32 pubkey,
+        bytes32 tokenHash,
+        uint128 tokenAmount,
+        uint256 srcChainId,
+        uint64 srcChainDepositNonce,
+        bytes32 brokerHash
+    );
+    event AccountWithdrawSolApprove(
+        bytes32 indexed accountId,
+        uint64 indexed withdrawNonce,
+        uint64 indexed eventId,
+        bytes32 brokerHash,
+        bytes32 sender,
+        bytes32 receiver,
+        uint256 chainId,
+        bytes32 tokenHash,
+        uint128 tokenAmount,
+        uint128 fee
+    );
+    event AccountWithdrawSolFail(
+        bytes32 indexed accountId,
+        uint64 indexed withdrawNonce,
+        uint64 indexed eventId,
+        bytes32 brokerHash,
+        bytes32 sender,
+        bytes32 receiver,
+        uint256 chainId,
+        bytes32 tokenHash,
+        uint128 tokenAmount,
+        uint128 fee,
+        uint8 failReason
+    );
 
     // All events below are deprecated
     // Keep them for indexer backward compatibility
@@ -230,7 +271,7 @@ interface ILedgerEvent {
         uint128 tokenAmount,
         uint128 fee,
         uint256 blocktime,
-        uint8 failReson
+        uint8 failReason
     );
     // @deprecated
     event ProcessValidatedFutures(
