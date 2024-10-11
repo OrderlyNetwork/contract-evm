@@ -80,7 +80,14 @@ contract OperatorManagerImplA is IOperatorManagerImplA, OwnableUpgradeable, Oper
         if (!succ) revert SignatureNotMatch();
 
         // process each validated perp trades
-        ledger.executeProcessValidatedFuturesBatch(trades);
+        for (uint256 i = 0; i < data.count; i++) {
+            ledger.executeProcessValidatedFutures(trades[i]);
+        }
+        // TODO
+        // Need audit of the following code
+        // We should change to the transient storage implementation to save gas
+        // and increase the tps of trade upload
+        // ledger.executeProcessValidatedFuturesBatch(trades);
     }
 
     /// @notice Function to verify Engine signature for event upload data, if validated then Ledger contract will be called to execute the event process
