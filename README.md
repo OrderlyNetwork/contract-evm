@@ -202,6 +202,8 @@ forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_ETHEREUM --verifi
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_FUJI --broadcast --verifier-url 'https://api.routescan.io/v2/network/testnet/evm/43113/etherscan' --verify --etherscan-api-key "verifyContract"
 # avax mainnet
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_AVAX --broadcast --verifier-url 'https://api.routescan.io/v2/network/mainnet/evm/43114/etherscan' --verify --etherscan-api-key "verifyContract"
+# sei arctic
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_SEIARCTIC --broadcast --legacy
 ```
 
 ### Deploy new implement command:
@@ -227,6 +229,8 @@ forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_BASE --verifier-url
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_MANTLESEPOLIA --broadcast --verifier-url https://explorer.sepolia.mantle.xyz/api\? --verifier blockscout --verify --skip-simulation
 # mantle mainnet
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_MANTLE --verifier-url https://api.mantlescan.xyz/api --broadcast --verify --etherscan-api-key $MANTLE_ETHERSCAN_API_KEY --skip-simulation
+# sei
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_SEI --broadcast --legacy
 ```
 
 ## Zip scripts
