@@ -6,10 +6,15 @@ import "./types/PerpTypes.sol";
 import "./types/EventTypes.sol";
 import "./types/MarketTypes.sol";
 import "./types/RebalanceTypes.sol";
+import "./Ed25519/Ed25519.sol";
+import "./Bytes32ToAsciiBytes.sol";
 
 /// @title Signature library
 /// @author Orderly_Rubick, Orderly_Zion
 library Signature {
+    // keccak256("Orderly Network")
+    bytes32 constant HASH_ORDERLY_NETWORK = hex"768a5991f3d52b299dee3ad82f4adaeaa9fb91ffcf7afbecbac40c39201773b4";
+
     function verifyWithdraw(address sender, EventTypes.WithdrawData memory data) internal view returns (bool) {
         bytes32 typeHash =
             keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
@@ -35,6 +40,26 @@ library Signature {
 
         bytes32 hash = keccak256(abi.encodePacked("\x19\x01", eip712DomainHash, hashStruct));
         return ECDSA.recover(hash, data.v, data.r, data.s) == sender;
+    }
+
+    function verifyWithdrawSol(EventTypes.WithdrawDataSol memory data) internal pure returns (bool) {
+        bytes32 hashStruct = keccak256(
+            abi.encode(
+                keccak256(abi.encodePacked(data.brokerId)),
+                keccak256(abi.encodePacked(data.tokenSymbol)),
+                data.chainId,
+                data.receiver,
+                data.tokenAmount,
+                data.withdrawNonce,
+                data.timestamp,
+                HASH_ORDERLY_NETWORK // salt
+            )
+        );
+        bytes32 k = data.sender;
+        bytes32 r = data.r;
+        bytes32 s = data.s;
+        bytes memory m = Bytes32ToAsciiBytes.bytes32ToAsciiBytes(hashStruct);
+        return Ed25519.verify(k, r, s, m);
     }
 
     function verifyDelegateWithdraw(address delegateSigner, EventTypes.WithdrawData memory data)
@@ -168,6 +193,20 @@ library Signature {
         uint256 chainId;
     }
 
+    struct WithdrawSolDataSignature {
+        uint64 eventId; // flat map to this
+        string brokerId;
+        bytes32 accountId;
+        uint256 chainId;
+        bytes32 sender;
+        bytes32 receiver;
+        string token;
+        uint128 tokenAmount;
+        uint128 fee;
+        uint64 withdrawNonce;
+        uint64 timestamp;
+    }
+
     struct EventUploadSignature {
         uint64 batchId;
         WithdrawDataSignature[] withdraws;
@@ -178,6 +217,7 @@ library Signature {
         DelegeteSignerSignature[] delegateSigners;
         AdlV2Signature[] adlV2s;
         LiquidationV2Signature[] liquidationV2s;
+        WithdrawSolDataSignature[] withdrawSols;
     }
 
     function eventsUploadEncodeHash(EventTypes.EventUpload memory data) internal pure returns (bytes memory) {
@@ -187,8 +227,9 @@ library Signature {
         // so we have `withdraws: new WithdrawDataSignature[](countArray[0]+countArray[6])` when initializing eventUploadSignature
         // 0: withdraws + delegate, 1: settlements, 2: adls, 3: liquidations
         // 4: feeDistributions, 5: delegateSigners, 6: null, 7: adlV2s, 8: liquidationV2s
-        uint8[] memory countArray = new uint8[](9);
-        uint8[] memory countArray2 = new uint8[](9);
+        // 9: withdrawSol
+        uint8[] memory countArray = new uint8[](10);
+        uint8[] memory countArray2 = new uint8[](10);
         uint256 len = data.events.length;
         for (uint256 i = 0; i < len; i++) {
             countArray[data.events[i].bizType - 1]++;
@@ -202,7 +243,8 @@ library Signature {
             feeDistributions: new FeeDistributionSignature[](countArray[4]),
             delegateSigners: new DelegeteSignerSignature[](countArray[5]),
             adlV2s: new AdlV2Signature[](countArray[7]),
-            liquidationV2s: new LiquidationV2Signature[](countArray[8])
+            liquidationV2s: new LiquidationV2Signature[](countArray[8]),
+            withdrawSols: new WithdrawSolDataSignature[](countArray[9])
         });
 
         for (uint256 i = 0; i < len; i++) {
@@ -320,13 +362,45 @@ library Signature {
                 });
                 eventUploadSignature.liquidationV2s[countArray2[8]] = liquidationV2Signature;
                 countArray2[8]++;
+            } else if (eventUploadData.bizType == 10) {
+                EventTypes.WithdrawDataSol memory withdrawSolData =
+                    abi.decode(eventUploadData.data, (EventTypes.WithdrawDataSol));
+                WithdrawSolDataSignature memory withdrawSolDataSignature = WithdrawSolDataSignature({
+                    eventId: eventUploadData.eventId,
+                    brokerId: withdrawSolData.brokerId,
+                    accountId: withdrawSolData.accountId,
+                    chainId: withdrawSolData.chainId,
+                    sender: withdrawSolData.sender,
+                    receiver: withdrawSolData.receiver,
+                    token: withdrawSolData.tokenSymbol,
+                    tokenAmount: withdrawSolData.tokenAmount,
+                    fee: withdrawSolData.fee,
+                    withdrawNonce: withdrawSolData.withdrawNonce,
+                    timestamp: withdrawSolData.timestamp
+                });
+                eventUploadSignature.withdrawSols[countArray2[9]] = withdrawSolDataSignature;
+                countArray2[9]++;
             } else {
                 // should never happen
                 revert("Invalid bizType");
             }
         }
         bytes memory encoded;
-        if (eventUploadSignature.adlV2s.length > 0 || eventUploadSignature.liquidationV2s.length > 0) {
+        if (eventUploadSignature.withdrawSols.length > 0) {
+            // v5 signature, only support [v4, withdrawSols]
+            encoded = abi.encode(
+                eventUploadSignature.batchId,
+                eventUploadSignature.withdraws,
+                eventUploadSignature.settlements,
+                eventUploadSignature.adls,
+                eventUploadSignature.liquidations,
+                eventUploadSignature.feeDistributions,
+                eventUploadSignature.delegateSigners,
+                eventUploadSignature.adlV2s,
+                eventUploadSignature.liquidationV2s,
+                eventUploadSignature.withdrawSols
+            );
+        } else if (eventUploadSignature.adlV2s.length > 0 || eventUploadSignature.liquidationV2s.length > 0) {
             // v4 signature, only support [v3, adlV2s, liquidationV2s]
             encoded = abi.encode(
                 eventUploadSignature.batchId,

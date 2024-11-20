@@ -16,6 +16,7 @@ interface ILedger is IError, ILedgerEvent {
 
     // Functions called by cross chain manager on Ledger side
     function accountDeposit(AccountTypes.AccountDeposit calldata data) external;
+    function accountDepositSol(AccountTypes.AccountDepositSol calldata data) external;
     function accountWithDrawFinish(AccountTypes.AccountWithdraw calldata withdraw) external;
     // Called by admin to revert failed withdraw
     function accountWithdrawFail(AccountTypes.AccountWithdraw calldata withdraw) external;
@@ -24,6 +25,7 @@ interface ILedger is IError, ILedgerEvent {
     function executeProcessValidatedFutures(PerpTypes.FuturesTradeUpload calldata trade) external;
     function executeProcessValidatedFuturesBatch(PerpTypes.FuturesTradeUpload[] calldata trades) external;
     function executeWithdrawAction(EventTypes.WithdrawData calldata withdraw, uint64 eventId) external;
+    function executeWithdrawSolAction(EventTypes.WithdrawDataSol calldata withdraw, uint64 eventId) external;
     function executeSettlement(EventTypes.Settlement calldata ledger, uint64 eventId) external;
     function executeLiquidation(EventTypes.Liquidation calldata liquidation, uint64 eventId) external;
     function executeLiquidationV2(EventTypes.LiquidationV2 calldata liquidation, uint64 eventId) external;
@@ -55,9 +57,11 @@ interface ILedger is IError, ILedgerEvent {
     // admin call
     function setOperatorManagerAddress(address _operatorManagerAddress) external;
     function setCrossChainManager(address _crossChainManagerAddress) external;
+    function setCrossChainManagerV2(address _crossChainManagerV2Address) external;
     function setVaultManager(address _vaultManagerAddress) external;
     function setMarketManager(address _marketManagerAddress) external;
     function setFeeManager(address _feeManagerAddress) external;
     function setLedgerImplA(address _ledgerImplA) external;
     function setLedgerImplB(address _ledgerImplB) external;
+    function setLedgerImplC(address _ledgerImplC) external;
 }

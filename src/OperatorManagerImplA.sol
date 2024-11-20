@@ -79,12 +79,14 @@ contract OperatorManagerImplA is IOperatorManagerImplA, OwnableUpgradeable, Oper
         bool succ = Signature.perpUploadEncodeHashVerify(data, enginePerpTradeUploadAddress);
         if (!succ) revert SignatureNotMatch();
 
-        // process each event upload
+        // process each validated perp trades
         for (uint256 i = 0; i < data.count; i++) {
             ledger.executeProcessValidatedFutures(trades[i]);
         }
-        // TODO: use batch process instead
-        // // process each validated perp trades
+        // TODO
+        // Need audit of the following code
+        // We should change to the transient storage implementation to save gas
+        // and increase the tps of trade upload
         // ledger.executeProcessValidatedFuturesBatch(trades);
     }
 
@@ -133,6 +135,9 @@ contract OperatorManagerImplA is IOperatorManagerImplA, OwnableUpgradeable, Oper
         } else if (bizType == 9) {
             // liquidation v2
             ledger.executeLiquidationV2(abi.decode(data.data, (EventTypes.LiquidationV2)), data.eventId);
+        } else if (bizType == 10) {
+            // withdraw sol
+            ledger.executeWithdrawSolAction(abi.decode(data.data, (EventTypes.WithdrawDataSol)), data.eventId);
         } else {
             revert InvalidBizType(bizType);
         }
