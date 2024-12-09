@@ -206,6 +206,8 @@ forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_FUJI --broadcast 
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_AVAX --broadcast --verifier-url 'https://api.routescan.io/v2/network/mainnet/evm/43114/etherscan' --verify --etherscan-api-key "verifyContract"
 # sei arctic
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_SEIARCTIC --broadcast --legacy
+# story test
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_STORYODY --broadcast --verifier-url https://testnet.storyscan.xyz/api\? --verifier blockscout
 ```
 
 ### Deploy new implement command:
