@@ -208,6 +208,8 @@ forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_AVAX --broadcast 
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_SEIARCTIC --broadcast --legacy
 # story test
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_STORYODY --broadcast --verifier-url https://testnet.storyscan.xyz/api\? --verifier blockscout
+# morph mainnet
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_MORPH --broadcast
 ```
 
 ### Deploy new implement command:
@@ -234,7 +236,9 @@ forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_MANTLESEPOLIA --bro
 # mantle mainnet
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_MANTLE --verifier-url https://api.mantlescan.xyz/api --broadcast --verify --etherscan-api-key $MANTLE_ETHERSCAN_API_KEY --skip-simulation
 # sei
-forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_SEI --broadcast --legacy
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_SEI --broadcast --legacy
+# morph mainnet
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_MORPH --broadcast
 ```
 
 ## Zip scripts
