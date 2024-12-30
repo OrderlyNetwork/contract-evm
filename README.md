@@ -210,6 +210,8 @@ forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_SEIARCTIC --broad
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_STORYODY --broadcast --verifier-url https://testnet.storyscan.xyz/api\? --verifier blockscout
 # morph mainnet
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_MORPH --broadcast
+# sonic mainnet
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_SONIC --broadcast
 ```
 
 ### Deploy new implement command:
@@ -239,6 +241,8 @@ forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_MANTLE --verifier-u
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_SEI --broadcast --legacy
 # morph mainnet
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_MORPH --broadcast
+# sonic mainnet
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_SONIC --broadcast
 ```
 
 ## Zip scripts
