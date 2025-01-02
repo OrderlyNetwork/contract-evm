@@ -208,6 +208,11 @@ forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_AVAX --broadcast 
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_SEIARCTIC --broadcast --legacy
 # story test
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_STORYODY --broadcast --verifier-url https://testnet.storyscan.xyz/api\? --verifier blockscout
+
+# morph testnet
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_MORPHOLESKY --broadcast --verifier-url https://explorer-api-holesky.morphl2.io/api\? --verifier blockscout
+# sonic testnet
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_SONICTESTNET --broadcast
 # morph mainnet
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_MORPH --broadcast
 # sonic mainnet
