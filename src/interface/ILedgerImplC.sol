@@ -12,4 +12,5 @@ import "./ILedgerEvent.sol";
 interface ILedgerImplC is IError, ILedgerEvent {
     function accountDepositSol(AccountTypes.AccountDepositSol calldata data) external;
     function executeWithdrawSolAction(EventTypes.WithdrawDataSol calldata withdraw, uint64 eventId) external;
+    function executeWithdraw2Contract(EventTypes.Withdraw2Contract calldata data, uint64 eventId) external;
 }

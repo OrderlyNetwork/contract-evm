@@ -12,6 +12,7 @@ interface ILedgerCrossChainManager {
     /// @notice Approves a cross-chain withdrawal from the ledger to the vault.
     /// @param data Struct containing withdrawal data.
     function withdraw(EventTypes.WithdrawData memory data) external;
+    function withdraw2Contract(EventTypes.Withdraw2Contract memory data) external;
 
     /// @notice Approves a cross-chain burn from the ledger to the vault.
     /// @param data Struct containing burn data.

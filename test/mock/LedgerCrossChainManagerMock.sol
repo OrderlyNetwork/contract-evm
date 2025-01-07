@@ -55,4 +55,6 @@ contract LedgerCrossChainManagerMock is ILedgerCrossChainManager, Ownable {
     function accountDepositMock(AccountTypes.AccountDeposit memory data) external {
         ledger.accountDeposit(data);
     }
+
+    function withdraw2Contract(EventTypes.Withdraw2Contract memory data) external override {}
 }
