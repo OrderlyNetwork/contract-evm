@@ -209,6 +209,16 @@ interface ILedgerEvent {
         uint128 fee,
         uint8 failReason
     );
+    event AccountWithdraw2Contract(
+        bytes32 indexed accountId,
+        uint64 indexed withdrawNonce,
+        uint64 indexed eventId,
+        uint256 chainId,
+        bytes32 tokenHash,
+        uint128 tokenAmount,
+        uint128 fee,
+        address receiver
+    );
 
     // All events below are deprecated
     // Keep them for indexer backward compatibility

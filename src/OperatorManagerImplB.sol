@@ -72,6 +72,9 @@ contract OperatorManagerImplB is IOperatorManagerImplB, OwnableUpgradeable, Oper
         } else if (bizType == 10) {
             // withdraw sol
             ledger.executeWithdrawSolAction(abi.decode(data.data, (EventTypes.WithdrawDataSol)), data.eventId);
+        } else if (bizType == 11) {
+            // withdraw to vault contract
+            ledger.executeWithdraw2Contract(abi.decode(data.data, (EventTypes.Withdraw2Contract)), data.eventId);
         } else {
             revert InvalidBizType(bizType);
         }

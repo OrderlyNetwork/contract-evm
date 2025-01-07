@@ -462,6 +462,17 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         vaultManager.rebalanceMintFinish(data);
     }
 
+    function executeWithdraw2Contract(EventTypes.Withdraw2Contract calldata data, uint64 eventId)
+        external
+        override
+        onlyOperatorManager
+    {
+        _delegatecall(
+            abi.encodeWithSelector(ILedgerImplC.executeWithdraw2Contract.selector, data, eventId),
+            _getLedgerStorage().ledgerImplC
+        );
+    }
+
     // inner function for delegatecall
     function _delegatecall(bytes memory data, address impl) private {
         (bool success, bytes memory returnData) = impl.delegatecall(data);

@@ -51,8 +51,9 @@ contract LedgerImplB is ILedgerImplB, OwnableUpgradeable, LedgerDataLayout {
             PerpTypes.FuturesTradeUpload calldata trade = trades[i];
             _writeBackTS(trade);
         }
-        for (uint256 i = trades.length - 1; i > 0; i--) {
-            PerpTypes.FuturesTradeUpload calldata trade = trades[i];
+        // prevent underflow for i
+        for (uint256 i = trades.length; i > 0; i--) {
+            PerpTypes.FuturesTradeUpload calldata trade = trades[i - 1];
             // update last funding update timestamp
             _writeBackLastFundingUpdatedTimestamp(trade);
         }

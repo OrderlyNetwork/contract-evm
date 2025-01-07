@@ -6,6 +6,7 @@ import "openzeppelin-contracts/contracts/utils/math/SafeCast.sol";
 import "./dataLayout/LedgerDataLayout.sol";
 import "./interface/ILedger.sol";
 import "./interface/ILedgerImplC.sol";
+import "./interface/ILedgerCrossChainManager.sol";
 import "./interface/ILedgerCrossChainManagerV2.sol";
 import "./library/Utils.sol";
 import "./library/Signature.sol";
@@ -144,6 +145,41 @@ contract LedgerImplC is ILedgerImplC, OwnableUpgradeable, LedgerDataLayout {
         );
         // send cross-chain tx
         ILedgerCrossChainManagerV2(crossChainManagerV2Address).withdraw(withdraw);
+    }
+
+    function executeWithdraw2Contract(EventTypes.Withdraw2Contract calldata withdraw, uint64 eventId)
+        external
+        override
+    {
+        AccountTypes.Account storage account = userLedger[withdraw.accountId];
+        // frozen balance
+        // account should frozen `tokenAmount`, and vault should frozen `tokenAmount - fee`, because vault will payout `tokenAmount - fee`
+        account.frozenBalance(withdraw.withdrawNonce, withdraw.tokenHash, withdraw.tokenAmount);
+        vaultManager.frozenBalance(withdraw.tokenHash, withdraw.chainId, withdraw.tokenAmount - withdraw.fee);
+        // withdraw fee
+        if (withdraw.fee > 0) {
+            // gas saving if no fee
+            bytes32 feeCollectorAccountId =
+                feeManager.getFeeCollector(IFeeManager.FeeCollectorType.WithdrawFeeCollector);
+            AccountTypes.Account storage feeCollectorAccount = userLedger[feeCollectorAccountId];
+            feeCollectorAccount.addBalance(withdraw.tokenHash, withdraw.fee);
+        }
+        account.lastEngineEventId = eventId;
+        // emit withdraw approve event
+        emit AccountWithdrawApprove(
+            withdraw.accountId,
+            withdraw.withdrawNonce,
+            _newGlobalEventId(),
+            withdraw.brokerHash,
+            withdraw.sender,
+            withdraw.receiver,
+            withdraw.chainId,
+            withdraw.tokenHash,
+            withdraw.tokenAmount,
+            withdraw.fee
+        );
+        // send cross-chain tx
+        ILedgerCrossChainManager(crossChainManagerV2Address).withdraw2Contract(withdraw);
     }
 
     // internal functions
