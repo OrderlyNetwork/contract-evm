@@ -51,6 +51,6 @@ library VaultTypes {
         address sender;
         address receiver;
         uint64 withdrawNonce;
-        uint256 periodId;
+        uint256 clientId;
     }
 }

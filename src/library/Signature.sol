@@ -220,7 +220,7 @@ library Signature {
         uint128 fee;
         uint64 withdrawNonce;
         uint64 timestamp;
-        uint256 periodId;
+        uint256 clientId;
     }
 
     struct EventUploadSignature {
@@ -414,7 +414,7 @@ library Signature {
                     fee: withdraw2Contract.fee,
                     withdrawNonce: withdraw2Contract.withdrawNonce,
                     timestamp: withdraw2Contract.timestamp,
-                    periodId: withdraw2Contract.periodId
+                    clientId: withdraw2Contract.clientId
                 });
                 eventUploadSignature.withdraw2Contracts[countArray2[10]] = withdraw2ContractSignature;
                 countArray2[10]++;

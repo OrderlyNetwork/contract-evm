@@ -303,7 +303,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
             emit WithdrawFailed(address(tokenAddress), data.receiver, amount);
         } else {
             tokenAddress.safeApprove(data.receiver, amount);
-            protocolVault.depositFromStrategy(data.periodId, address(tokenAddress), amount);
+            protocolVault.depositFromStrategy(data.clientId, address(tokenAddress), amount);
         }
         // emit withdraw event
         emit AccountWithdraw(
