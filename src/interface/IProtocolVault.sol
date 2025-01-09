@@ -20,5 +20,5 @@ struct DepositParams {
 
 /// @title IProtocolVault Interface
 interface IProtocolVault {
-    function depositFromStrategy(uint256 periodId, address sender, uint256 amount) external;
+    function depositFromStrategy(uint256 periodId, address token, uint256 amount) external;
 }
