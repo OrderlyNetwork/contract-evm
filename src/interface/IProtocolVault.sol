@@ -20,6 +20,5 @@ struct DepositParams {
 
 /// @title IProtocolVault Interface
 interface IProtocolVault {
-    function deposit(DepositParams memory depositParams) external payable;
-    function quoteOperation() external view returns (uint256);
+    function depositFromStrategy(uint256 periodId, address sender, uint256 amount) external;
 }

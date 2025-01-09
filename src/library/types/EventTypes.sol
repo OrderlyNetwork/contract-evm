@@ -163,5 +163,6 @@ library EventTypes {
         uint64 timestamp;
         bytes32 brokerHash;
         bytes32 tokenHash;
+        uint256 periodId;
     }
 }

@@ -302,15 +302,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         if (!_validReceiver(data.receiver, address(tokenAddress))) {
             emit WithdrawFailed(address(tokenAddress), data.receiver, amount);
         } else {
-            uint256 fee = protocolVault.quoteOperation();
-            DepositParams memory depositParams = DepositParams({
-                payloadType: PayloadType.SP_DEPOSIT,
-                receiver: data.receiver,
-                token: address(tokenAddress),
-                amount: amount,
-                brokerHash: data.brokerHash
-            });
-            protocolVault.deposit{value: fee}(depositParams);
+            protocolVault.depositFromStrategy(data.periodId, data.receiver, amount);
         }
         // emit withdraw event
         emit AccountWithdraw(
