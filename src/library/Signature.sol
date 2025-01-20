@@ -15,6 +15,41 @@ library Signature {
     // keccak256("Orderly Network")
     bytes32 constant HASH_ORDERLY_NETWORK = hex"768a5991f3d52b299dee3ad82f4adaeaa9fb91ffcf7afbecbac40c39201773b4";
 
+    /**
+     * // 01 -> numRequiredSignatures
+     * // 00 -> numReadonlySignedAccounts
+     * // 02 -> numReadonlyUnsignedAccounts
+     * // 03 -> accountAddressesLength
+     * // 8d74357c58760282acca9f5af78bb51e2adaa44d6248bb9243116e9ad4a5b4a9 ->  AXBG9WUtfKn3c1hTsYB5UGxTAXjouunQUpdiQGnZwVyz feePayer, from input
+     * // 0306466fe5211732ffecadba72c39be7bc8ce5bbc5f7126b2c439b3a40000000 -> ComputeBudget111111111111111111111111111111 ComputeBudget
+     * // 054a535a992921064d24e87160da387c7c35b5ddbc92bb81e41fa8404105448d ->  MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr MemoProgramId
+     * // 0000000000000000000000000000000000000000000000000000000000000000 -> blockHash
+     *
+     * // 03 -> instructionsLength
+     * // 01 -> account index ComputeBudget111111111111111111111111111111
+     * // 00 -> key number
+     * // 09 -> data size
+     * // 030000000000000000 setComputeUnitLimit
+     *
+     * // 01 -> account index ComputeBudget111111111111111111111111111111
+     * // 00 -> key number
+     * // 05 -> datasize
+     * // 0200000000 -> setComputeUnitPrice
+     * //
+     * // 02 -> account index MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr
+     * // 00 -> key number
+     * // 40 -> message length
+     * // 34643734316236663165623239636232613962393931316338326635366661386437336230343935396433643964323232383935646636633062323861613135 -> message, from input
+     */
+    function solanaLedgerSignature(bytes32 pubkey, bytes32 messageRaw) internal pure returns (bytes memory) {
+        bytes memory message = Bytes32ToAsciiBytes.bytes32ToAsciiBytes(messageRaw);
+        bytes memory m1 = hex"01000203";
+        bytes memory m2 =
+            hex"0306466fe5211732ffecadba72c39be7bc8ce5bbc5f7126b2c439b3a40000000054a535a992921064d24e87160da387c7c35b5ddbc92bb81e41fa8404105448d0000000000000000000000000000000000000000000000000000000000000000030100090300000000000000000100050200000000020040";
+        bytes memory m = abi.encodePacked(m1, abi.encodePacked(pubkey), m2, message);
+        return m;
+    }
+
     function verifyWithdraw(address sender, EventTypes.WithdrawData memory data) internal view returns (bool) {
         bytes32 typeHash =
             keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
@@ -59,7 +94,8 @@ library Signature {
         bytes32 r = data.r;
         bytes32 s = data.s;
         bytes memory m = Bytes32ToAsciiBytes.bytes32ToAsciiBytes(hashStruct);
-        return Ed25519.verify(k, r, s, m);
+        // the former is the signature of message from eoa, the latter is the signature of tx from ledger
+        return Ed25519.verify(k, r, s, m) || Ed25519.verify(k, r, s, solanaLedgerSignature(k, hashStruct));
     }
 
     function verifyDelegateWithdraw(address delegateSigner, EventTypes.WithdrawData memory data)
