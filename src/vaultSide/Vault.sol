@@ -202,6 +202,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         // avoid reentrancy, so `transferFrom` token at the beginning
         IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
         // check deposit limit
+        /// @notice Be aware that we track the balance of the token in the contract, should be better track internal token deposit
         if (
             tokenAddress2DepositLimit[address(tokenAddress)] != 0
                 && data.tokenAmount + tokenAddress.balanceOf(address(this))
