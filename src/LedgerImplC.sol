@@ -171,7 +171,7 @@ contract LedgerImplC is ILedgerImplC, OwnableUpgradeable, LedgerDataLayout {
             withdraw.fee
         );
         // send cross-chain tx
-        ILedgerCrossChainManager(crossChainManagerV2Address).withdraw2Contract(withdraw);
+        ILedgerCrossChainManager(crossChainManagerAddress).withdraw2Contract(withdraw);
     }
 
     // internal functions
