@@ -151,7 +151,53 @@ contract LedgerImplC is ILedgerImplC, OwnableUpgradeable, LedgerDataLayout {
         external
         override
     {
+        bytes32 brokerHash = withdraw.brokerHash;
+        bytes32 tokenHash = withdraw.tokenHash;
+        if (!vaultManager.getAllowedBroker(brokerHash)) revert BrokerNotAllowed();
+        if (!vaultManager.getAllowedChainToken(tokenHash, withdraw.chainId)) {
+            revert TokenNotAllowed(tokenHash, withdraw.chainId);
+        }
+        if (!Utils.validateAccountId(withdraw.accountId, brokerHash, withdraw.sender)) revert AccountIdInvalid();
         AccountTypes.Account storage account = userLedger[withdraw.accountId];
+        uint8 state = 0;
+        {
+            // avoid stack too deep
+            uint128 maxWithdrawFee = vaultManager.getMaxWithdrawFee(tokenHash);
+            // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/326402549/Withdraw+Error+Code
+            if (account.lastWithdrawNonce >= withdraw.withdrawNonce) {
+                // require withdraw nonce inc
+                state = 101;
+            } else if (account.balances[tokenHash] < withdraw.tokenAmount) {
+                // require balance enough
+                revert WithdrawBalanceNotEnough(account.balances[tokenHash], withdraw.tokenAmount);
+            } else if (vaultManager.getBalance(tokenHash, withdraw.chainId) < withdraw.tokenAmount - withdraw.fee) {
+                // require chain has enough balance
+                revert WithdrawVaultBalanceNotEnough(
+                    vaultManager.getBalance(tokenHash, withdraw.chainId), withdraw.tokenAmount - withdraw.fee
+                );
+            } else if (maxWithdrawFee > 0 && maxWithdrawFee < withdraw.fee) {
+                // require fee not exceed maxWithdrawFee
+                revert WithdrawFeeTooLarge(maxWithdrawFee, withdraw.fee);
+            }
+        }
+        // check all assert, should not change any status
+        if (state != 0) {
+            emit AccountWithdrawFail(
+                withdraw.accountId,
+                withdraw.withdrawNonce,
+                _newGlobalEventId(),
+                brokerHash,
+                withdraw.sender,
+                withdraw.receiver,
+                withdraw.chainId,
+                tokenHash,
+                withdraw.tokenAmount,
+                withdraw.fee,
+                state
+            );
+            return;
+        }
+        // update status, should never fail
         // frozen balance
         // account should frozen `tokenAmount`, and vault should frozen `tokenAmount - fee`, because vault will payout `tokenAmount - fee`
         account.frozenBalance(withdraw.withdrawNonce, withdraw.tokenHash, withdraw.tokenAmount);
