@@ -156,14 +156,6 @@ contract LedgerImplC is ILedgerImplC, OwnableUpgradeable, LedgerDataLayout {
         // account should frozen `tokenAmount`, and vault should frozen `tokenAmount - fee`, because vault will payout `tokenAmount - fee`
         account.frozenBalance(withdraw.withdrawNonce, withdraw.tokenHash, withdraw.tokenAmount);
         vaultManager.frozenBalance(withdraw.tokenHash, withdraw.chainId, withdraw.tokenAmount - withdraw.fee);
-        // withdraw fee
-        if (withdraw.fee > 0) {
-            // gas saving if no fee
-            bytes32 feeCollectorAccountId =
-                feeManager.getFeeCollector(IFeeManager.FeeCollectorType.WithdrawFeeCollector);
-            AccountTypes.Account storage feeCollectorAccount = userLedger[feeCollectorAccountId];
-            feeCollectorAccount.addBalance(withdraw.tokenHash, withdraw.fee);
-        }
         account.lastEngineEventId = eventId;
         // emit withdraw approve event
         emit AccountWithdrawApprove(
