@@ -430,9 +430,11 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
                     success: true
                 })
             );
-        } catch {
-            // send fail cross-chain tx to ledger
-            // rebalanceId, amount, tokenHash, burnChainId, mintChainId | false
+        } catch Error(string memory reason) {
+            // The method `receiveMessage` is permissionless, so it may fail due to others call it first
+            // So if the reason is "Nonce already used", we treat it as success
+            string memory expectedReason = "Nonce already used";
+            bool success = keccak256(abi.encodePacked(reason)) == keccak256(abi.encodePacked(expectedReason));
             IVaultCrossChainManager(crossChainManagerAddress).mintFinish(
                 RebalanceTypes.RebalanceMintCCFinishData({
                     rebalanceId: data.rebalanceId,
@@ -440,7 +442,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
                     tokenHash: data.tokenHash,
                     burnChainId: data.burnChainId,
                     mintChainId: data.mintChainId,
-                    success: false
+                    success: success
                 })
             );
         }
