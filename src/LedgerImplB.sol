@@ -57,6 +57,11 @@ contract LedgerImplB is ILedgerImplB, OwnableUpgradeable, LedgerDataLayout {
             // update last funding update timestamp
             _writeBackLastFundingUpdatedTimestamp(trade);
         }
+        // clean up last funding update timestamp flag
+        for (uint256 i = 0; i < trades.length; i++) {
+            PerpTypes.FuturesTradeUpload calldata trade = trades[i];
+            _setTSMarketManagerFlag(trade.symbolHash, false);
+        }
         // clean up fee collector
         _cleanUpFeeCollector();
     }
