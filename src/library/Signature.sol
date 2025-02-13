@@ -245,7 +245,6 @@ library Signature {
 
     struct Withdraw2ContractSignature {
         uint64 eventId; // flat map to this
-        EventTypes.VaultEnum vaultType;
         bytes32 brokerHash;
         bytes32 accountId;
         uint256 chainId;
@@ -256,6 +255,7 @@ library Signature {
         uint128 fee;
         uint64 withdrawNonce;
         uint64 timestamp;
+        EventTypes.VaultEnum vaultType;
         uint256 clientId;
     }
 
@@ -439,7 +439,6 @@ library Signature {
                     abi.decode(eventUploadData.data, (EventTypes.Withdraw2Contract));
                 Withdraw2ContractSignature memory withdraw2ContractSignature = Withdraw2ContractSignature({
                     eventId: eventUploadData.eventId,
-                    vaultType: withdraw2Contract.vaultType,
                     brokerHash: withdraw2Contract.brokerHash,
                     accountId: withdraw2Contract.accountId,
                     chainId: withdraw2Contract.chainId,
@@ -450,6 +449,7 @@ library Signature {
                     fee: withdraw2Contract.fee,
                     withdrawNonce: withdraw2Contract.withdrawNonce,
                     timestamp: withdraw2Contract.timestamp,
+                    vaultType: withdraw2Contract.vaultType,
                     clientId: withdraw2Contract.clientId
                 });
                 eventUploadSignature.withdraw2Contracts[countArray2[10]] = withdraw2ContractSignature;

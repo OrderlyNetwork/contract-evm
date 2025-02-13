@@ -869,4 +869,35 @@ contract SignatureTest is Test {
             hex"010002038d74357c58760282acca9f5af78bb51e2adaa44d6248bb9243116e9ad4a5b4a90306466fe5211732ffecadba72c39be7bc8ce5bbc5f7126b2c439b3a40000000054a535a992921064d24e87160da387c7c35b5ddbc92bb81e41fa8404105448d000000000000000000000000000000000000000000000000000000000000000003010009030000000000000000010005020000000002004034643734316236663165623239636232613962393931316338326635366661386437336230343935396433643964323232383935646636633062323861613135";
         assertEq(m, target);
     }
+
+    // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/930578433/SvWithdraw+Upload
+    function test_eventUploadEncodeHash_svWithdraw() public {
+        EventTypes.Withdraw2Contract memory w1 = EventTypes.Withdraw2Contract({
+            accountId: 0x1723cb226c337a417a6022890bc5671ebb4db551db0273536bf1094edf39ed63,
+            chainId: 10086,
+            sender: 0x6a9961Ace9bF0C1B8B98ba11558A4125B1f5EA3f,
+            receiver: 0x6a9961Ace9bF0C1B8B98ba11558A4125B1f5EA3f,
+            tokenAmount: 123,
+            fee: 5000,
+            withdrawNonce: 9,
+            timestamp: 1683270380530,
+            vaultType: EventTypes.VaultEnum.ProtocolVault,
+            clientId: 1,
+            brokerHash: 0x1fa6aa88896b69294e9b9f76cd226cafdc04e7d2f8cc1b97764be60be388958a,
+            tokenHash: 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa
+        });
+        EventTypes.EventUploadData[] memory events = new EventTypes.EventUploadData[](1);
+        events[0] = EventTypes.EventUploadData({bizType: 11, eventId: 1, data: abi.encode(w1)});
+        EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
+            events: events,
+            r: 0x55b2b89987a236f760fb6ec75e99d8a78a0ff2c6e2cd099cdf6c2747548f95a6,
+            s: 0x09be0b1a6afa8285d5b27ec62c2db950320b588693f67f732149c9ad898a00c5,
+            v: 0x1c,
+            count: 2,
+            batchId: 7888
+        });
+
+        bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
+        assertEq(succ, true);
+    }
 }
