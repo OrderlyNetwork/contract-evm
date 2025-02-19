@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity ^0.8.18;
+pragma solidity 0.8.26;
 
 import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 import "openzeppelin-contracts/contracts/utils/math/SafeCast.sol";
@@ -200,6 +200,7 @@ contract LedgerImplC is ILedgerImplC, OwnableUpgradeable, LedgerDataLayout {
         // update status, should never fail
         // frozen balance
         // account should frozen `tokenAmount`, and vault should frozen `tokenAmount - fee`, because vault will payout `tokenAmount - fee`
+        /// @notice frozen dust is a knwon issue, but we can ignore it
         account.frozenBalance(withdraw.withdrawNonce, withdraw.tokenHash, withdraw.tokenAmount);
         vaultManager.frozenBalance(withdraw.tokenHash, withdraw.chainId, withdraw.tokenAmount - withdraw.fee);
         account.lastEngineEventId = eventId;
