@@ -435,6 +435,8 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         } catch Error(string memory reason) {
             // The method `receiveMessage` is permissionless, so it may fail due to others call it first
             // So if the reason is "Nonce already used", we treat it as success
+            /// @notice This is still a bad practice, because maybe more errors will be treated as success (e.g. cctp contract pause & call it & unpause)
+            /// But those corner cases are rare, and we can finally fix it
             string memory expectedReason = "Nonce already used";
             bool success = keccak256(abi.encodePacked(reason)) == keccak256(abi.encodePacked(expectedReason));
             IVaultCrossChainManager(crossChainManagerAddress).mintFinish(
