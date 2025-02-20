@@ -115,6 +115,7 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
             // avoid stack too deep
             uint128 maxWithdrawFee = vaultManager.getMaxWithdrawFee(tokenHash);
             // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/326402549/Withdraw+Error+Code
+            /// @notice some cases should not revert and just emit event, which is fully dicussed in the above link
             if (account.lastWithdrawNonce >= withdraw.withdrawNonce) {
                 // require withdraw nonce inc
                 state = 101;

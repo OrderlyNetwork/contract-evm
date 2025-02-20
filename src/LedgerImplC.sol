@@ -73,6 +73,7 @@ contract LedgerImplC is ILedgerImplC, OwnableUpgradeable, LedgerDataLayout {
             // avoid stack too deep
             uint128 maxWithdrawFee = vaultManager.getMaxWithdrawFee(tokenHash);
             // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/326402549/Withdraw+Error+Code
+            /// @notice similar to `LedgerImplA.executeWithdrawAction()`
             if (account.lastWithdrawNonce >= withdraw.withdrawNonce) {
                 // require withdraw nonce inc
                 state = 101;
@@ -164,6 +165,7 @@ contract LedgerImplC is ILedgerImplC, OwnableUpgradeable, LedgerDataLayout {
             // avoid stack too deep
             uint128 maxWithdrawFee = vaultManager.getMaxWithdrawFee(tokenHash);
             // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/326402549/Withdraw+Error+Code
+            /// @notice similar to `LedgerImplA.executeWithdrawAction()`
             if (account.lastWithdrawNonce >= withdraw.withdrawNonce) {
                 // require withdraw nonce inc
                 state = 101;
