@@ -317,6 +317,12 @@
       "proxyAdmin": "0xA2eA0a58b083c492AdC91A687FAc8B53AdB7c0Fd",
       "usdc": "0x29219dd400f2Bf60E5a23d13Be72B486D4038894",
       "vault": "0x816f722424B49Cf1275cc86DA9840Fbd5a6167e9"
+    },
+    "berachain": {
+      "multiSig": "0x4e834Ca9310d7710a409638A7aa70CB22F141Df3",
+      "proxyAdmin": "0xA2eA0a58b083c492AdC91A687FAc8B53AdB7c0Fd",
+      "usdc": "0x549943e04f40284185054145c6E4e9568C1D3241",
+      "vault": "0x816f722424B49Cf1275cc86DA9840Fbd5a6167e9"
     }
   }
 }
