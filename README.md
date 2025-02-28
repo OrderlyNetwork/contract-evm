@@ -217,6 +217,8 @@ forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_SONICTESTNET --br
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_MORPH --broadcast
 # sonic mainnet
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_SONIC --broadcast
+# berachain mainnet
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_BERACHAIN --verifier-url https://api.berascan.com/api --verify --etherscan-api-key $BERACHAIN_ETHERSCAN_API_KEY --broadcast
 ```
 
 ### Deploy new implement command:
@@ -248,6 +250,8 @@ forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_SEI --broadcast --l
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_MORPH --broadcast
 # sonic mainnet
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_SONIC --broadcast
+# berachain mainnet
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_BERACHAIN --broadcast
 ```
 
 ## Zip scripts
