@@ -153,6 +153,7 @@ forge script script/ledgerV2/DeployNewLedgerImplA.s.sol -f $RPC_URL_ORDERLYOP --
 forge script script/ledgerV2/DeployNewLedgerImplB.s.sol -f $RPC_URL_ORDERLYOP --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
 forge script script/ledgerV2/DeployNewLedgerImplC.s.sol -f $RPC_URL_ORDERLYOP --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
 forge script script/ledgerV2/DeployNewOperatorManagerImplA.s.sol -f $RPC_URL_ORDERLYOP --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
+forge script script/ledgerV2/DeployNewOperatorManagerImplB.s.sol -f $RPC_URL_ORDERLYOP --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
 # orderly mainnet
 forge script script/ledgerV2/DeployNewLedger.s.sol -f $RPC_URL_ORDERLYMAIN --broadcast --verifier-url https://explorer.orderly.network/api\? --verifier blockscout --verify
 forge script script/ledgerV2/DeployNewOperatorManager.s.sol -f $RPC_URL_ORDERLYMAIN --broadcast --verifier-url https://explorer.orderly.network/api\? --verifier blockscout --verify
@@ -163,6 +164,7 @@ forge script script/ledgerV2/DeployNewLedgerImplA.s.sol -f $RPC_URL_ORDERLYMAIN 
 forge script script/ledgerV2/DeployNewLedgerImplB.s.sol -f $RPC_URL_ORDERLYMAIN --broadcast --verifier-url https://explorer.orderly.network/api\? --verifier blockscout --verify
 forge script script/ledgerV2/DeployNewLedgerImplC.s.sol -f $RPC_URL_ORDERLYMAIN --broadcast --verifier-url https://explorer.orderly.network/api\? --verifier blockscout --verify
 forge script script/ledgerV2/DeployNewOperatorManagerImplA.s.sol -f $RPC_URL_ORDERLYMAIN --broadcast --verifier-url https://explorer.orderly.network/api\? --verifier blockscout --verify
+forge script script/ledgerV2/DeployNewOperatorManagerImplB.s.sol -f $RPC_URL_ORDERLYMAIN --broadcast --verifier-url https://explorer.orderly.network/api\? --verifier blockscout --verify
 ```
 
 ## Vault scripts
@@ -202,6 +204,22 @@ forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_ETHEREUM --verifi
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_FUJI --broadcast --verifier-url 'https://api.routescan.io/v2/network/testnet/evm/43113/etherscan' --verify --etherscan-api-key "verifyContract"
 # avax mainnet
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_AVAX --broadcast --verifier-url 'https://api.routescan.io/v2/network/mainnet/evm/43114/etherscan' --verify --etherscan-api-key "verifyContract"
+# sei arctic
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_SEIARCTIC --broadcast --legacy
+# story test
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_STORYODY --broadcast --verifier-url https://testnet.storyscan.xyz/api\? --verifier blockscout
+# story mainnet
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_STORY --verifier-url https://storyscan.xyz/api\? --verifier blockscout --broadcast
+# morph testnet
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_MORPHOLESKY --broadcast --verifier-url https://explorer-api-holesky.morphl2.io/api\? --verifier blockscout
+# sonic testnet
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_SONICTESTNET --broadcast
+# morph mainnet
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_MORPH --broadcast
+# sonic mainnet
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_SONIC --broadcast
+# berachain mainnet
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_BERACHAIN --verifier-url https://api.berascan.com/api --verify --etherscan-api-key $BERACHAIN_ETHERSCAN_API_KEY --broadcast
 ```
 
 ### Deploy new implement command:
@@ -227,6 +245,18 @@ forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_BASE --verifier-url
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_MANTLESEPOLIA --broadcast --verifier-url https://explorer.sepolia.mantle.xyz/api\? --verifier blockscout --verify --skip-simulation
 # mantle mainnet
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_MANTLE --verifier-url https://api.mantlescan.xyz/api --broadcast --verify --etherscan-api-key $MANTLE_ETHERSCAN_API_KEY --skip-simulation
+# sei
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_SEI --broadcast --legacy
+# story test
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_STORYODY --verifier-url https://testnet.storyscan.xyz/api\? --verifier blockscout --broadcast
+# story mainnet
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_STORY --verifier-url https://storyscan.xyz/api\? --verifier blockscout --broadcast
+# morph mainnet
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_MORPH --broadcast
+# sonic mainnet
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_SONIC --broadcast
+# berachain mainnet
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_BERACHAIN --broadcast
 ```
 
 ## Zip scripts

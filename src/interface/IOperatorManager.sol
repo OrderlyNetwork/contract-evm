@@ -39,4 +39,5 @@ interface IOperatorManager is IError, IOperatorManagerEvent {
     function setEngineRebalanceUploadAddress(address _engineRebalanceUploadAddress) external;
     function setOperatorManagerZipAddress(address _operatorManagerZipAddress) external;
     function setOperatorManagerImplA(address _operatorManagerImplA) external;
+    function setOperatorManagerImplB(address _operatorManagerImplB) external;
 }

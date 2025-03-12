@@ -145,4 +145,24 @@ library EventTypes {
         bytes32 brokerHash;
         uint256 chainId;
     }
+
+    enum VaultEnum {
+        ProtocolVault,
+        UserVault
+    }
+
+    struct Withdraw2Contract {
+        uint128 tokenAmount;
+        uint128 fee;
+        uint256 chainId; // target withdraw chain
+        bytes32 accountId;
+        VaultEnum vaultType;
+        address sender;
+        uint64 withdrawNonce;
+        address receiver; // maybe optional?
+        uint64 timestamp;
+        bytes32 brokerHash;
+        bytes32 tokenHash;
+        uint256 clientId;
+    }
 }

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity ^0.8.18;
+pragma solidity 0.8.26;
 
 import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 import "./dataLayout/LedgerDataLayout.sol";
@@ -51,10 +51,16 @@ contract LedgerImplB is ILedgerImplB, OwnableUpgradeable, LedgerDataLayout {
             PerpTypes.FuturesTradeUpload calldata trade = trades[i];
             _writeBackTS(trade);
         }
-        for (uint256 i = trades.length - 1; i > 0; i--) {
-            PerpTypes.FuturesTradeUpload calldata trade = trades[i];
+        // prevent underflow for i
+        for (uint256 i = trades.length; i > 0; i--) {
+            PerpTypes.FuturesTradeUpload calldata trade = trades[i - 1];
             // update last funding update timestamp
             _writeBackLastFundingUpdatedTimestamp(trade);
+        }
+        // clean up last funding update timestamp flag
+        for (uint256 i = 0; i < trades.length; i++) {
+            PerpTypes.FuturesTradeUpload calldata trade = trades[i];
+            _setTSMarketManagerFlag(trade.symbolHash, false);
         }
         // clean up fee collector
         _cleanUpFeeCollector();

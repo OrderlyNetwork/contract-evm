@@ -173,7 +173,7 @@ contract OperatorManagerZip is
                             brokerId: withdrawZip.brokerId,
                             tokenSymbol: "USDC"
                         })
-                        )
+                    )
                 });
             } else if (zipData.bizType == 2) {
                 EventTypesZip.Settlement memory settlementZip = abi.decode(zipData.data, (EventTypesZip.Settlement));
@@ -216,7 +216,7 @@ contract OperatorManagerZip is
                             sumUnitaryFundings: adlZip.sumUnitaryFundings,
                             timestamp: adlZip.timestamp
                         })
-                        )
+                    )
                 });
             } else if (zipData.bizType == 4) {
                 EventTypesZip.Liquidation memory liquidationZip = abi.decode(zipData.data, (EventTypesZip.Liquidation));
@@ -261,7 +261,7 @@ contract OperatorManagerZip is
                             amount: feeDistributionZip.amount,
                             tokenHash: feeDistributionZip.tokenHash
                         })
-                        )
+                    )
                 });
             } else if (zipData.bizType == 6) {
                 EventTypesZip.DelegateSigner memory delegateSignerZip =
@@ -276,7 +276,7 @@ contract OperatorManagerZip is
                             brokerHash: delegateSignerZip.brokerHash,
                             chainId: delegateSignerZip.chainId
                         })
-                        )
+                    )
                 });
             }
         }
