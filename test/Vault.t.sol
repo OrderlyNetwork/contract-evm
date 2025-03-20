@@ -7,10 +7,21 @@ import "openzeppelin-contracts/contracts/proxy/transparent/ProxyAdmin.sol";
 import "../src/vaultSide/Vault.sol";
 import "../src/vaultSide/tUSDC.sol";
 import "./mock/VaultCrossChainManagerMock.sol";
+import "./mock/LedgerCrossChainManagerMock.sol";
+
+import "../src/OperatorManager.sol";
+import "../src/VaultManager.sol";
+import "../src/MarketManager.sol";
+import "../src/FeeManager.sol";
+import "./cheater/LedgerCheater.sol";
+import "../src/LedgerImplA.sol";
+
+import "forge-std/console.sol";
 
 contract VaultTest is Test {
     ProxyAdmin admin;
-    IVaultCrossChainManager vaultCrossChainManager;
+    VaultCrossChainManagerMock vaultCrossChainManager;
+    LedgerCrossChainManagerMock ledgerCrossChainManager;
     TestUSDC tUSDC;
     IVault vault;
     TransparentUpgradeableProxy vaultProxy;
@@ -36,6 +47,19 @@ contract VaultTest is Test {
         withdrawNonce: 0
     });
 
+    uint256 constant CHAIN_ID = 986532;
+    address constant operatorAddress = address(0x1234567890);
+    IOperatorManager operatorManager;
+    IVaultManager vaultManager;
+    LedgerCheater ledger;
+    IFeeManager feeManager;
+    IMarketManager marketManager;
+    TransparentUpgradeableProxy operatorProxy;
+    // TransparentUpgradeableProxy vaultProxy;
+    TransparentUpgradeableProxy ledgerProxy;
+    TransparentUpgradeableProxy feeProxy;
+    TransparentUpgradeableProxy marketProxy;
+
     function setUp() public {
         admin = new ProxyAdmin();
 
@@ -49,6 +73,61 @@ contract VaultTest is Test {
         vault.setAllowedBroker(BROKER_HASH, true);
         vaultCrossChainManager = new VaultCrossChainManagerMock();
         vault.setCrossChainManager(address(vaultCrossChainManager));
+        ledgerCrossChainManager = new LedgerCrossChainManagerMock();
+
+        // setup ledger
+        IOperatorManager operatorManagerImpl = new OperatorManager();
+        IVaultManager vaultManagerImpl = new VaultManager();
+        ILedger ledgerImpl = new LedgerCheater();
+        IFeeManager feeImpl = new FeeManager();
+        IMarketManager marketImpl = new MarketManager();
+
+        bytes memory initData = abi.encodeWithSignature("initialize()");
+        operatorProxy = new TransparentUpgradeableProxy(address(operatorManagerImpl), address(admin), initData);
+        vaultProxy = new TransparentUpgradeableProxy(address(vaultManagerImpl), address(admin), initData);
+        ledgerProxy = new TransparentUpgradeableProxy(address(ledgerImpl), address(admin), initData);
+        feeProxy = new TransparentUpgradeableProxy(address(feeImpl), address(admin), initData);
+        marketProxy = new TransparentUpgradeableProxy(address(marketImpl), address(admin), initData);
+
+        operatorManager = IOperatorManager(address(operatorProxy));
+        vaultManager = IVaultManager(address(vaultProxy));
+        ledger = LedgerCheater(address(ledgerProxy));
+        feeManager = IFeeManager(address(feeProxy));
+        marketManager = IMarketManager(address(marketProxy));
+
+        // do not change the order
+        LedgerImplA ledgerImplA = new LedgerImplA();
+
+        ledger.setOperatorManagerAddress(address(operatorManager));
+        ledger.setCrossChainManager(address(ledgerCrossChainManager));
+        ledger.setVaultManager(address(vaultManager));
+        ledger.setFeeManager(address(feeManager));
+        ledger.setMarketManager(address(marketManager));
+        ledger.setLedgerImplA(address(ledgerImplA));
+
+        operatorManager.setOperator(operatorAddress);
+        operatorManager.setLedger(address(ledger));
+
+        vaultManager.setLedgerAddress(address(ledger));
+        if (!vaultManager.getAllowedToken(TOKEN_HASH)) {
+            vaultManager.setAllowedToken(TOKEN_HASH, true);
+        }
+        if (!vaultManager.getAllowedBroker(BROKER_HASH)) {
+            vaultManager.setAllowedBroker(BROKER_HASH, true);
+        }
+        vaultManager.setAllowedChainToken(TOKEN_HASH, CHAIN_ID, true);
+
+        feeManager.setLedgerAddress(address(ledger));
+
+        marketManager.setOperatorManagerAddress(address(operatorManager));
+        marketManager.setLedgerAddress(address(ledger));
+
+        ledgerCrossChainManager.setLedger(address(ledger));
+        ledgerCrossChainManager.setOperatorManager(address(operatorManager));
+
+        // set VaultCCManagerMock -> LedgerCCManagerMock -> Ledger
+        vaultCrossChainManager.setLedgerCCManagerMock(address(ledgerCrossChainManager));
+        ledgerCrossChainManager.setLedger(address(ledger));
     }
 
     function test_deposit() public {
@@ -61,6 +140,7 @@ contract VaultTest is Test {
         vm.stopPrank();
         assertEq(tUSDC.balanceOf(address(SENDER)), 0);
         assertEq(tUSDC.balanceOf(address(vault)), AMOUNT);
+        assertTrue(vaultCrossChainManager.calledDeposit());
     }
 
     function testRevert_depositInsufficientAmount() public {

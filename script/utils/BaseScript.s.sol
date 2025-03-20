@@ -10,7 +10,7 @@ contract BaseScript is Script {
     function vmSelectRpcAndBroadcast(string memory network) internal {
         string memory rpcUrl = getRpcUrl(network);
         uint256 pk = getPrivateKey(network);
-        vm.createSelectFork(rpcUrl); 
+        vm.createSelectFork(rpcUrl);
         vm.startBroadcast(pk);
     }
 
@@ -40,7 +40,7 @@ contract BaseScript is Script {
 
     function getLzChainId(string memory network) internal view returns (uint16) {
         return uint16(vm.envUint(network.toUpperCase().concat("_LZ_CHAIN_ID")));
-}
+    }
 
     function getOperatorManagerAddress(string memory network) internal view returns (address) {
         return vm.envAddress(network.toUpperCase().concat("_OPERATOR_MANAGER"));

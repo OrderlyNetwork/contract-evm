@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity ^0.8.18;
+pragma solidity 0.8.26;
 
 import "../interface/IVault.sol";
 import "../interface/IVaultCrossChainManager.sol";
@@ -11,6 +11,7 @@ import "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../interface/cctp/ITokenMessenger.sol";
 import "../interface/cctp/IMessageTransmitter.sol";
+import "../interface/IProtocolVault.sol";
 
 /// @title Vault contract
 /// @author Orderly_Rubick, Orderly_Zion
@@ -44,6 +45,9 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
 
     // A set to record deposit limit for each token. 0 means unlimited
     mapping(address => uint256) public tokenAddress2DepositLimit;
+
+    // Protocol Vault address
+    IProtocolVault public protocolVault;
 
     /// @notice Require only cross-chain manager can call
     modifier onlyCrossChainManager() {
@@ -81,6 +85,16 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     function setDepositLimit(address _tokenAddress, uint256 _limit) public override onlyOwner {
         tokenAddress2DepositLimit[_tokenAddress] = _limit;
         emit ChangeDepositLimit(_tokenAddress, _limit);
+    }
+
+    /// @notice Set protocolVault address
+    function setProtocolVaultAddress(address _protocolVaultAddress)
+        public
+        override
+        onlyOwner
+        nonZeroAddress(_protocolVaultAddress)
+    {
+        protocolVault = IProtocolVault(_protocolVaultAddress);
     }
 
     /// @notice Add contract address for an allowed token given the tokenHash
@@ -188,6 +202,8 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         // avoid reentrancy, so `transferFrom` token at the beginning
         IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
         // check deposit limit
+        /// @notice Be aware that we track the balance of the token in the contract, should be better track internal token deposit
+        /// @notice Be aware that becuase of the async process of deposit & withdraw, the limit may be broken. So, it's a soft limit, not a hard limit
         if (
             tokenAddress2DepositLimit[address(tokenAddress)] != 0
                 && data.tokenAmount + tokenAddress.balanceOf(address(this))
@@ -238,6 +254,59 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
             emit WithdrawFailed(address(tokenAddress), data.receiver, amount);
         } else {
             tokenAddress.safeTransfer(data.receiver, amount);
+        }
+        // emit withdraw event
+        emit AccountWithdraw(
+            data.accountId,
+            data.withdrawNonce,
+            data.brokerHash,
+            data.sender,
+            data.receiver,
+            data.tokenHash,
+            data.tokenAmount,
+            data.fee
+        );
+    }
+
+    /// @notice withdraw to another contract by calling the contract's deposit function
+    function withdraw2Contract(VaultTypes.VaultWithdraw2Contract calldata data)
+        external
+        onlyCrossChainManager
+        whenNotPaused
+    {
+        if (data.vaultType == VaultTypes.VaultEnum.ProtocolVault) {
+            if (data.receiver != address(protocolVault)) {
+                revert ProtocolVaultAddressMismatch(address(protocolVault), data.receiver);
+            }
+        } else if (data.vaultType == VaultTypes.VaultEnum.UserVault) {
+            revert NotImplemented();
+        } else {
+            revert NotImplemented();
+        }
+        VaultTypes.VaultWithdraw memory vaultWithdrawData = VaultTypes.VaultWithdraw({
+            accountId: data.accountId,
+            brokerHash: data.brokerHash,
+            tokenHash: data.tokenHash,
+            tokenAmount: data.tokenAmount,
+            fee: data.fee,
+            sender: data.sender,
+            receiver: data.receiver,
+            withdrawNonce: data.withdrawNonce
+        });
+        // send cross-chain tx to ledger
+        IVaultCrossChainManager(crossChainManagerAddress).withdraw(vaultWithdrawData);
+        // avoid reentrancy, so `transfer` token at the end
+        IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
+        uint128 amount = data.tokenAmount - data.fee;
+        require(tokenAddress.balanceOf(address(this)) >= amount, "Vault: insufficient balance");
+        // avoid revert if transfer to zero address or blacklist.
+        /// @notice This check condition should always be true because cc promise that
+        /// @notice But in some extreme cases (e.g. usdc contract pause) it will revert, devs should mannual fix it
+        if (!_validReceiver(data.receiver, address(tokenAddress))) {
+            emit WithdrawFailed(address(tokenAddress), data.receiver, amount);
+        } else {
+            tokenAddress.safeApprove(data.receiver, amount);
+            protocolVault.depositFromStrategy(data.clientId, address(tokenAddress), amount);
         }
         // emit withdraw event
         emit AccountWithdraw(
@@ -363,9 +432,13 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
                     success: true
                 })
             );
-        } catch {
-            // send fail cross-chain tx to ledger
-            // rebalanceId, amount, tokenHash, burnChainId, mintChainId | false
+        } catch Error(string memory reason) {
+            // The method `receiveMessage` is permissionless, so it may fail due to others call it first
+            // So if the reason is "Nonce already used", we treat it as success
+            /// @notice This is still a bad practice, because maybe more errors will be treated as success (e.g. cctp contract pause & call it & unpause)
+            /// But those corner cases are rare, and we can finally fix it
+            string memory expectedReason = "Nonce already used";
+            bool success = keccak256(abi.encodePacked(reason)) == keccak256(abi.encodePacked(expectedReason));
             IVaultCrossChainManager(crossChainManagerAddress).mintFinish(
                 RebalanceTypes.RebalanceMintCCFinishData({
                     rebalanceId: data.rebalanceId,
@@ -373,7 +446,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
                     tokenHash: data.tokenHash,
                     burnChainId: data.burnChainId,
                     mintChainId: data.mintChainId,
-                    success: false
+                    success: success
                 })
             );
         }

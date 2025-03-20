@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity ^0.8.18;
+pragma solidity 0.8.26;
 
 import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 import "./dataLayout/LedgerDataLayout.sol";
@@ -460,6 +460,17 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         onlyCrossChainManager
     {
         vaultManager.rebalanceMintFinish(data);
+    }
+
+    function executeWithdraw2Contract(EventTypes.Withdraw2Contract calldata data, uint64 eventId)
+        external
+        override
+        onlyOperatorManager
+    {
+        _delegatecall(
+            abi.encodeWithSelector(ILedgerImplC.executeWithdraw2Contract.selector, data, eventId),
+            _getLedgerStorage().ledgerImplC
+        );
     }
 
     // inner function for delegatecall

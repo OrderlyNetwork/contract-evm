@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity ^0.8.18;
+pragma solidity 0.8.26;
 
 import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 import "./dataLayout/OperatorManagerDataLayout.sol";
-import "./interface/ILedger.sol";
-import "./interface/IMarketManager.sol";
 import "./interface/IOperatorManager.sol";
 import "./interface/IOperatorManagerImplA.sol";
+import "./interface/IOperatorManagerImplB.sol";
 import "./library/Signature.sol";
 
 /// @title Operator call this manager for update data
@@ -18,6 +17,7 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
     struct OperatorManagerStorage {
         // Because of EIP170 size limit, the implementation should be split to impl contracts
         address operatorManagerImplA;
+        address operatorManagerImplB;
     }
 
     // keccak256(abi.encode(uint256(keccak256("orderly.OperatorManager")) - 1)) & ~bytes32(uint256(0xff))
@@ -143,6 +143,17 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         _getOperatorManagerStorage().operatorManagerImplA = _operatorManagerImplA;
     }
 
+    /// @notice Set the address of operator manager impl B contract
+    function setOperatorManagerImplB(address _operatorManagerImplB)
+        external
+        override
+        onlyOwner
+        nonZeroAddress(_operatorManagerImplB)
+    {
+        emit ChangeOperatorImplB(_getOperatorManagerStorage().operatorManagerImplB, _operatorManagerImplB);
+        _getOperatorManagerStorage().operatorManagerImplB = _operatorManagerImplB;
+    }
+
     constructor() {
         _disableInitializers();
     }
@@ -158,22 +169,34 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
 
     /// @notice Operator ping to update last operator interaction timestamp
     function operatorPing() external onlyOperator {
-        _delegatecall(abi.encodeWithSelector(IOperatorManagerImplA.operatorPing.selector));
+        _delegatecall(
+            abi.encodeWithSelector(IOperatorManagerImplA.operatorPing.selector),
+            _getOperatorManagerStorage().operatorManagerImplA
+        );
     }
 
     /// @notice Function for perpetual futures trade upload
     function futuresTradeUpload(PerpTypes.FuturesTradeUploadData calldata data) external override onlyOperator {
-        _delegatecall(abi.encodeWithSelector(IOperatorManagerImplA.futuresTradeUpload.selector, data));
+        _delegatecall(
+            abi.encodeWithSelector(IOperatorManagerImplA.futuresTradeUpload.selector, data),
+            _getOperatorManagerStorage().operatorManagerImplA
+        );
     }
 
     /// @notice Function for event upload
     function eventUpload(EventTypes.EventUpload calldata data) external override onlyOperator {
-        _delegatecall(abi.encodeWithSelector(IOperatorManagerImplA.eventUpload.selector, data));
+        _delegatecall(
+            abi.encodeWithSelector(IOperatorManagerImplB.eventUpload.selector, data),
+            _getOperatorManagerStorage().operatorManagerImplB
+        );
     }
 
     /// @notice Function for perpetual futures price upload
     function perpPriceUpload(MarketTypes.UploadPerpPrice calldata data) external override onlyOperator {
-        _delegatecall(abi.encodeWithSelector(IOperatorManagerImplA.perpPriceUpload.selector, data));
+        _delegatecall(
+            abi.encodeWithSelector(IOperatorManagerImplA.perpPriceUpload.selector, data),
+            _getOperatorManagerStorage().operatorManagerImplA
+        );
     }
 
     /// @notice Function for sum unitary fundings upload
@@ -182,17 +205,26 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
         override
         onlyOperator
     {
-        _delegatecall(abi.encodeWithSelector(IOperatorManagerImplA.sumUnitaryFundingsUpload.selector, data));
+        _delegatecall(
+            abi.encodeWithSelector(IOperatorManagerImplA.sumUnitaryFundingsUpload.selector, data),
+            _getOperatorManagerStorage().operatorManagerImplA
+        );
     }
 
     // @notice Function for rebalance burn upload
     function rebalanceBurnUpload(RebalanceTypes.RebalanceBurnUploadData calldata data) external override onlyOperator {
-        _delegatecall(abi.encodeWithSelector(IOperatorManagerImplA.rebalanceBurnUpload.selector, data));
+        _delegatecall(
+            abi.encodeWithSelector(IOperatorManagerImplA.rebalanceBurnUpload.selector, data),
+            _getOperatorManagerStorage().operatorManagerImplA
+        );
     }
 
     // @notice Function for rebalance mint upload
     function rebalanceMintUpload(RebalanceTypes.RebalanceMintUploadData calldata data) external override onlyOperator {
-        _delegatecall(abi.encodeWithSelector(IOperatorManagerImplA.rebalanceMintUpload.selector, data));
+        _delegatecall(
+            abi.encodeWithSelector(IOperatorManagerImplA.rebalanceMintUpload.selector, data),
+            _getOperatorManagerStorage().operatorManagerImplA
+        );
     }
 
     /// @notice Function to check if the last operator interaction timestamp is over 3 days
@@ -201,8 +233,8 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
     }
 
     // inner function for delegatecall
-    function _delegatecall(bytes memory data) private {
-        (bool success, bytes memory returnData) = _getOperatorManagerStorage().operatorManagerImplA.delegatecall(data);
+    function _delegatecall(bytes memory data, address impl) private {
+        (bool success, bytes memory returnData) = impl.delegatecall(data);
         if (!success) {
             if (returnData.length > 0) {
                 assembly {

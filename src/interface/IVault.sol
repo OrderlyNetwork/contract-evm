@@ -17,6 +17,8 @@ interface IVault {
     error ZeroCodeLength();
     error NotZeroCodeLength();
     error DepositExceedLimit();
+    error NotImplemented();
+    error ProtocolVaultAddressMismatch(address want, address got);
 
     // @deprecated
     event AccountDeposit(
@@ -69,6 +71,7 @@ interface IVault {
     function enableDepositFee(bool _enabled) external;
     function withdraw(VaultTypes.VaultWithdraw calldata data) external;
     function delegateSigner(VaultTypes.VaultDelegate calldata data) external;
+    function withdraw2Contract(VaultTypes.VaultWithdraw2Contract calldata data) external;
 
     // CCTP: functions for receive rebalance msg
     function rebalanceMint(RebalanceTypes.RebalanceMintCCData calldata data) external;
@@ -79,6 +82,7 @@ interface IVault {
     // admin call
     function setCrossChainManager(address _crossChainManagerAddress) external;
     function setDepositLimit(address _tokenAddress, uint256 _limit) external;
+    function setProtocolVaultAddress(address _protocolVaultAddress) external;
     function emergencyPause() external;
     function emergencyUnpause() external;
 
