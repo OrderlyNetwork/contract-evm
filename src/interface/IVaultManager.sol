@@ -27,6 +27,9 @@ interface IVaultManager is IError, ILedgerComponent {
     // rebalance mint result
     event RebalanceMintResult(uint64 indexed rebalanceId, bool success);
 
+    // sv related
+    event SetProtocolVaultAddress(address _oldProtocolVaultAddress, address _newProtocolVaultAddress);
+
     // get balance
     function getBalance(bytes32 _tokenHash, uint256 _chainId) external view returns (uint128);
     // add balance
@@ -81,4 +84,8 @@ interface IVaultManager is IError, ILedgerComponent {
     function executeRebalanceMint(RebalanceTypes.RebalanceMintUploadData calldata data) external;
     function rebalanceMintFinish(RebalanceTypes.RebalanceMintCCFinishData calldata data) external;
     function getRebalanceStatus(uint64 rebalanceId) external view returns (RebalanceTypes.RebalanceStatus memory);
+
+    // sv related
+    function setProtocolVaultAddress(address _protocolVaultAddress) external;
+    function getProtocolVaultAddress() external view returns (address);
 }

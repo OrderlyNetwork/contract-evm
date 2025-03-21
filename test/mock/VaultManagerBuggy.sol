@@ -88,4 +88,8 @@ contract VaultManagerBuggy is IVaultManager, LedgerComponent {
     {}
 
     function unfrozenBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) external override {}
+
+    function setProtocolVaultAddress(address _protocolVaultAddress) external override {}
+
+    function getProtocolVaultAddress() external view override returns (address) {}
 }

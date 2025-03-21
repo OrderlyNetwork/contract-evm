@@ -53,6 +53,8 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
 
     // Protocol Vault address
     IProtocolVault public protocolVault;
+    // Ceffu address, the only address that can transfer out token by calling withdraw2Contract of type StrategyProvider
+    address public ceffuAddress;
 
     // EnumerableSet for rebalance enable tokens
     EnumerableSet.Bytes32Set private _rebalanceEnableTokenSet;
@@ -134,7 +136,14 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
         onlyOwner
         nonZeroAddress(_protocolVaultAddress)
     {
+        emit SetProtocolVaultAddress(address(protocolVault), _protocolVaultAddress);
         protocolVault = IProtocolVault(_protocolVaultAddress);
+    }
+
+    /// @notice Set ceffu address
+    function setCeffuAddress(address _ceffuAddress) public override onlyOwner nonZeroAddress(_ceffuAddress) {
+        emit SetCeffuAddress(ceffuAddress, _ceffuAddress);
+        ceffuAddress = _ceffuAddress;
     }
 
     /// @notice Add contract address for an allowed token given the tokenHash
@@ -339,8 +348,10 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
         // check if tokenHash and brokerHash are allowed
         if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
-        // check if accountId = keccak256(abi.encode(receiver, data.tokenHash))
-        if (!Utils.validateAccountId(data.accountId, data.brokerHash, receiver)) revert AccountIdInvalid();
+        // check if accountId = keccak256(abi.encodePacked(brokerHash, receiver))
+        if (!Utils.validateExtendedAccountId(address(protocolVault), data.accountId, data.brokerHash, receiver)) {
+            revert AccountIdInvalid();
+        }
         // check if tokenAmount > 0
         if (data.tokenAmount == 0) revert ZeroDeposit();
     }
@@ -401,6 +412,10 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
             }
         } else if (data.vaultType == VaultTypes.VaultEnum.UserVault) {
             revert NotImplemented();
+        } else if (data.vaultType == VaultTypes.VaultEnum.StrategyProvider) {
+            if (data.receiver != ceffuAddress) {
+                revert CeffuAddressMismatch(ceffuAddress, data.receiver);
+            }
         } else {
             revert NotImplemented();
         }
@@ -433,9 +448,13 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
             if (!_validReceiver(data.receiver, address(tokenAddress))) {
                 emit WithdrawFailed(address(tokenAddress), data.receiver, amount);
             } else {
-                tokenAddress.safeApprove(data.receiver, amount);
-                protocolVault.depositFromStrategy(data.clientId, address(tokenAddress), amount);
-            }
+                // because we check type at the beginning, so we can safely check the type here
+                if (data.vaultType == VaultTypes.VaultEnum.ProtocolVault) {
+                    tokenAddress.safeApprove(data.receiver, amount);
+                    protocolVault.depositFromStrategy(data.clientId, address(tokenAddress), amount);
+                } else if (data.vaultType == VaultTypes.VaultEnum.StrategyProvider) {
+                    tokenAddress.safeTransfer(data.receiver, amount);
+                }
         }
         // emit withdraw event
         emit AccountWithdraw(

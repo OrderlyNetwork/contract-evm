@@ -39,6 +39,14 @@ contract VaultManager is IVaultManager, LedgerComponent {
     uint64 constant MAX_REBALACE_SLOT = 100;
     // for record latest rebalance status
     mapping(uint64 => RebalanceTypes.RebalanceStatus) private rebalanceStatus;
+    // protocal vault address
+    address private protocalVaultAddress;
+
+    /// @notice check non-zero address
+    modifier nonZeroAddress(address _address) {
+        if (_address == address(0)) revert AddressZero();
+        _;
+    }
 
     // address of symbol manager
     address public symbolManager;
@@ -322,5 +330,18 @@ contract VaultManager is IVaultManager, LedgerComponent {
 
     function finishMintToken(bytes32 _tokenHash, uint256 _chainId, uint128 _amount) internal {
         tokenBalanceOnchain[_tokenHash][_chainId] += _amount;
+    }
+
+    function setProtocolVaultAddress(address _protocalVaultAddress)
+        external
+        onlyOwner
+        nonZeroAddress(_protocalVaultAddress)
+    {
+        emit SetProtocolVaultAddress(protocalVaultAddress, _protocalVaultAddress);
+        protocalVaultAddress = _protocalVaultAddress;
+    }
+
+    function getProtocolVaultAddress() public view override returns (address) {
+        return protocalVaultAddress;
     }
 }
