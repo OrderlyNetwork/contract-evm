@@ -53,8 +53,6 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
 
     // Protocol Vault address
     IProtocolVault public protocolVault;
-    // Ceffu address, the only address that can transfer out token by calling withdraw2Contract of type StrategyProvider
-    address public ceffuAddress;
 
     // EnumerableSet for rebalance enable tokens
     EnumerableSet.Bytes32Set private _rebalanceEnableTokenSet;
@@ -75,6 +73,11 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     address public swapOperator;
     // Swap Signer Address
     address public swapSigner;
+
+    /*=============== Ceffu ===============*/
+
+    // Ceffu address, the only address that can transfer out token by calling withdraw2Contract of type StrategyProvider
+    address public ceffuAddress;
 
     /*=============== Modifiers ===============*/
 
