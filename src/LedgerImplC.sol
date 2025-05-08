@@ -165,6 +165,14 @@ contract LedgerImplC is ILedgerImplC, OwnableUpgradeable, LedgerDataLayout {
                 vaultManager.getProtocolVaultAddress(), withdraw.accountId, brokerHash, withdraw.sender
             )
         ) revert AccountIdInvalid();
+
+        if (accountIdToPrimeWallet[withdraw.accountId] == address(0)) {
+            revert AccountNotBindToPrimeWallet();
+        }
+        if (withdraw.receiver != accountIdToPrimeWallet[withdraw.accountId]) {
+            revert InvalidPrimeWallet();
+        }
+
         AccountTypes.Account storage account = userLedger[withdraw.accountId];
         uint8 state = 0;
         {

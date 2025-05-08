@@ -413,12 +413,6 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
             if (data.receiver != address(protocolVault)) {
                 revert ProtocolVaultAddressMismatch(address(protocolVault), data.receiver);
             }
-        } else if (data.vaultType == VaultTypes.VaultEnum.UserVault) {
-            revert NotImplemented();
-        } else if (data.vaultType == VaultTypes.VaultEnum.StrategyProvider) {
-            if (data.receiver != ceffuAddress) {
-                revert CeffuAddressMismatch(ceffuAddress, data.receiver);
-            }
         } else {
             revert NotImplemented();
         }

@@ -149,7 +149,7 @@ library EventTypes {
     enum VaultEnum {
         ProtocolVault,
         UserVault,
-        StrategyProvider
+        Ceffu
     }
 
     struct Withdraw2Contract {

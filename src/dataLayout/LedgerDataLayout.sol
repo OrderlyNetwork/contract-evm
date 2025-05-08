@@ -31,6 +31,8 @@ contract LedgerDataLayout {
     mapping(bytes32 => AccountTypes.AccountDelegateSigner) public contractSigner;
     // crossChainManagerV2Address, for lzv2
     address public crossChainManagerV2Address;
+    // AccountId => Ceffu Prime Wallet
+    mapping(bytes32 => address) public accountIdToPrimeWallet;
 
     // The storage gap to prevent overwriting by proxy
     uint256[42] private __gap;

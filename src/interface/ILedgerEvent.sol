@@ -228,6 +228,8 @@ interface ILedgerEvent {
         bool isFromAccountId,
         uint8 transferType
     );
+
+    event PrimeWalletSet(bytes32 accountId, address primeWallet);
     // All events below are deprecated
     // Keep them for indexer backward compatibility
 

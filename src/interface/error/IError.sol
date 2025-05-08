@@ -40,6 +40,8 @@ interface IError {
     error WithdrawVaultBalanceNotEnough(uint128 balance, uint128 withdrawAmount);
     error WithdrawFeeTooLarge(uint128 maxFee, uint128 withdrawFee);
     error WithdrawToAddressZero();
+    error AccountNotBindToPrimeWallet();
+    error InvalidPrimeWallet();
 
     // OperatorManager Error
     error InvalidBizType(uint8 bizType);
