@@ -35,5 +35,5 @@ contract LedgerDataLayout {
     mapping(bytes32 => address) public accountIdToPrimeWallet;
 
     // The storage gap to prevent overwriting by proxy
-    uint256[42] private __gap;
+    uint256[41] private __gap;
 }
