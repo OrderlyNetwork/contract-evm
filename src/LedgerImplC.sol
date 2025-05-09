@@ -223,6 +223,28 @@ contract LedgerImplC is ILedgerImplC, OwnableUpgradeable, LedgerDataLayout {
         ILedgerCrossChainManager(crossChainManagerAddress).withdraw2Contract(withdraw);
     }
 
+    function executeBalanceTransfer(EventTypes.BalanceTransfer calldata balanceTransfer, uint64 eventId)
+        external
+        override
+    {
+        AccountTypes.Account storage userAccount = userLedger[balanceTransfer.accountId];
+        if (balanceTransfer.isFromAccountId) {
+            userAccount.subBalance(balanceTransfer.tokenHash, balanceTransfer.amount);
+        } else {
+            userAccount.addBalance(balanceTransfer.tokenHash, balanceTransfer.amount);
+        }
+        userAccount.lastEngineEventId = eventId;
+        // emit event
+        emit BalanceTransfer(
+            _newGlobalEventId(),
+            balanceTransfer.accountId,
+            balanceTransfer.amount,
+            balanceTransfer.tokenHash,
+            balanceTransfer.isFromAccountId,
+            balanceTransfer.transferType
+        );
+    }
+
     // internal functions
 
     function _newGlobalEventId() internal returns (uint64) {

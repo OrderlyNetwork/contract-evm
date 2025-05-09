@@ -473,6 +473,17 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         );
     }
 
+    function executeBalanceTransfer(EventTypes.BalanceTransfer calldata balanceTransfer, uint64 eventId)
+        external
+        override
+        onlyOperatorManager
+    {
+        _delegatecall(
+            abi.encodeWithSelector(ILedgerImplC.executeBalanceTransfer.selector, balanceTransfer, eventId),
+            _getLedgerStorage().ledgerImplC
+        );
+    }
+
     // inner function for delegatecall
     function _delegatecall(bytes memory data, address impl) private {
         (bool success, bytes memory returnData) = impl.delegatecall(data);

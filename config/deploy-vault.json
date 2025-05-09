@@ -329,6 +329,18 @@
       "proxyAdmin": "0xA2eA0a58b083c492AdC91A687FAc8B53AdB7c0Fd",
       "usdc": "0xf1815bd50389c46847f0bda824ec8da914045d14",
       "vault": "0x816f722424B49Cf1275cc86DA9840Fbd5a6167e9"
+    },
+    "mode": {
+      "multiSig": "0x4e834Ca9310d7710a409638A7aa70CB22F141Df3",
+      "proxyAdmin": "0xA2eA0a58b083c492AdC91A687FAc8B53AdB7c0Fd",
+      "usdc": "0xd988097fb8612cc24eeC14542bC03424c656005f",
+      "vault": "0x816f722424B49Cf1275cc86DA9840Fbd5a6167e9"
+    },
+    "plume": {
+      "multiSig": "0x4e834Ca9310d7710a409638A7aa70CB22F141Df3",
+      "proxyAdmin": "0xA2eA0a58b083c492AdC91A687FAc8B53AdB7c0Fd",
+      "usdc": "0xdddD73F5Df1F0DC31373357beAC77545dC5A6f3F",
+      "vault": "0x816f722424B49Cf1275cc86DA9840Fbd5a6167e9"
     }
   }
 }
