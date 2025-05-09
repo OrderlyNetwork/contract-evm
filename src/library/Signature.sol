@@ -259,6 +259,15 @@ library Signature {
         uint256 clientId;
     }
 
+    struct BalanceTransferSignature {
+        uint64 eventId; // flat map to this
+        bytes32 accountId;
+        uint128 amount;
+        bytes32 tokenHash;
+        bool isFromAccountId;
+        uint8 transferType;
+    }
+
     struct EventUploadSignature {
         uint64 batchId;
         WithdrawDataSignature[] withdraws;
@@ -271,6 +280,7 @@ library Signature {
         LiquidationV2Signature[] liquidationV2s;
         WithdrawSolDataSignature[] withdrawSols;
         Withdraw2ContractSignature[] withdraw2Contracts;
+        BalanceTransferSignature[] balanceTransfers;
     }
 
     function eventsUploadEncodeHash(EventTypes.EventUpload memory data) internal pure returns (bytes memory) {
@@ -280,9 +290,9 @@ library Signature {
         // so we have `withdraws: new WithdrawDataSignature[](countArray[0]+countArray[6])` when initializing eventUploadSignature
         // 0: withdraws + delegate, 1: settlements, 2: adls, 3: liquidations
         // 4: feeDistributions, 5: delegateSigners, 6: null, 7: adlV2s, 8: liquidationV2s
-        // 9: withdrawSol, 10: withdraw2Contract
-        uint8[] memory countArray = new uint8[](11);
-        uint8[] memory countArray2 = new uint8[](11);
+        // 9: withdrawSol, 10: withdraw2Contract, 11: balanceTransfer
+        uint8[] memory countArray = new uint8[](12);
+        uint8[] memory countArray2 = new uint8[](12);
         uint256 len = data.events.length;
         for (uint256 i = 0; i < len; i++) {
             countArray[data.events[i].bizType - 1]++;
@@ -298,7 +308,8 @@ library Signature {
             adlV2s: new AdlV2Signature[](countArray[7]),
             liquidationV2s: new LiquidationV2Signature[](countArray[8]),
             withdrawSols: new WithdrawSolDataSignature[](countArray[9]),
-            withdraw2Contracts: new Withdraw2ContractSignature[](countArray[10])
+            withdraw2Contracts: new Withdraw2ContractSignature[](countArray[10]),
+            balanceTransfers: new BalanceTransferSignature[](countArray[11])
         });
 
         for (uint256 i = 0; i < len; i++) {
@@ -454,13 +465,42 @@ library Signature {
                 });
                 eventUploadSignature.withdraw2Contracts[countArray2[10]] = withdraw2ContractSignature;
                 countArray2[10]++;
+            } else if (eventUploadData.bizType == 12) {
+                EventTypes.BalanceTransfer memory balanceTransfer =
+                    abi.decode(eventUploadData.data, (EventTypes.BalanceTransfer));
+                BalanceTransferSignature memory balanceTransferSignature = BalanceTransferSignature({
+                    eventId: eventUploadData.eventId,
+                    accountId: balanceTransfer.accountId,
+                    amount: balanceTransfer.amount,
+                    tokenHash: balanceTransfer.tokenHash,
+                    isFromAccountId: balanceTransfer.isFromAccountId,
+                    transferType: balanceTransfer.transferType
+                });
+                eventUploadSignature.balanceTransfers[countArray2[11]] = balanceTransferSignature;
+                countArray2[11]++;
             } else {
                 // should never happen
                 revert("Invalid bizType");
             }
         }
         bytes memory encoded;
-        if (eventUploadSignature.withdraw2Contracts.length > 0) {
+        if (eventUploadSignature.balanceTransfers.length > 0) {
+            // v7 signature, only support [v6, balanceTransfers]
+            encoded = abi.encode(
+                eventUploadSignature.batchId,
+                eventUploadSignature.withdraws,
+                eventUploadSignature.settlements,
+                eventUploadSignature.adls,
+                eventUploadSignature.liquidations,
+                eventUploadSignature.feeDistributions,
+                eventUploadSignature.delegateSigners,
+                eventUploadSignature.adlV2s,
+                eventUploadSignature.liquidationV2s,
+                eventUploadSignature.withdrawSols,
+                eventUploadSignature.withdraw2Contracts,
+                eventUploadSignature.balanceTransfers
+            );
+        } else if (eventUploadSignature.withdraw2Contracts.length > 0) {
             // v6 signature, only support [v5, withdraw2Contracts]
             encoded = abi.encode(
                 eventUploadSignature.batchId,
