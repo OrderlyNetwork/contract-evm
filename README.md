@@ -220,6 +220,10 @@ forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_MORPH --broadcast
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_SONIC --broadcast
 # berachain mainnet
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_BERACHAIN --verifier-url https://api.berascan.com/api --verify --etherscan-api-key $BERACHAIN_ETHERSCAN_API_KEY --broadcast
+# mode mainnet
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_MODE --verifier-url 'https://api.routescan.io/v2/network/mainnet/evm/34443/etherscan' --etherscan-api-key "verifyContract" --broadcast
+# plume mainnet
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_PLUME --broadcast
 ```
 
 ### Deploy new implement command:
@@ -257,6 +261,10 @@ forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_MORPH --broadcast
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_SONIC --broadcast
 # berachain mainnet
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_BERACHAIN --broadcast
+# mode mainnet
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_MODE --verifier-url 'https://api.routescan.io/v2/network/mainnet/evm/34443/etherscan' --etherscan-api-key "verifyContract" --broadcast
+# plume mainnet
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_PLUME --broadcast
 ```
 
 ## Zip scripts

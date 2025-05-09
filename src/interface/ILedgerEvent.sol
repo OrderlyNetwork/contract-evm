@@ -220,6 +220,14 @@ interface ILedgerEvent {
         address receiver
     );
 
+    event BalanceTransfer(
+        uint64 indexed eventId,
+        bytes32 indexed accountId,
+        uint128 amount,
+        bytes32 tokenHash,
+        bool isFromAccountId,
+        uint8 transferType
+    );
     // All events below are deprecated
     // Keep them for indexer backward compatibility
 
