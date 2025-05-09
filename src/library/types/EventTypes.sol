@@ -165,4 +165,12 @@ library EventTypes {
         bytes32 tokenHash;
         uint256 clientId;
     }
+
+    struct BalanceTransfer {
+        bytes32 accountId;
+        uint128 amount;
+        bytes32 tokenHash;
+        bool isFromAccountId;
+        uint8 transferType;
+    }
 }

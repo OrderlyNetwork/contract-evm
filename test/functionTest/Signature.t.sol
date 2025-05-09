@@ -900,4 +900,39 @@ contract SignatureTest is Test {
         bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
         assertEq(succ, true);
     }
+
+    // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/1113948191/Event+upload+-+FeeDistribution+change+2025-04
+    function test_eventUploadEncodeHash_balanceTransfer() public {
+        EventTypes.BalanceTransfer memory b1 = EventTypes.BalanceTransfer({
+            accountId: 0x9ff99a5d6cb71a3ef897b0fff5f5801af6dc5f72d8f1608e61409b8fc965bd68,
+            amount: 1231245125,
+            tokenHash: 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa,
+            isFromAccountId: true,
+            transferType: 1
+        });
+
+        EventTypes.BalanceTransfer memory b2 = EventTypes.BalanceTransfer({
+            accountId: 0x9ff99a5d6cb71a3ef897b0fff5f5801af6dc5f72d8f1608e61409b8fc965bd68,
+            amount: 1231245125,
+            tokenHash: 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa,
+            isFromAccountId: false,
+            transferType: 2
+        });
+
+        EventTypes.EventUploadData[] memory events = new EventTypes.EventUploadData[](2);
+        events[0] = EventTypes.EventUploadData({bizType: 12, eventId: 1274, data: abi.encode(b1)});
+        events[1] = EventTypes.EventUploadData({bizType: 12, eventId: 1277, data: abi.encode(b2)});
+
+        EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
+            events: events,
+            r: 0x41a4b5ee5fbf586b64309c6c4e93168696fa046ce948dc793c3cb17c47dd60ab,
+            s: 0x2531a258045014dd96636bf31456ac8146a8ee2c2b33ae50d783b7415974806a,
+            v: 0x1c,
+            count: 2,
+            batchId: 7888
+        });
+
+        bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
+        assertEq(succ, true);
+    }
 }
