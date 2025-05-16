@@ -17,7 +17,7 @@ interface IVault {
     error ZeroCodeLength();
     error NotZeroCodeLength();
     error DepositExceedLimit();
-    error NativeTokeDepositAmountMismatch();
+    error NativeTokenDepositAmountMismatch();
     error NotImplemented();
     error ProtocolVaultAddressMismatch(address want, address got);
 
@@ -90,6 +90,7 @@ interface IVault {
     // whitelist
     function setAllowedToken(bytes32 _tokenHash, bool _allowed) external;
     function setAllowedBroker(bytes32 _brokerHash, bool _allowed) external;
+    function setNativeTokenHash(bytes32 _nativeTokenHash) external;
     function changeTokenAddressAndAllow(bytes32 _tokenHash, address _tokenAddress) external;
     function getAllowedToken(bytes32 _tokenHash) external view returns (address);
     function getAllowedBroker(bytes32 _brokerHash) external view returns (bool);

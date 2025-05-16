@@ -23,7 +23,7 @@ contract LedgerCheater is Ledger {
     }
 
     // get userLedger balance
-    function getUserLedgerBalance(bytes32 accountId, bytes32 tokenHash) public view returns (uint128) {
+    function getUserLedgerBalance(bytes32 accountId, bytes32 tokenHash) public view returns (int128) {
         return userLedger[accountId].getBalance(tokenHash);
     }
 

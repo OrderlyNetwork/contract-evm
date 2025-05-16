@@ -17,8 +17,11 @@ import "./cheater/LedgerCheater.sol";
 import "../src/LedgerImplA.sol";
 
 import "forge-std/console.sol";
+import "../src/library/typesHelper/SafeCastHelper.sol";
 
 contract VaultTest is Test {
+    using SafeCastHelper for uint128;
+
     ProxyAdmin admin;
     VaultCrossChainManagerMock vaultCrossChainManager;
     LedgerCrossChainManagerMock ledgerCrossChainManager;
@@ -197,7 +200,7 @@ contract VaultTest is Test {
         assertTrue(vaultCrossChainManager.calledDeposit());
 
         vm.prank(address(ledgerCrossChainManager));
-        assertEq(ledger.getUserLedgerBalance(ACCOUNT_ID, TOKEN_HASH), AMOUNT);
+        assertEq(ledger.getUserLedgerBalance(ACCOUNT_ID, TOKEN_HASH), AMOUNT.toInt128());
         assertEq(vaultManager.getBalance(TOKEN_HASH, CHAIN_ID), AMOUNT);
     }
 

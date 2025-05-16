@@ -10,6 +10,7 @@ import "./interface/ILedgerCrossChainManager.sol";
 import "./interface/ILedgerCrossChainManagerV2.sol";
 import "./library/Utils.sol";
 import "./library/Signature.sol";
+import "./library/typesHelper/SafeCastHelper.sol";
 
 /// @title Ledger contract, implementation part C contract, for resolve EIP170 limit
 /// @notice This contract is designed for Solana connection
@@ -17,6 +18,7 @@ import "./library/Signature.sol";
 contract LedgerImplC is ILedgerImplC, OwnableUpgradeable, LedgerDataLayout {
     using AccountTypeHelper for AccountTypes.Account;
     using SafeCast for uint256;
+    using SafeCastHelper for uint128;
 
     constructor() {
         _disableInitializers();
@@ -77,7 +79,7 @@ contract LedgerImplC is ILedgerImplC, OwnableUpgradeable, LedgerDataLayout {
             if (account.lastWithdrawNonce >= withdraw.withdrawNonce) {
                 // require withdraw nonce inc
                 state = 101;
-            } else if (account.balances[tokenHash] < withdraw.tokenAmount) {
+            } else if (account.balances[tokenHash] < withdraw.tokenAmount.toInt128()) {
                 // require balance enough
                 revert WithdrawBalanceNotEnough(account.balances[tokenHash], withdraw.tokenAmount);
             } else if (vaultManager.getBalance(tokenHash, withdraw.chainId) < withdraw.tokenAmount - withdraw.fee) {
@@ -169,7 +171,7 @@ contract LedgerImplC is ILedgerImplC, OwnableUpgradeable, LedgerDataLayout {
             if (account.lastWithdrawNonce >= withdraw.withdrawNonce) {
                 // require withdraw nonce inc
                 state = 101;
-            } else if (account.balances[tokenHash] < withdraw.tokenAmount) {
+            } else if (account.balances[tokenHash] < withdraw.tokenAmount.toInt128()) {
                 // require balance enough
                 revert WithdrawBalanceNotEnough(account.balances[tokenHash], withdraw.tokenAmount);
             } else if (vaultManager.getBalance(tokenHash, withdraw.chainId) < withdraw.tokenAmount - withdraw.fee) {

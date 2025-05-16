@@ -23,7 +23,7 @@ library AccountTypes {
         // primary address
         address userAddress;
         // mapping symbol => balance
-        mapping(bytes32 => uint128) balances;
+        mapping(bytes32 => int128) balances;
         // mapping symbol => totalFrozenBalance
         mapping(bytes32 => uint128) totalFrozenBalances;
         // mapping withdrawNonce => symbol => balance
@@ -83,7 +83,7 @@ library AccountTypes {
         // token hash
         bytes32 tokenHash;
         // balance & frozenBalance
-        uint128 balance;
+        int128 balance;
         uint128 frozenBalance;
     }
 

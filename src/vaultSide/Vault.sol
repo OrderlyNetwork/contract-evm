@@ -187,7 +187,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         whenNotPaused
     {
         if (data.tokenHash == nativeTokenHash) {
-            _ethDeposit(receiver, data.tokenAmount);
+            _ethDeposit(receiver, data);
         } else {
             _deposit(receiver, data);
         }
@@ -286,7 +286,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
 
     function _ethWithdraw(address receiver, uint128 amount) internal {
         require(address(this).balance >= amount, "Vault: insufficient ETH balance");
-        receiver.sendValue(amount);
+        payable(receiver).sendValue(amount);
     }
 
     /// @notice user withdraw
