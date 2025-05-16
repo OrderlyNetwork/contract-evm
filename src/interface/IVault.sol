@@ -17,6 +17,7 @@ interface IVault {
     error ZeroCodeLength();
     error NotZeroCodeLength();
     error DepositExceedLimit();
+    error NativeTokeDepositAmountMismatch();
     error NotImplemented();
     error ProtocolVaultAddressMismatch(address want, address got);
 

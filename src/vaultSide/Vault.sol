@@ -9,6 +9,7 @@ import "openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeabl
 import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 import "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
+import "openzeppelin-contracts/contracts/utils/Address.sol";
 import "../interface/cctp/ITokenMessenger.sol";
 import "../interface/cctp/IMessageTransmitter.sol";
 import "../interface/IProtocolVault.sol";
@@ -22,6 +23,7 @@ import "../interface/IProtocolVault.sol";
 contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     using EnumerableSet for EnumerableSet.Bytes32Set;
     using SafeERC20 for IERC20;
+    using Address for address payable;
 
     // The cross-chain manager address on Vault side
     address public crossChainManagerAddress;
@@ -48,6 +50,12 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
 
     // Protocol Vault address
     IProtocolVault public protocolVault;
+
+    // Native token hash
+    bytes32 public nativeTokenHash;
+
+    // Native token deposit limit
+    uint256 public nativeTokenDepositLimit;
 
     /// @notice Require only cross-chain manager can call
     modifier onlyCrossChainManager() {
@@ -102,8 +110,8 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     function setAllowedToken(bytes32 _tokenHash, bool _allowed) public override onlyOwner {
         bool succ = false;
         if (_allowed) {
-            // require tokenAddress exist
-            if (allowedToken[_tokenHash] == address(0)) revert AddressZero();
+            // require tokenAddress exist, except for native token
+            if (allowedToken[_tokenHash] == address(0) && _tokenHash != nativeTokenHash) revert AddressZero();
             succ = allowedTokenSet.add(_tokenHash);
         } else {
             succ = allowedTokenSet.remove(_tokenHash);
@@ -122,6 +130,11 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         }
         if (!succ) revert EnumerableSetError();
         emit SetAllowedBroker(_brokerHash, _allowed);
+    }
+
+    /// @notice Set native token hash
+    function setNativeTokenHash(bytes32 _nativeTokenHash) public override onlyOwner {
+        nativeTokenHash = _nativeTokenHash;
     }
 
     /// @notice Change the token address for an allowed token, used when a new token is added
@@ -173,7 +186,11 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         override
         whenNotPaused
     {
-        _deposit(receiver, data);
+        if (data.tokenHash == nativeTokenHash) {
+            _ethDeposit(receiver, data.tokenAmount);
+        } else {
+            _deposit(receiver, data);
+        }
     }
 
     /// @notice The function to query layerzero fee from CrossChainManager contract
@@ -229,6 +246,33 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         emit AccountDepositTo(data.accountId, receiver, depositId, data.tokenHash, data.tokenAmount);
     }
 
+    function _ethDeposit(address receiver, VaultTypes.VaultDepositFE calldata data) internal {
+        _validateDeposit(receiver, data);
+        if (msg.value < data.tokenAmount) revert NativeTokenDepositAmountMismatch();
+        // check native token deposit limit
+        if (nativeTokenDepositLimit != 0 && data.tokenAmount + address(this).balance > nativeTokenDepositLimit) {
+            revert DepositExceedLimit();
+        }
+        // cross-chain tx to ledger
+        VaultTypes.VaultDeposit memory depositData = VaultTypes.VaultDeposit(
+            data.accountId, receiver, data.brokerHash, data.tokenHash, data.tokenAmount, _newDepositId()
+        );
+
+        // cross-chain fee
+        uint256 crossChainFee = msg.value - data.tokenAmount;
+
+        // if deposit fee is enabled, user should pay fee in native token and the msg.value will be forwarded to CrossChainManager to pay for the layerzero cross-chain fee
+        if (depositFeeEnabled) {
+            if (crossChainFee == 0) revert ZeroDepositFee();
+            IVaultCrossChainManager(crossChainManagerAddress).depositWithFeeRefund{value: crossChainFee}(
+                msg.sender, depositData
+            );
+        } else {
+            IVaultCrossChainManager(crossChainManagerAddress).deposit(depositData);
+        }
+        emit AccountDepositTo(data.accountId, receiver, depositId, data.tokenHash, data.tokenAmount);
+    }
+
     /// @notice The function to validate deposit data
     function _validateDeposit(address receiver, VaultTypes.VaultDepositFE calldata data) internal view {
         // check if tokenHash and brokerHash are allowed
@@ -240,20 +284,32 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         if (data.tokenAmount == 0) revert ZeroDeposit();
     }
 
+    function _ethWithdraw(address receiver, uint128 amount) internal {
+        require(address(this).balance >= amount, "Vault: insufficient ETH balance");
+        receiver.sendValue(amount);
+    }
+
     /// @notice user withdraw
     function withdraw(VaultTypes.VaultWithdraw calldata data) public override onlyCrossChainManager whenNotPaused {
         // send cross-chain tx to ledger
         IVaultCrossChainManager(crossChainManagerAddress).withdraw(data);
-        // avoid reentrancy, so `transfer` token at the end
-        IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
-        uint128 amount = data.tokenAmount - data.fee;
-        require(tokenAddress.balanceOf(address(this)) >= amount, "Vault: insufficient balance");
-        // avoid revert if transfer to zero address or blacklist.
-        /// @notice This check condition should always be true because cc promise that
-        if (!_validReceiver(data.receiver, address(tokenAddress))) {
-            emit WithdrawFailed(address(tokenAddress), data.receiver, amount);
+
+        require(data.tokenAmount > data.fee, "withdraw: fee is greater than token amount");
+
+        if (data.tokenHash == nativeTokenHash) {
+            _ethWithdraw(data.receiver, data.tokenAmount - data.fee);
         } else {
-            tokenAddress.safeTransfer(data.receiver, amount);
+            // avoid reentrancy, so `transfer` token at the end
+            IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
+            uint128 amount = data.tokenAmount - data.fee;
+            require(tokenAddress.balanceOf(address(this)) >= amount, "withdraw: insufficient balance");
+            // avoid revert if transfer to zero address or blacklist.
+            /// @notice This check condition should always be true because cc promise that
+            if (!_validReceiver(data.receiver, address(tokenAddress))) {
+                emit WithdrawFailed(address(tokenAddress), data.receiver, amount);
+            } else {
+                tokenAddress.safeTransfer(data.receiver, amount);
+            }
         }
         // emit withdraw event
         emit AccountWithdraw(
@@ -295,18 +351,25 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         });
         // send cross-chain tx to ledger
         IVaultCrossChainManager(crossChainManagerAddress).withdraw(vaultWithdrawData);
-        // avoid reentrancy, so `transfer` token at the end
-        IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
-        uint128 amount = data.tokenAmount - data.fee;
-        require(tokenAddress.balanceOf(address(this)) >= amount, "Vault: insufficient balance");
-        // avoid revert if transfer to zero address or blacklist.
-        /// @notice This check condition should always be true because cc promise that
-        /// @notice But in some extreme cases (e.g. usdc contract pause) it will revert, devs should mannual fix it
-        if (!_validReceiver(data.receiver, address(tokenAddress))) {
-            emit WithdrawFailed(address(tokenAddress), data.receiver, amount);
+
+        require(data.tokenAmount > data.fee, "withdraw2Contract: fee is greater than token amount");
+
+        if (data.tokenHash == nativeTokenHash) {
+            _ethWithdraw(data.receiver, data.tokenAmount - data.fee);
         } else {
-            tokenAddress.safeApprove(data.receiver, amount);
-            protocolVault.depositFromStrategy(data.clientId, address(tokenAddress), amount);
+            // avoid reentrancy, so `transfer` token at the end
+            IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
+            uint128 amount = data.tokenAmount - data.fee;
+            require(tokenAddress.balanceOf(address(this)) >= amount, "Vault: insufficient balance");
+            // avoid revert if transfer to zero address or blacklist.
+            /// @notice This check condition should always be true because cc promise that
+            /// @notice But in some extreme cases (e.g. usdc contract pause) it will revert, devs should mannual fix it
+            if (!_validReceiver(data.receiver, address(tokenAddress))) {
+                emit WithdrawFailed(address(tokenAddress), data.receiver, amount);
+            } else {
+                tokenAddress.safeApprove(data.receiver, amount);
+                protocolVault.depositFromStrategy(data.clientId, address(tokenAddress), amount);
+            }
         }
         // emit withdraw event
         emit AccountWithdraw(
