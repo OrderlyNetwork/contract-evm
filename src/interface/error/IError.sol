@@ -55,6 +55,7 @@ interface IError {
     error RebalanceMintUnexpected(); // the rebalance burn state or something is wrong, so the rebalance mint is unexpected. Should never happen.
     error RebalanceChainIdInvalid(uint256 chainId);
     error RebalanceTokenNotSupported(bytes32 tokenHash, uint256 chainId);
+    error OnlySymbolManagerOrOwner();
 
     // FeeManager Error
     error InvalidFeeCollectorType();
