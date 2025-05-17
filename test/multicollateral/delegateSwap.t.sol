@@ -309,6 +309,7 @@ contract DelegateSwapTest is Test {
     // Helper function to sign swap data
     function signSwapData(VaultTypes.DelegateSwap memory swap, uint256 privateKey) 
         internal
+        view
         returns (uint8 v, bytes32 r, bytes32 s) 
     {
         // Get domain separator

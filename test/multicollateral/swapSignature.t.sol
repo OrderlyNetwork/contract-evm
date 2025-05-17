@@ -49,7 +49,7 @@ contract SwapSignatureTest is Test {
         VaultTypes.DelegateSwap memory swap = createTestSwapData();
         
         // Sign the swap data
-        (bytes32 digest, VaultTypes.DelegateSwap memory signedSwap) = signSwapData(swap);
+        (, VaultTypes.DelegateSwap memory signedSwap) = signSwapData(swap);
         
         // Verify the signature is valid
         bool isValid = SwapSignature.validateSwapSignature(signer, signedSwap);
@@ -61,7 +61,7 @@ contract SwapSignatureTest is Test {
         VaultTypes.DelegateSwap memory swap = createTestSwapData();
         
         // Sign the swap data
-        (bytes32 digest, VaultTypes.DelegateSwap memory signedSwap) = signSwapData(swap);
+        (, VaultTypes.DelegateSwap memory signedSwap) = signSwapData(swap);
         
         // Try to verify with the wrong signer
         address wrongSigner = vm.addr(0xB0B);
@@ -74,7 +74,7 @@ contract SwapSignatureTest is Test {
         VaultTypes.DelegateSwap memory swap = createTestSwapData();
         
         // Sign the swap data
-        (bytes32 digest, VaultTypes.DelegateSwap memory signedSwap) = signSwapData(swap);
+        (, VaultTypes.DelegateSwap memory signedSwap) = signSwapData(swap);
         
         // Tamper with the data after signing
         signedSwap.inTokenAmount += 100; // Change amount
@@ -89,7 +89,7 @@ contract SwapSignatureTest is Test {
         VaultTypes.DelegateSwap memory swap = createTestSwapData();
         
         // Sign the swap data
-        (bytes32 digest, VaultTypes.DelegateSwap memory signedSwap) = signSwapData(swap);
+        (, VaultTypes.DelegateSwap memory signedSwap) = signSwapData(swap);
         
         // Tamper with the signature
         signedSwap.r = bytes32(uint256(signedSwap.r) + 1);
@@ -104,7 +104,7 @@ contract SwapSignatureTest is Test {
         VaultTypes.DelegateSwap memory swap = createTestSwapData();
         
         // Sign the swap data
-        (bytes32 digest, VaultTypes.DelegateSwap memory signedSwap) = signSwapData(swap);
+        (, VaultTypes.DelegateSwap memory signedSwap) = signSwapData(swap);
         
         // Change the chainId after signing
         signedSwap.chainId = 999; // Different chain ID
@@ -125,7 +125,7 @@ contract SwapSignatureTest is Test {
         VaultTypes.DelegateSwap memory swap = createTestSwapData();
         
         // Sign the swap data
-        (bytes32 digest, VaultTypes.DelegateSwap memory signedSwap) = signSwapData(swap);
+        (, VaultTypes.DelegateSwap memory signedSwap) = signSwapData(swap);
         
         // Change the calldata after signing
         signedSwap.swapCalldata = abi.encodeWithSignature("differentFunction()");
@@ -172,6 +172,7 @@ contract SwapSignatureTest is Test {
     // Helper function to sign swap data
     function signSwapData(VaultTypes.DelegateSwap memory swap) 
         internal 
+        view
         returns (bytes32 digest, VaultTypes.DelegateSwap memory signedSwap) 
     {
         // Deep copy the swap data
