@@ -15,6 +15,7 @@ import "../interface/cctp/ITokenMessenger.sol";
 import "../interface/cctp/IMessageTransmitter.sol";
 import "../interface/IProtocolVault.sol";
 import "../library/SwapSignature.sol";
+import "./ReentrancyGuardUpgradeable.sol";
 
 /// @title Vault contract
 /// @author Orderly_Rubick, Orderly_Zion
@@ -22,7 +23,7 @@ import "../library/SwapSignature.sol";
 /// EACH CHAIN SHOULD HAVE ONE Vault CONTRACT.
 /// User can deposit erc20 (USDC) from Vault.
 /// Only crossChainManager can approve withdraw request.
-contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
+contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     using EnumerableSet for EnumerableSet.Bytes32Set;
     using SafeERC20 for IERC20;
     using Address for address payable;
@@ -98,6 +99,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     function initialize() external override initializer {
         __Ownable_init();
         __Pausable_init();
+        __ReentrancyGuard_init();
     }
 
     /// @notice Change crossChainManager address
@@ -587,30 +589,30 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         VaultTypes.DelegateSwap calldata data
     ) internal view {
         // Verify Signature
-        require(SwapSignature.validateSwapSignature(swapSigner, data), "Invalid signature");
+        require(SwapSignature.validateSwapSignature(swapSigner, data), "Vault: Invalid signature");
     }
 
     function _validateSwap(
         VaultTypes.DelegateSwap calldata data
     ) internal view {
         // require nonce == swapNonce
-        require(data.swapNonce == swapNonce, "Invalid nonce");
+        require(data.swapNonce == swapNonce, "Vault: Invalid nonce");
 
         // Verify that the token is allowed
         bytes32 inTokenHash = data.inTokenHash;
-        require(allowedTokenSet.contains(inTokenHash), "Token not allowed");
+        require(allowedTokenSet.contains(inTokenHash), "Vault: Token not allowed");
 
         // Verify that the owner has enough tokens
         if (inTokenHash != nativeTokenHash) {
             // ERC20 token case
             address tokenAddress = allowedToken[inTokenHash];
-            require(address(tokenAddress) != address(0), "Token does not exist");
+            require(address(tokenAddress) != address(0), "Vault: Token does not exist");
             IERC20 token = IERC20(tokenAddress);
-            require(token.balanceOf(address(this)) >= data.inTokenAmount, "Insufficient balance");
+            require(token.balanceOf(address(this)) >= data.inTokenAmount, "Vault: Insufficient balance");
 
         } else {
             // Native ETH case - use the vault's existing ETH balance
-            require(address(this).balance >= data.inTokenAmount, "Insufficient ETH balance");
+            require(address(this).balance >= data.inTokenAmount, "Vault: Insufficient ETH balance");
         }
 
         // Verify Signature
@@ -619,7 +621,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
 
     function delegateSwap(
         VaultTypes.DelegateSwap calldata data
-    ) external override whenNotPaused onlySwapOperator {
+    ) external override whenNotPaused onlySwapOperator nonReentrant {
         _validateSwap(data);
         _incrementSwapNonce();
         
@@ -638,8 +640,19 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         }
         
         // Execute the transaction
-        (bool success, ) = data.to.call{value: value}(data.swapCalldata);
-        require(success, "Vault: Delegate Swap Transaction failed");
+        (bool success, bytes memory result) = data.to.call{value: value}(data.swapCalldata);
+        if (!success) {
+            assembly {
+                revert(add(result, 0x20), mload(result))
+            }
+        }
+
+        // Revoke the approval
+        if (data.inTokenHash != nativeTokenHash) {
+            address tokenAddress = allowedToken[data.inTokenHash];
+            IERC20 token = IERC20(tokenAddress);
+            token.safeApprove(data.to, 0);
+        }
         
         emit DelegateSwapExecuted(
             data.swapNonce,
