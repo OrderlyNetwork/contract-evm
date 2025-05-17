@@ -52,6 +52,9 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     // Protocol Vault address
     IProtocolVault public protocolVault;
 
+    // EnumerableSet for rebalance enable tokens
+    EnumerableSet.Bytes32Set private rebalanceEnableTokenSet;
+
     // Native token hash
     bytes32 public nativeTokenHash;
 
@@ -119,6 +122,17 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         }
         if (!succ) revert EnumerableSetError();
         emit SetAllowedToken(_tokenHash, _allowed);
+    }
+
+    function setRebalanceEnableToken(bytes32 _tokenHash, bool _allowed) public override onlyOwner {
+        bool succ = false;
+        if (_allowed) {
+            succ = rebalanceEnableTokenSet.add(_tokenHash);
+        } else {
+            succ = rebalanceEnableTokenSet.remove(_tokenHash);
+        }
+        if (!succ) revert EnumerableSetError();
+        emit SetRebalanceEnableToken(_tokenHash, _allowed);
     }
 
     /// @notice Add the hash value for an allowed brokerId
@@ -460,8 +474,12 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     }
 
     function rebalanceBurn(RebalanceTypes.RebalanceBurnCCData calldata data) external override onlyCrossChainManager {
+        /// Check if the token is allowed to be burned
         address burnToken = allowedToken[data.tokenHash];
         if (burnToken == address(0)) revert AddressZero();
+        if (!rebalanceEnableTokenSet.contains(data.tokenHash)) revert NotRebalanceEnableToken();
+
+        /// Approve the token to be burned
         IERC20(burnToken).approve(tokenMessengerContract, data.amount);
         try ITokenMessenger(tokenMessengerContract).depositForBurn(
             data.amount, data.dstDomain, Utils.toBytes32(data.dstVaultAddress), burnToken
@@ -526,5 +544,9 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
                 })
             );
         }
+    }
+
+    function delegateOdosSwap(bytes calldata data) external override {
+
     }
 }

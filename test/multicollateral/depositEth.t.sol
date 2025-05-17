@@ -235,7 +235,7 @@ contract DepositEthTest is Test {
         vm.prank(address(vault.owner()));
         vault.enableDepositFee(true);
 
-        uint256 feeAmount = vault.getDepositFee(SENDER, depositData);
+        // uint256 feeAmount = vault.getDepositFee(SENDER, depositData);
 
         vm.startPrank(SENDER);
         

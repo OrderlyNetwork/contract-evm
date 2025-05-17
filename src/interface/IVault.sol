@@ -20,6 +20,7 @@ interface IVault {
     error NativeTokenDepositAmountMismatch();
     error NotImplemented();
     error ProtocolVaultAddressMismatch(address want, address got);
+    error NotRebalanceEnableToken();
 
     // @deprecated
     event AccountDeposit(
@@ -63,6 +64,7 @@ interface IVault {
     event ChangeCrossChainManager(address oldAddress, address newAddress);
     event ChangeDepositLimit(address indexed _tokenAddress, uint256 _limit);
     event WithdrawFailed(address indexed token, address indexed receiver, uint256 amount);
+    event SetRebalanceEnableToken(bytes32 indexed _tokenHash, bool _allowed);
 
     function initialize() external;
 
@@ -92,9 +94,13 @@ interface IVault {
     function setAllowedBroker(bytes32 _brokerHash, bool _allowed) external;
     function setNativeTokenHash(bytes32 _nativeTokenHash) external;
     function setNativeTokenDepositLimit(uint256 _nativeTokenDepositLimit) external;
+    function setRebalanceEnableToken(bytes32 _tokenHash, bool _allowed) external;
     function changeTokenAddressAndAllow(bytes32 _tokenHash, address _tokenAddress) external;
     function getAllowedToken(bytes32 _tokenHash) external view returns (address);
     function getAllowedBroker(bytes32 _brokerHash) external view returns (bool);
     function getAllAllowedToken() external view returns (bytes32[] memory);
     function getAllAllowedBroker() external view returns (bytes32[] memory);
+
+    // odos swap
+    function delegateOdosSwap(bytes calldata data) external;
 }

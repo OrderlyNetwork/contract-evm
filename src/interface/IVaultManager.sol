@@ -14,6 +14,7 @@ interface IVaultManager is IError, ILedgerComponent {
     event SetAllowedToken(bytes32 indexed _tokenHash, bool _allowed);
     event SetAllowedChainToken(bytes32 indexed _tokenHash, uint256 indexed _chainId, bool _allowed);
     event SetMaxWithdrawFee(bytes32 indexed _tokenHash, uint128 _maxWithdrawFee);
+    event SetSymbolManager(address indexed _symbolManager);
 
     // rebalance burn token
     event RebalanceBurn(
@@ -44,6 +45,9 @@ interface IVaultManager is IError, ILedgerComponent {
     // allow broker
     function setAllowedBroker(bytes32 _brokerHash, bool _allowed) external;
     function getAllowedBroker(bytes32 _brokerHash) external view returns (bool);
+
+    // allow symbol manager
+    function setSymbolManager(address _symbolManager) external;
 
     // allow chain+token. in some chain, some token is not allowed for safety
     function setAllowedChainToken(bytes32 _tokenHash, uint256 _chainId, bool _allowed) external;

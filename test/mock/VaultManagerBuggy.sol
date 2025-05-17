@@ -36,6 +36,8 @@ contract VaultManagerBuggy is IVaultManager, LedgerComponent {
 
     function getAllowedBroker(bytes32 _brokerHash) external view override returns (bool) {}
 
+    function setSymbolManager(address _symbolManager) external override {}
+
     function setAllowedChainToken(bytes32 _tokenHash, uint256 _chainId, bool _allowed) external override {}
 
     function getAllowedChainToken(bytes32 _tokenHash, uint256 _chainId) external view override returns (bool) {}
