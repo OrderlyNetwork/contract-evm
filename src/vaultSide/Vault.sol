@@ -9,6 +9,7 @@ import "openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeabl
 import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 import "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
+import "openzeppelin-contracts/contracts/utils/math/SafeCast.sol";
 import "openzeppelin-contracts/contracts/utils/Address.sol";
 import "../interface/cctp/ITokenMessenger.sol";
 import "../interface/cctp/IMessageTransmitter.sol";
@@ -24,7 +25,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
     using EnumerableSet for EnumerableSet.Bytes32Set;
     using SafeERC20 for IERC20;
     using Address for address payable;
-
+    using SafeCast for uint256;
     // The cross-chain manager address on Vault side
     address public crossChainManagerAddress;
     // An incrasing deposit id / nonce on Vault side
@@ -137,6 +138,11 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         nativeTokenHash = _nativeTokenHash;
     }
 
+    /// @notice Set native token deposit limit
+    function setNativeTokenDepositLimit(uint256 _nativeTokenDepositLimit) public override onlyOwner {
+        nativeTokenDepositLimit = _nativeTokenDepositLimit;
+    }
+
     /// @notice Change the token address for an allowed token, used when a new token is added
     /// @dev maybe should called `addTokenAddressAndAllow`, because it's for initializing
     function changeTokenAddressAndAllow(bytes32 _tokenHash, address _tokenAddress)
@@ -176,7 +182,11 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
 
     /// @notice The function to receive user deposit, VaultDepositFE type is defined in VaultTypes.sol
     function deposit(VaultTypes.VaultDepositFE calldata data) public payable override whenNotPaused {
-        _deposit(msg.sender, data);
+        if (data.tokenHash == nativeTokenHash) {
+            _ethDeposit(msg.sender, data);
+        } else {
+            _deposit(msg.sender, data);
+        }
     }
 
     /// @notice The function to allow users to deposit on behalf of another user, the receiver is the user who will receive the deposit
@@ -248,7 +258,10 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
 
     function _ethDeposit(address receiver, VaultTypes.VaultDepositFE calldata data) internal {
         _validateDeposit(receiver, data);
-        if (msg.value < data.tokenAmount) revert NativeTokenDepositAmountMismatch();
+
+        uint128 nativeDepositAmount = msg.value.toUint128();
+
+        if (nativeDepositAmount < data.tokenAmount) revert NativeTokenDepositAmountMismatch();
         // check native token deposit limit
         if (nativeTokenDepositLimit != 0 && data.tokenAmount + address(this).balance > nativeTokenDepositLimit) {
             revert DepositExceedLimit();
@@ -259,7 +272,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         );
 
         // cross-chain fee
-        uint256 crossChainFee = msg.value - data.tokenAmount;
+        uint256 crossChainFee = nativeDepositAmount - data.tokenAmount;
 
         // if deposit fee is enabled, user should pay fee in native token and the msg.value will be forwarded to CrossChainManager to pay for the layerzero cross-chain fee
         if (depositFeeEnabled) {
@@ -278,7 +291,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         // check if tokenHash and brokerHash are allowed
         if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
-        // check if accountId = keccak256(abi.encodePacked(brokerHash, receiver))
+        // check if accountId = keccak256(abi.encode(receiver, data.tokenHash))
         if (!Utils.validateAccountId(data.accountId, data.brokerHash, receiver)) revert AccountIdInvalid();
         // check if tokenAmount > 0
         if (data.tokenAmount == 0) revert ZeroDeposit();

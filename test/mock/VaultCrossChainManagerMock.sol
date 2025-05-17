@@ -11,12 +11,15 @@ contract VaultCrossChainManagerMock is IVaultCrossChainManager, Ownable {
     LedgerCrossChainManagerMock public ledgerCCManagerMock;
     bool public calledDeposit;
     bool public calledDepositWithFeeRefund;
+    uint256 constant public depositFee = 0.01 ether;
 
     function setVault(address _vault) external override {
         vault = IVault(_vault);
     }
 
-    function getDepositFee(VaultTypes.VaultDeposit memory data) external view override returns (uint256) {}
+    function getDepositFee(VaultTypes.VaultDeposit memory) external pure override returns (uint256) {
+        return depositFee;
+    }
 
     function setLedgerCCManagerMock(address _ledgerCCManagerMock) external onlyOwner {
         require(_ledgerCCManagerMock != address(0), "Invalid address: zero address provided");
@@ -57,6 +60,7 @@ contract VaultCrossChainManagerMock is IVaultCrossChainManager, Ownable {
         payable
         override
     {
+        require(msg.value >= depositFee, "Amount must be greater than deposit fee.");
         require(refundReceiver != address(0), "Invalid address: zero address provided");
         require(_data.tokenAmount >= 0, "Amount must be greater than zero.");
         calledDepositWithFeeRefund = true;
