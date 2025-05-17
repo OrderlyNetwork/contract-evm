@@ -14,6 +14,7 @@ import "openzeppelin-contracts/contracts/utils/Address.sol";
 import "../interface/cctp/ITokenMessenger.sol";
 import "../interface/cctp/IMessageTransmitter.sol";
 import "../interface/IProtocolVault.sol";
+import "../library/SwapSignature.sol";
 
 /// @title Vault contract
 /// @author Orderly_Rubick, Orderly_Zion
@@ -60,6 +61,23 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
 
     // Native token deposit limit
     uint256 public nativeTokenDepositLimit;
+
+    /*=================================================
+     =============== Delegate  Swap ===============
+     =================================================*/
+
+    // Swap nonce
+    uint256 public swapNonce;
+    // Swap Operator Address
+    address public swapOperator;
+    // Swap Signer Address
+    address public swapSigner;
+
+    /// @notice Require only swapOperator can call
+    modifier onlySwapOperator() {
+        require(msg.sender == swapOperator, "Vault: Only swap operator can call");
+        _;
+    }
 
     /// @notice Require only cross-chain manager can call
     modifier onlyCrossChainManager() {
@@ -546,7 +564,90 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable {
         }
     }
 
-    function delegateOdosSwap(bytes calldata data) external override {
+    /*=================================================
+     =============== Delegate Swap ===============
+     =================================================*/
 
+    /// @notice Set the operator for the Swap
+    function setSwapOperator(address _swapOperator) public override onlyOwner {
+        swapOperator = _swapOperator;
     }
+
+    /// @notice Set the signer for the Swap
+    function setSwapSigner(address _swapSigner) public override onlyOwner {
+        swapSigner = _swapSigner;
+    }
+
+    /// @notice Increment the nonce for the Swap
+    function _incrementSwapNonce() internal {
+        swapNonce++;
+    }
+
+    function _verifySwapSignature(
+        VaultTypes.DelegateSwap calldata data
+    ) internal view {
+        // Verify Signature
+        require(SwapSignature.validateSwapSignature(swapSigner, data), "Invalid signature");
+    }
+
+    function _validateSwap(
+        VaultTypes.DelegateSwap calldata data
+    ) internal view {
+        // require nonce == swapNonce
+        require(data.swapNonce == swapNonce, "Invalid nonce");
+
+        // Verify that the token is allowed
+        bytes32 inTokenHash = data.inTokenHash;
+        require(allowedTokenSet.contains(inTokenHash), "Token not allowed");
+
+        // Verify that the owner has enough tokens
+        if (inTokenHash != nativeTokenHash) {
+            // ERC20 token case
+            address tokenAddress = allowedToken[inTokenHash];
+            require(address(tokenAddress) != address(0), "Token does not exist");
+            IERC20 token = IERC20(tokenAddress);
+            require(token.balanceOf(address(this)) >= data.inTokenAmount, "Insufficient balance");
+
+        } else {
+            // Native ETH case - use the vault's existing ETH balance
+            require(address(this).balance >= data.inTokenAmount, "Insufficient ETH balance");
+        }
+
+        // Verify Signature
+        _verifySwapSignature(data);
+    }
+
+    function delegateSwap(
+        VaultTypes.DelegateSwap calldata data
+    ) external override whenNotPaused onlySwapOperator {
+        _validateSwap(data);
+        _incrementSwapNonce();
+        
+        // Execute the transaction
+        // Verify that the owner has enough tokens
+        if (data.inTokenHash != nativeTokenHash) {
+            // Approve the token to be spent
+            address tokenAddress = allowedToken[data.inTokenHash];
+            IERC20 token = IERC20(tokenAddress);
+            token.safeApprove(data.to, data.inTokenAmount);
+        }
+
+        uint256 value = 0;
+        if (data.inTokenHash == nativeTokenHash) {
+            value = data.value;
+        }
+        
+        // Execute the transaction
+        (bool success, ) = data.to.call{value: value}(data.swapCalldata);
+        require(success, "Vault: Delegate Swap Transaction failed");
+        
+        emit DelegateSwapExecuted(
+            data.swapNonce,
+            data.inTokenHash,
+            data.inTokenAmount,
+            data.to,
+            data.value
+        );
+    }
+
 }

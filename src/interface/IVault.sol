@@ -65,6 +65,7 @@ interface IVault {
     event ChangeDepositLimit(address indexed _tokenAddress, uint256 _limit);
     event WithdrawFailed(address indexed token, address indexed receiver, uint256 amount);
     event SetRebalanceEnableToken(bytes32 indexed _tokenHash, bool _allowed);
+    event DelegateSwapExecuted(uint256 indexed swapNonce, bytes32 inTokenHash, uint256 inTokenAmount, address to, uint256 value);
 
     function initialize() external;
 
@@ -101,6 +102,8 @@ interface IVault {
     function getAllAllowedToken() external view returns (bytes32[] memory);
     function getAllAllowedBroker() external view returns (bytes32[] memory);
 
-    // odos swap
-    function delegateOdosSwap(bytes calldata data) external;
+    // Delegate swap function
+    function setSwapOperator(address _swapOperator) external;
+    function setSwapSigner(address _swapSigner) external;
+    function delegateSwap(VaultTypes.DelegateSwap calldata data) external;
 }

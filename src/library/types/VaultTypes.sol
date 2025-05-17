@@ -53,4 +53,18 @@ library VaultTypes {
         uint64 withdrawNonce;
         uint256 clientId;
     }
+
+    struct DelegateSwap {
+        uint256 swapNonce;
+        uint256 chainId;
+        bytes32 inTokenHash;
+        uint256 inTokenAmount;
+        address to;
+        uint256 value;
+        bytes swapCalldata;
+        // signature
+        bytes32 r;
+        bytes32 s;
+        uint8 v;
+    }
 }
