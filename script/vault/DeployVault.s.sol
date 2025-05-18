@@ -19,7 +19,7 @@ contract UpgradeVault is Script {
         vm.startBroadcast(orderlyPrivateKey);
 
         IVault vaultImpl = new Vault();
-        admin.upgrade(vaultProxy, address(vaultImpl));
+        // admin.upgrade(vaultProxy, address(vaultImpl));
         // admin.upgradeAndCall(vaultProxy, address(vaultImpl), abi.encodeWithSignature("initialize()"));
         // admin.upgradeAndCall(proxy, implementation, data);
         console.log("Vault deployed at:", address(vaultImpl));
