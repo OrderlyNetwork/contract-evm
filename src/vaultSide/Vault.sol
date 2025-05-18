@@ -57,15 +57,15 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     // EnumerableSet for rebalance enable tokens
     EnumerableSet.Bytes32Set private rebalanceEnableTokenSet;
 
+    /*=============== Native Token ===============*/
+
     // Native token hash
     bytes32 public nativeTokenHash;
 
     // Native token deposit limit
     uint256 public nativeTokenDepositLimit;
 
-    /*=================================================
-     =============== Delegate  Swap ===============
-     =================================================*/
+    /*=============== Delegate  Swap ===============*/
 
     // Swap nonce
     uint256 public swapNonce;
@@ -73,6 +73,8 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     address public swapOperator;
     // Swap Signer Address
     address public swapSigner;
+
+    /*=============== Modifiers ===============*/
 
     /// @notice Require only swapOperator can call
     modifier onlySwapOperator() {
@@ -92,15 +94,21 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
         _;
     }
 
+    /*=============== Constructor ===============*/
+
     constructor() {
         _disableInitializers();
     }
+
+    /*=============== Initializer ===============*/
 
     function initialize() external override initializer {
         __Ownable_init();
         __Pausable_init();
         __ReentrancyGuard_init();
     }
+
+    /*=============== Setters ===============*/
 
     /// @notice Change crossChainManager address
     function setCrossChainManager(address _crossChainManagerAddress)
@@ -213,6 +221,8 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     function getAllAllowedBroker() public view override returns (bytes32[] memory) {
         return allowedBrokerSet.values();
     }
+
+    /*=============== Deposit ===============*/
 
     /// @notice The function to receive user deposit, VaultDepositFE type is defined in VaultTypes.sol
     function deposit(VaultTypes.VaultDepositFE calldata data) public payable override whenNotPaused {
@@ -336,6 +346,8 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
         payable(receiver).sendValue(amount);
     }
 
+    /*=============== Withdraw ===============*/
+
     /// @notice user withdraw
     function withdraw(VaultTypes.VaultWithdraw calldata data) public override onlyCrossChainManager whenNotPaused {
         // send cross-chain tx to ledger
@@ -370,6 +382,8 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
             data.fee
         );
     }
+
+    /*=============== Withdraw2Contract ===============*/
 
     /// @notice withdraw to another contract by calling the contract's deposit function
     function withdraw2Contract(VaultTypes.VaultWithdraw2Contract calldata data)
@@ -618,6 +632,8 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
         // Verify Signature
         _verifySwapSignature(data);
     }
+
+    /*=============== Delegate Swap ===============*/
 
     function delegateSwap(
         VaultTypes.DelegateSwap calldata data
