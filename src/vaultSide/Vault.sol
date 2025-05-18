@@ -163,6 +163,10 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
         emit SetRebalanceEnableToken(_tokenHash, _allowed);
     }
 
+    function getAllRebalanceEnableToken() public view returns (bytes32[] memory) {
+        return rebalanceEnableTokenSet.values();
+    }
+
     /// @notice Add the hash value for an allowed brokerId
     function setAllowedBroker(bytes32 _brokerHash, bool _allowed) public override onlyOwner {
         bool succ = false;

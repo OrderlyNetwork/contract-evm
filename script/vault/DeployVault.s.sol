@@ -19,12 +19,27 @@ contract UpgradeVault is Script {
         vm.startBroadcast(orderlyPrivateKey);
 
         IVault vaultImpl = new Vault();
-        // admin.upgrade(vaultProxy, address(vaultImpl));
+        admin.upgrade(vaultProxy, address(vaultImpl));
         // admin.upgradeAndCall(vaultProxy, address(vaultImpl), abi.encodeWithSignature("initialize()"));
+        // admin.upgradeAndCall(proxy, implementation, data);
         console.log("Vault deployed at:", address(vaultImpl));
         console.log("Vault proxy deployed at:", address(vaultProxy));
         console.log("call: ");
         console.logBytes(abi.encodeWithSelector(OwnableUpgradeable.transferOwnership.selector, adminAddress));
+        // 
+        bytes32 ethTokenHash = keccak256(abi.encodePacked("ETH"));
+        bytes32 usdtTokenHash = keccak256(abi.encodePacked("USDT"));
+        bytes32 usdcTokenHash = keccak256(abi.encodePacked("USDC"));
+
+        // print
+        console.log("ethTokenHash: ");
+        console.logBytes32(ethTokenHash);
+        console.log("usdtTokenHash: ");
+        console.logBytes32(usdtTokenHash);
+        console.log("usdcTokenHash: ");
+        console.logBytes32(usdcTokenHash);
+
+        
 
         vm.stopBroadcast();
     }

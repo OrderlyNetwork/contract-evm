@@ -101,6 +101,7 @@ interface IVault {
     function getAllowedBroker(bytes32 _brokerHash) external view returns (bool);
     function getAllAllowedToken() external view returns (bytes32[] memory);
     function getAllAllowedBroker() external view returns (bytes32[] memory);
+    function getAllRebalanceEnableToken() external view returns (bytes32[] memory);
 
     // Delegate swap function
     function setSwapOperator(address _swapOperator) external;

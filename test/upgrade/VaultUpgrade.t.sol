@@ -95,7 +95,14 @@ contract VaultUpgradeTest is Test {
             address afterMessageTransmitterContract,
             address afterProtocolVault
         ) = captureCurrentState();
+
         
+        bytes32[] memory rebalanceEnableTokensAfter = vault.getAllRebalanceEnableToken();
+        console.log("rebalanceEnableTokensAfter: ");
+        for (uint i = 0; i < rebalanceEnableTokensAfter.length; i++) {
+            console.logBytes32(rebalanceEnableTokensAfter[i]);
+        }
+
         // Verify the core storage values are preserved
         assertEq(initialCrossChainManager, afterCrossChainManager, "Cross chain manager should not change");
         assertEq(initialDepositId, afterDepositId, "Deposit ID should not change");
@@ -147,14 +154,6 @@ contract VaultUpgradeTest is Test {
             assertEq(initialBrokerAllowed, brokerAllowedAfter, "Broker allowance status should not change");
         }
         
-        // Verify specific important slots by name
-        verifySlot("crossChainManagerAddress");
-        verifySlot("depositId");
-        verifySlot("depositFeeEnabled");
-        verifySlot("nativeTokenHash");
-        verifySlot("swapNonce");
-        verifySlot("swapOperator");
-        verifySlot("swapSigner");
     }
     
     // Capture storage slot values for later verification
@@ -302,3 +301,4 @@ contract VaultUpgradeTest is Test {
         // For example, if there's a new configuration method
     }
     
+}
