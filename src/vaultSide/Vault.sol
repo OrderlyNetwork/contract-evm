@@ -409,14 +409,12 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
         onlyCrossChainManager
         whenNotPaused
     {
-        if (data.vaultType != VaultTypes.VaultEnum.Ceffu || data.vaultType != VaultTypes.VaultEnum.ProtocolVault) {
-            revert NotImplemented();
-        }
-
         if (data.vaultType == VaultTypes.VaultEnum.ProtocolVault) {
             if (data.receiver != address(protocolVault)) {
                 revert ProtocolVaultAddressMismatch(address(protocolVault), data.receiver);
             }
+        } else if (data.vaultType != VaultTypes.VaultEnum.Ceffu) {
+            revert NotImplemented();
         }
 
         VaultTypes.VaultWithdraw memory vaultWithdrawData = VaultTypes.VaultWithdraw({

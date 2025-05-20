@@ -229,7 +229,7 @@ interface ILedgerEvent {
         uint8 transferType
     );
 
-    event PrimeWalletSet(bytes32 accountId, address primeWallet);
+    event PrimeWalletSet(bytes32 id, address primeWallet);
     // All events below are deprecated
     // Keep them for indexer backward compatibility
 

@@ -166,10 +166,10 @@ contract LedgerImplC is ILedgerImplC, OwnableUpgradeable, LedgerDataLayout {
             )
         ) revert AccountIdInvalid();
 
-        if (accountIdToPrimeWallet[withdraw.accountId] == address(0)) {
-            revert AccountNotBindToPrimeWallet();
-        }
-        if (withdraw.receiver != accountIdToPrimeWallet[withdraw.accountId]) {
+        if (
+            idToPrimeWallet[withdraw.accountId] == address(0)
+                || withdraw.receiver != idToPrimeWallet[withdraw.accountId]
+        ) {
             revert InvalidPrimeWallet();
         }
 
