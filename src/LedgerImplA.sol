@@ -37,7 +37,11 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
         if (!vaultManager.getAllowedChainToken(data.tokenHash, data.srcChainId)) {
             revert TokenNotAllowed(data.tokenHash, data.srcChainId);
         }
-        if (!Utils.validateAccountId(data.accountId, data.brokerHash, data.userAddress)) revert AccountIdInvalid();
+        if (
+            !Utils.validateExtendedAccountId(
+                vaultManager.getProtocolVaultAddress(), data.accountId, data.brokerHash, data.userAddress
+            )
+        ) revert AccountIdInvalid();
 
         // a not registerd account can still deposit, because of the consistency
         AccountTypes.Account storage account = userLedger[data.accountId];
@@ -108,7 +112,11 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
         if (!vaultManager.getAllowedChainToken(tokenHash, withdraw.chainId)) {
             revert TokenNotAllowed(tokenHash, withdraw.chainId);
         }
-        if (!Utils.validateAccountId(withdraw.accountId, brokerHash, withdraw.sender)) revert AccountIdInvalid();
+        if (
+            !Utils.validateExtendedAccountId(
+                vaultManager.getProtocolVaultAddress(), withdraw.accountId, brokerHash, withdraw.sender
+            )
+        ) revert AccountIdInvalid();
         AccountTypes.Account storage account = userLedger[withdraw.accountId];
         uint8 state = 0;
         {
@@ -514,7 +522,11 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
         if (!vaultManager.getAllowedChainToken(tokenHash, withdraw.chainId)) {
             revert TokenNotAllowed(tokenHash, withdraw.chainId);
         }
-        if (!Utils.validateAccountId(withdraw.accountId, brokerHash, withdraw.sender)) {
+        if (
+            !Utils.validateExtendedAccountId(
+                vaultManager.getProtocolVaultAddress(), withdraw.accountId, brokerHash, withdraw.sender
+            )
+        ) {
             revert AccountIdInvalid();
         }
         AccountTypes.Account storage account = userLedger[withdraw.accountId];

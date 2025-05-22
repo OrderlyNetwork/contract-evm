@@ -38,7 +38,8 @@ library VaultTypes {
 
     enum VaultEnum {
         ProtocolVault,
-        UserVault
+        UserVault,
+        Ceffu
     }
 
     struct VaultWithdraw2Contract {

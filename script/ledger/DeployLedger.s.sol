@@ -12,8 +12,8 @@ import "../../src/LedgerImplC.sol";
 contract DeployLedger is Script {
     function run() external {
         uint256 orderlyPrivateKey = vm.envUint("PK");
-        address adminAddress = vm.envAddress("LEDGER_PROXY_ADMIN");
-        address ledgerAddress = vm.envAddress("LEDGER_ADDRESS");
+        // address adminAddress = vm.envAddress("LEDGER_PROXY_ADMIN");
+        // address ledgerAddress = vm.envAddress("LEDGER_ADDRESS");
 
         // ProxyAdmin admin = ProxyAdmin(adminAddress);
         // ITransparentUpgradeableProxy ledgerProxy = ITransparentUpgradeableProxy(ledgerAddress);

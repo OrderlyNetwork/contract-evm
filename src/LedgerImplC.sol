@@ -160,7 +160,19 @@ contract LedgerImplC is ILedgerImplC, OwnableUpgradeable, LedgerDataLayout {
         if (!vaultManager.getAllowedChainToken(tokenHash, withdraw.chainId)) {
             revert TokenNotAllowed(tokenHash, withdraw.chainId);
         }
-        if (!Utils.validateAccountId(withdraw.accountId, brokerHash, withdraw.sender)) revert AccountIdInvalid();
+        if (
+            !Utils.validateExtendedAccountId(
+                vaultManager.getProtocolVaultAddress(), withdraw.accountId, brokerHash, withdraw.sender
+            )
+        ) revert AccountIdInvalid();
+
+        if (
+            idToPrimeWallet[withdraw.accountId] == address(0)
+                || withdraw.receiver != idToPrimeWallet[withdraw.accountId]
+        ) {
+            revert InvalidPrimeWallet();
+        }
+
         AccountTypes.Account storage account = userLedger[withdraw.accountId];
         uint8 state = 0;
         {

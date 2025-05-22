@@ -161,6 +161,14 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         feeManager = IFeeManager(_feeManagerAddress);
     }
 
+    /// @notice Set the address of prime wallet for a given accountId
+    /// @param id accountId or spId
+    /// @param _primeWallet address of the prime wallet
+    function setPrimeWallet(bytes32 id, address _primeWallet) external onlyOwner nonZeroAddress(_primeWallet) {
+        idToPrimeWallet[id] = _primeWallet;
+        emit PrimeWalletSet(id, _primeWallet);
+    }
+
     /// @notice Get the amount of a token frozen balance for a given account and the corresponding withdrawNonce
     /// @param accountId accountId to query
     /// @param withdrawNonce withdrawNonce to query

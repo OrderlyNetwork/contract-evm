@@ -24,6 +24,7 @@ interface IVault {
     error NotRebalanceEnableToken();
     error InvalidSwapNonce();
     error InvalidSwapSignature();
+    error CeffuAddressMismatch(address want, address got);
 
     // @deprecated
     event AccountDeposit(
@@ -70,6 +71,9 @@ interface IVault {
     event SetRebalanceEnableToken(bytes32 indexed _tokenHash, bool _allowed);
     event DelegateSwapExecuted(uint256 indexed swapNonce, bytes32 inTokenHash, uint256 inTokenAmount, address to, uint256 value);
 
+    event SetProtocolVaultAddress(address _oldProtocolVaultAddress, address _newProtocolVaultAddress);
+    event SetCeffuAddress(address _oldCeffuAddress, address _newCeffuAddress);
+
     function initialize() external;
 
     function deposit(VaultTypes.VaultDepositFE calldata data) external payable;
@@ -90,6 +94,7 @@ interface IVault {
     function setCrossChainManager(address _crossChainManagerAddress) external;
     function setDepositLimit(address _tokenAddress, uint256 _limit) external;
     function setProtocolVaultAddress(address _protocolVaultAddress) external;
+    function setCeffuAddress(address _ceFiAddress) external;
     function emergencyPause() external;
     function emergencyUnpause() external;
 
