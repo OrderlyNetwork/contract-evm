@@ -346,7 +346,6 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     }
 
     function _ethWithdraw(address receiver, uint128 amount) internal {
-        require(address(this).balance >= amount, "Vault: insufficient ETH balance");
         payable(receiver).sendValue(amount);
     }
 
@@ -620,13 +619,13 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
 
         // Verify that the token is allowed
         bytes32 inTokenHash = data.inTokenHash;
-        require(allowedTokenSet.contains(inTokenHash), "Vault: Token not allowed");
+        if (!allowedTokenSet.contains(inTokenHash)) revert TokenNotAllowed();
 
         // Verify that the owner has enough tokens
         if (inTokenHash != nativeTokenHash) {
             // ERC20 token case
             address tokenAddress = allowedToken[inTokenHash];
-            require(address(tokenAddress) != address(0), "Vault: Token does not exist");
+            if (tokenAddress == address(0)) revert InvalidTokenAddress();
         }
 
         // Verify Signature

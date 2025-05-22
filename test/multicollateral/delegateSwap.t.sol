@@ -244,7 +244,7 @@ contract DelegateSwapTest is Test {
         
         // Should fail due to invalid nonce
         vm.prank(swapOperator);
-        vm.expectRevert("Vault: Invalid nonce");
+        vm.expectRevert(IVault.InvalidSwapNonce.selector);
         vault.delegateSwap(swapData);
     }
     
@@ -302,7 +302,7 @@ contract DelegateSwapTest is Test {
         swapData.v = v;
 
         vm.prank(swapOperator);
-        vm.expectRevert("Vault: Invalid signature");
+        vm.expectRevert(IVault.InvalidSwapSignature.selector);
         vault.delegateSwap(swapData);
     }
     
