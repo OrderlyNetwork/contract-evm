@@ -8,6 +8,7 @@ interface IVault {
     error OnlyCrossChainManagerCanCall();
     error AccountIdInvalid();
     error TokenNotAllowed();
+    error InvalidTokenAddress();
     error BrokerNotAllowed();
     error BalanceNotEnough(uint256 balance, uint128 amount);
     error AddressZero();
@@ -17,8 +18,12 @@ interface IVault {
     error ZeroCodeLength();
     error NotZeroCodeLength();
     error DepositExceedLimit();
+    error NativeTokenDepositAmountMismatch();
     error NotImplemented();
     error ProtocolVaultAddressMismatch(address want, address got);
+    error NotRebalanceEnableToken();
+    error InvalidSwapNonce();
+    error InvalidSwapSignature();
 
     // @deprecated
     event AccountDeposit(
@@ -62,6 +67,8 @@ interface IVault {
     event ChangeCrossChainManager(address oldAddress, address newAddress);
     event ChangeDepositLimit(address indexed _tokenAddress, uint256 _limit);
     event WithdrawFailed(address indexed token, address indexed receiver, uint256 amount);
+    event SetRebalanceEnableToken(bytes32 indexed _tokenHash, bool _allowed);
+    event DelegateSwapExecuted(uint256 indexed swapNonce, bytes32 inTokenHash, uint256 inTokenAmount, address to, uint256 value);
 
     function initialize() external;
 
@@ -89,9 +96,18 @@ interface IVault {
     // whitelist
     function setAllowedToken(bytes32 _tokenHash, bool _allowed) external;
     function setAllowedBroker(bytes32 _brokerHash, bool _allowed) external;
+    function setNativeTokenHash(bytes32 _nativeTokenHash) external;
+    function setNativeTokenDepositLimit(uint256 _nativeTokenDepositLimit) external;
+    function setRebalanceEnableToken(bytes32 _tokenHash, bool _allowed) external;
     function changeTokenAddressAndAllow(bytes32 _tokenHash, address _tokenAddress) external;
     function getAllowedToken(bytes32 _tokenHash) external view returns (address);
     function getAllowedBroker(bytes32 _brokerHash) external view returns (bool);
     function getAllAllowedToken() external view returns (bytes32[] memory);
     function getAllAllowedBroker() external view returns (bytes32[] memory);
+    function getAllRebalanceEnableToken() external view returns (bytes32[] memory);
+
+    // Delegate swap function
+    function setSwapOperator(address _swapOperator) external;
+    function setSwapSigner(address _swapSigner) external;
+    function delegateSwap(VaultTypes.DelegateSwap calldata data) external;
 }

@@ -119,7 +119,7 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
             if (account.lastWithdrawNonce >= withdraw.withdrawNonce) {
                 // require withdraw nonce inc
                 state = 101;
-            } else if (account.balances[tokenHash] < withdraw.tokenAmount) {
+            } else if (account.balances[tokenHash] < withdraw.tokenAmount.toInt128()) {
                 // require balance enough
                 revert WithdrawBalanceNotEnough(account.balances[tokenHash], withdraw.tokenAmount);
             } else if (vaultManager.getBalance(tokenHash, withdraw.chainId) < withdraw.tokenAmount - withdraw.fee) {
@@ -237,10 +237,10 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
         AccountTypes.Account storage account = userLedger[settlement.accountId];
         if (settlement.insuranceTransferAmount != 0) {
             if (settlement.accountId == settlement.insuranceAccountId) revert InsuranceTransferToSelf();
-            uint128 balance = account.balances[settlement.settledAssetHash];
+            int128 balance = account.balances[settlement.settledAssetHash];
             // transfer insurance fund
             if (
-                balance.toInt128() + settlement.insuranceTransferAmount.toInt128() + settlement.settledAmount < 0
+                balance + settlement.insuranceTransferAmount.toInt128() + settlement.settledAmount < 0
                     || settlement.insuranceTransferAmount > settlement.settledAmount.abs()
             ) {
                 // overflow
@@ -263,12 +263,11 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
             position.lastExecutedPrice = ledgerExecution.markPrice;
             position.lastSettledPrice = ledgerExecution.markPrice;
             // check balance + settledAmount >= 0, where balance should cast to int128 first
-            uint128 balance = account.balances[settlement.settledAssetHash];
-            if (balance.toInt128() + ledgerExecution.settledAmount < 0) {
-                revert BalanceNotEnough(balance, ledgerExecution.settledAmount);
-            }
-            account.balances[settlement.settledAssetHash] =
-                (balance.toInt128() + ledgerExecution.settledAmount).toUint128();
+            int128 balance = account.balances[settlement.settledAssetHash];
+            // if (balance + ledgerExecution.settledAmount < 0) {
+            //     revert BalanceNotEnough(balance, ledgerExecution.settledAmount);
+            // }
+            account.balances[settlement.settledAssetHash] = balance + ledgerExecution.settledAmount;
             if (position.isFullSettled()) {
                 delete account.perpPositions[ledgerExecution.symbolHash];
             }
@@ -528,7 +527,7 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
             if (account.lastWithdrawNonce >= withdraw.withdrawNonce) {
                 // require withdraw nonce inc
                 state = 101;
-            } else if (account.balances[tokenHash] < withdraw.tokenAmount) {
+            } else if (account.balances[tokenHash] < withdraw.tokenAmount.toInt128()) {
                 // require balance enough
                 state = 1;
             } else if (vaultManager.getBalance(tokenHash, withdraw.chainId) < withdraw.tokenAmount - withdraw.fee) {

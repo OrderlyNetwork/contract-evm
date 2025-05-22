@@ -2,10 +2,13 @@
 pragma solidity ^0.8.18;
 
 import "../types/AccountTypes.sol";
+import "../typesHelper/SafeCastHelper.sol";
 
 /// @title AccountTypeHelper library
 /// @author Orderly_Rubick
 library AccountTypeHelper {
+    using SafeCastHelper for uint128;
+
     error FrozenBalanceInconsistent(); // should never happen
 
     // ====================
@@ -13,7 +16,7 @@ library AccountTypeHelper {
     // ====================
 
     /// @notice get balance
-    function getBalance(AccountTypes.Account storage account, bytes32 tokenHash) internal view returns (uint128) {
+    function getBalance(AccountTypes.Account storage account, bytes32 tokenHash) internal view returns (int128) {
         return account.balances[tokenHash];
     }
 
@@ -33,12 +36,12 @@ library AccountTypeHelper {
 
     /// @notice add balance
     function addBalance(AccountTypes.Account storage account, bytes32 tokenHash, uint128 amount) internal {
-        account.balances[tokenHash] += amount;
+        account.balances[tokenHash] += amount.toInt128();
     }
 
     /// @notice sub balance
     function subBalance(AccountTypes.Account storage account, bytes32 tokenHash, uint128 amount) internal {
-        account.balances[tokenHash] -= amount;
+        account.balances[tokenHash] -= amount.toInt128();
     }
 
     /// @notice frozen balance with a given withdrawNonce & amount
@@ -48,7 +51,7 @@ library AccountTypeHelper {
         bytes32 tokenHash,
         uint128 amount
     ) internal {
-        account.balances[tokenHash] -= amount;
+        account.balances[tokenHash] -= amount.toInt128();
         account.totalFrozenBalances[tokenHash] += amount;
         account.frozenBalances[withdrawNonce][tokenHash] = amount;
         account.lastWithdrawNonce = withdrawNonce;
@@ -61,7 +64,7 @@ library AccountTypeHelper {
         bytes32 tokenHash,
         uint128 amount
     ) internal {
-        account.balances[tokenHash] += amount;
+        account.balances[tokenHash] += amount.toInt128();
         account.totalFrozenBalances[tokenHash] -= amount;
         account.frozenBalances[withdrawNonce][tokenHash] -= amount;
         if (account.frozenBalances[withdrawNonce][tokenHash] != 0) revert FrozenBalanceInconsistent();

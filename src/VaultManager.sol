@@ -40,6 +40,14 @@ contract VaultManager is IVaultManager, LedgerComponent {
     // for record latest rebalance status
     mapping(uint64 => RebalanceTypes.RebalanceStatus) private rebalanceStatus;
 
+    // address of symbol manager
+    address public symbolManager;
+
+    modifier onlySymbolManagerOrOwner() {
+        if (msg.sender != symbolManager && msg.sender != owner()) revert OnlySymbolManagerOrOwner();
+        _;
+    }
+
     constructor() {
         _disableInitializers();
     }
@@ -126,8 +134,14 @@ contract VaultManager is IVaultManager, LedgerComponent {
         return allowedTokenSet.contains(_tokenHash) && allowedChainToken[_tokenHash][_chainId];
     }
 
+    /// @notice Set the symbol manager
+    function setSymbolManager(address _symbolManager) public override onlyOwner {
+        symbolManager = _symbolManager;
+        emit SetSymbolManager(_symbolManager);
+    }
+
     /// @notice Set the status for a symbol given the symbolHash
-    function setAllowedSymbol(bytes32 _symbolHash, bool _allowed) public override onlyOwner {
+    function setAllowedSymbol(bytes32 _symbolHash, bool _allowed) public override onlySymbolManagerOrOwner {
         bool succ = false;
         if (_allowed) {
             succ = allowedSymbolSet.add(_symbolHash);
