@@ -450,9 +450,10 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
                 if (data.vaultType == VaultTypes.VaultEnum.ProtocolVault) {
                     tokenAddress.safeApprove(data.receiver, amount);
                     protocolVault.depositFromStrategy(data.clientId, address(tokenAddress), amount);
-                } else if (data.vaultType == VaultTypes.VaultEnum.StrategyProvider) {
+                } else if (data.vaultType == VaultTypes.VaultEnum.Ceffu) {
                     tokenAddress.safeTransfer(data.receiver, amount);
                 }
+            }
         }
         // emit withdraw event
         emit AccountWithdraw(
