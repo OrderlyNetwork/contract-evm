@@ -60,7 +60,7 @@ library SwapSignature {
         bytes32 structHash = keccak256(
             abi.encode(
                 DELEGATE_SWAP_TYPEHASH,
-                data.swapNonce,
+                data.tradeId,
                 data.chainId,
                 data.inTokenHash,
                 data.inTokenAmount,

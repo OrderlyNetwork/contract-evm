@@ -20,7 +20,7 @@ interface IVault {
     error DepositExceedLimit();
     error NativeTokenDepositAmountMismatch();
     error NotRebalanceEnableToken();
-    error InvalidSwapNonce();
+    error SwapAlreadySubmitted();
     error InvalidSwapSignature();
     error CeffuAddressMismatch(address want, address got);
 
@@ -67,7 +67,7 @@ interface IVault {
     event ChangeDepositLimit(address indexed _tokenAddress, uint256 _limit);
     event WithdrawFailed(address indexed token, address indexed receiver, uint256 amount);
     event SetRebalanceEnableToken(bytes32 indexed _tokenHash, bool _allowed);
-    event DelegateSwapExecuted(uint256 indexed swapNonce, bytes32 inTokenHash, uint256 inTokenAmount, address to, uint256 value);
+    event DelegateSwapExecuted(bytes32 indexed tradeId, bytes32 inTokenHash, uint256 inTokenAmount, address to, uint256 value);
 
     event SetProtocolVaultAddress(address _oldProtocolVaultAddress, address _newProtocolVaultAddress);
     event SetCeffuAddress(address _oldCeffuAddress, address _newCeffuAddress);

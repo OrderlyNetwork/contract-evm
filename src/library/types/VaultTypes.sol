@@ -56,7 +56,7 @@ library VaultTypes {
     }
 
     struct DelegateSwap {
-        uint256 swapNonce;
+        bytes32 tradeId;
         uint256 chainId;
         bytes32 inTokenHash;
         uint256 inTokenAmount;

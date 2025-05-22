@@ -67,8 +67,8 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
 
     /*=============== Delegate  Swap ===============*/
 
-    // Swap nonce
-    uint256 public swapNonce;
+    // Submitted Swap
+    EnumerableSet.Bytes32Set private _submittedSwapSet;
     // Swap Operator Address
     address public swapOperator;
     // Swap Signer Address
@@ -609,9 +609,9 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
         swapSigner = _swapSigner;
     }
 
-    /// @notice Increment the nonce for the Swap
-    function _incrementSwapNonce() internal {
-        swapNonce++;
+    /// @notice Get all submitted swaps
+    function getSubmittedSwaps() public view returns (bytes32[] memory) {
+        return _submittedSwapSet.values();
     }
 
     function _verifySwapSignature(
@@ -625,7 +625,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
         VaultTypes.DelegateSwap calldata data
     ) internal view {
         // require nonce == swapNonce
-        if (data.swapNonce != swapNonce) revert InvalidSwapNonce();
+        if (_submittedSwapSet.contains(data.tradeId)) revert SwapAlreadySubmitted();
 
         // Verify that the token is allowed
         bytes32 inTokenHash = data.inTokenHash;
@@ -648,7 +648,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
         VaultTypes.DelegateSwap calldata data
     ) external override whenNotPaused onlySwapOperator nonReentrant {
         _validateSwap(data);
-        _incrementSwapNonce();
+        _submittedSwapSet.add(data.tradeId);
         
         // Execute the transaction
         // Verify that the owner has enough tokens
@@ -680,7 +680,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
         }
         
         emit DelegateSwapExecuted(
-            data.swapNonce,
+            data.tradeId,
             data.inTokenHash,
             data.inTokenAmount,
             data.to,
