@@ -21,6 +21,8 @@ interface IVault {
     error NotImplemented();
     error ProtocolVaultAddressMismatch(address want, address got);
     error NotRebalanceEnableToken();
+    error InvalidSwapNonce();
+    error InvalidSwapSignature();
 
     // @deprecated
     event AccountDeposit(

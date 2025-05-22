@@ -55,7 +55,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     IProtocolVault public protocolVault;
 
     // EnumerableSet for rebalance enable tokens
-    EnumerableSet.Bytes32Set private rebalanceEnableTokenSet;
+    EnumerableSet.Bytes32Set private _rebalanceEnableTokenSet;
 
     /*=============== Native Token ===============*/
 
@@ -155,16 +155,16 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     function setRebalanceEnableToken(bytes32 _tokenHash, bool _allowed) public override onlyOwner {
         bool succ = false;
         if (_allowed) {
-            succ = rebalanceEnableTokenSet.add(_tokenHash);
+            succ = _rebalanceEnableTokenSet.add(_tokenHash);
         } else {
-            succ = rebalanceEnableTokenSet.remove(_tokenHash);
+            succ = _rebalanceEnableTokenSet.remove(_tokenHash);
         }
         if (!succ) revert EnumerableSetError();
         emit SetRebalanceEnableToken(_tokenHash, _allowed);
     }
 
     function getAllRebalanceEnableToken() public view returns (bytes32[] memory) {
-        return rebalanceEnableTokenSet.values();
+        return _rebalanceEnableTokenSet.values();
     }
 
     /// @notice Add the hash value for an allowed brokerId
@@ -359,12 +359,13 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
 
         require(data.tokenAmount > data.fee, "withdraw: fee is greater than token amount");
 
+        uint128 amount = data.tokenAmount - data.fee;
+
         if (data.tokenHash == nativeTokenHash) {
-            _ethWithdraw(data.receiver, data.tokenAmount - data.fee);
+            _ethWithdraw(data.receiver, amount);
         } else {
             // avoid reentrancy, so `transfer` token at the end
             IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
-            uint128 amount = data.tokenAmount - data.fee;
             require(tokenAddress.balanceOf(address(this)) >= amount, "withdraw: insufficient balance");
             // avoid revert if transfer to zero address or blacklist.
             /// @notice This check condition should always be true because cc promise that
@@ -419,12 +420,13 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
 
         require(data.tokenAmount > data.fee, "withdraw2Contract: fee is greater than token amount");
 
+        uint128 amount = data.tokenAmount - data.fee;
+
         if (data.tokenHash == nativeTokenHash) {
-            _ethWithdraw(data.receiver, data.tokenAmount - data.fee);
+            _ethWithdraw(data.receiver, amount);
         } else {
             // avoid reentrancy, so `transfer` token at the end
             IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
-            uint128 amount = data.tokenAmount - data.fee;
             require(tokenAddress.balanceOf(address(this)) >= amount, "Vault: insufficient balance");
             // avoid revert if transfer to zero address or blacklist.
             /// @notice This check condition should always be true because cc promise that
@@ -515,7 +517,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
         /// Check if the token is allowed to be burned
         address burnToken = allowedToken[data.tokenHash];
         if (burnToken == address(0)) revert AddressZero();
-        if (!rebalanceEnableTokenSet.contains(data.tokenHash)) revert NotRebalanceEnableToken();
+        if (!_rebalanceEnableTokenSet.contains(data.tokenHash)) revert NotRebalanceEnableToken();
 
         /// Approve the token to be burned
         IERC20(burnToken).approve(tokenMessengerContract, data.amount);
@@ -607,14 +609,14 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
         VaultTypes.DelegateSwap calldata data
     ) internal view {
         // Verify Signature
-        require(SwapSignature.validateSwapSignature(swapSigner, data), "Vault: Invalid signature");
+        if (!SwapSignature.validateSwapSignature(swapSigner, data)) revert InvalidSwapSignature();
     }
 
     function _validateSwap(
         VaultTypes.DelegateSwap calldata data
     ) internal view {
         // require nonce == swapNonce
-        require(data.swapNonce == swapNonce, "Vault: Invalid nonce");
+        if (data.swapNonce != swapNonce) revert InvalidSwapNonce();
 
         // Verify that the token is allowed
         bytes32 inTokenHash = data.inTokenHash;
@@ -625,12 +627,6 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
             // ERC20 token case
             address tokenAddress = allowedToken[inTokenHash];
             require(address(tokenAddress) != address(0), "Vault: Token does not exist");
-            IERC20 token = IERC20(tokenAddress);
-            require(token.balanceOf(address(this)) >= data.inTokenAmount, "Vault: Insufficient balance");
-
-        } else {
-            // Native ETH case - use the vault's existing ETH balance
-            require(address(this).balance >= data.inTokenAmount, "Vault: Insufficient ETH balance");
         }
 
         // Verify Signature

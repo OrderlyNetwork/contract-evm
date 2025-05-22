@@ -15,8 +15,8 @@ contract DeployLedger is Script {
         address adminAddress = vm.envAddress("LEDGER_PROXY_ADMIN");
         address ledgerAddress = vm.envAddress("LEDGER_ADDRESS");
 
-        ProxyAdmin admin = ProxyAdmin(adminAddress);
-        ITransparentUpgradeableProxy ledgerProxy = ITransparentUpgradeableProxy(ledgerAddress);
+        // ProxyAdmin admin = ProxyAdmin(adminAddress);
+        // ITransparentUpgradeableProxy ledgerProxy = ITransparentUpgradeableProxy(ledgerAddress);
 
         vm.startBroadcast(orderlyPrivateKey);
 

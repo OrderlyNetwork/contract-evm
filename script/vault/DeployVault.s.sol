@@ -13,7 +13,7 @@ contract UpgradeVault is Script {
         address adminAddress = vm.envAddress("VAULT_PROXY_ADMIN");
         address vaultAddress = vm.envAddress("VAULT_ADDRESS");
 
-        ProxyAdmin admin = ProxyAdmin(adminAddress);
+        // ProxyAdmin admin = ProxyAdmin(adminAddress);
         ITransparentUpgradeableProxy vaultProxy = ITransparentUpgradeableProxy(vaultAddress);
 
         vm.startBroadcast(orderlyPrivateKey);
