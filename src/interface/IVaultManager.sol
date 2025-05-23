@@ -49,9 +49,6 @@ interface IVaultManager is IError, ILedgerComponent {
     function setAllowedBroker(bytes32 _brokerHash, bool _allowed) external;
     function getAllowedBroker(bytes32 _brokerHash) external view returns (bool);
 
-    // allow symbol manager
-    function setSymbolManager(address _symbolManager) external;
-
     // allow chain+token. in some chain, some token is not allowed for safety
     function setAllowedChainToken(bytes32 _tokenHash, uint256 _chainId, bool _allowed) external;
     function getAllowedChainToken(bytes32 _tokenHash, uint256 _chainId) external view returns (bool);
