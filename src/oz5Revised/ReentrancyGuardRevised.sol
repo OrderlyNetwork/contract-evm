@@ -6,6 +6,7 @@ import {Initializable} from "openzeppelin-contracts-upgradeable/contracts/proxy/
 
 /**
  * @dev Contract module that helps prevent reentrant calls to a function.
+ * @dev This is a revised version of the ReentrancyGuardUpgradeable contract only for backward compatibility
  *
  * Inheriting from `ReentrancyGuard` will make the {nonReentrant} modifier
  * available, which can be applied to functions to make sure there are no nested
@@ -23,7 +24,7 @@ import {Initializable} from "openzeppelin-contracts-upgradeable/contracts/proxy/
  * to protect against it, check out our blog post
  * https://blog.openzeppelin.com/reentrancy-after-istanbul/[Reentrancy After Istanbul].
  */
-abstract contract ReentrancyGuardUpgradeable is Initializable {
+abstract contract ReentrancyGuardRevised is Initializable {
     // Booleans are more expensive than uint256 or any type that takes up a full
     // word because each write operation emits an extra SLOAD to first read the
     // slot's contents, replace the bits taken up by the boolean, and then write

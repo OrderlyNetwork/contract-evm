@@ -4,12 +4,13 @@ pragma solidity ^0.8.18;
 import "./interface/IVaultManager.sol";
 import "./LedgerComponent.sol";
 import "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
+import "./oz5Revised/AccessControlRevised.sol";
 
 /// @title Ledger call this manager for update vault data
 /// @author Orderly_Rubick
 /// @notice VaultManager is responsible for saving vaults' balance, to ensure the cross-chain tx should success
 /// @notice VaultManager also saves the allowed brokerIds, tokenHash, symbolHash
-contract VaultManager is IVaultManager, LedgerComponent {
+contract VaultManager is IVaultManager, LedgerComponent, AccessControlRevised {
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
     // A mapping to record how much balance each token has on each chain: tokenHash => chainId => balance
@@ -42,17 +43,23 @@ contract VaultManager is IVaultManager, LedgerComponent {
     // protocal vault address
     address private protocalVaultAddress;
 
+    /* ================ Role ================ */
+
+    bytes32 public constant SYMBOL_MANAGER_ROLE = keccak256("VAULT_MANAGER_SYMBOL_MANAGER_ROLE");
+
+    bytes32 public constant BROKER_MANAGER_ROLE = keccak256("VAULT_MANAGER_BROKER_MANAGER_ROLE");
+
+    /* ================ Modifier ================ */
+
     /// @notice check non-zero address
     modifier nonZeroAddress(address _address) {
         if (_address == address(0)) revert AddressZero();
         _;
     }
 
-    // address of symbol manager
-    address public symbolManager;
-
-    modifier onlySymbolManagerOrOwner() {
-        if (msg.sender != symbolManager && msg.sender != owner()) revert OnlySymbolManagerOrOwner();
+    /// @notice check if the caller is the owner or has the role
+    modifier onlyOwnerOrRole(bytes32 role) {
+        if (!hasRole(role, msg.sender) && msg.sender != owner()) revert AccessControlUnauthorizedAccount(msg.sender, role);
         _;
     }
 
@@ -115,7 +122,7 @@ contract VaultManager is IVaultManager, LedgerComponent {
     }
 
     /// @notice Set the status for a broker given the brokerHash
-    function setAllowedBroker(bytes32 _brokerHash, bool _allowed) public override onlyOwner {
+    function setAllowedBroker(bytes32 _brokerHash, bool _allowed) public override onlyOwnerOrRole(BROKER_MANAGER_ROLE) {
         bool succ = false;
         if (_allowed) {
             succ = allowedBrokerSet.add(_brokerHash);
@@ -142,14 +149,8 @@ contract VaultManager is IVaultManager, LedgerComponent {
         return allowedTokenSet.contains(_tokenHash) && allowedChainToken[_tokenHash][_chainId];
     }
 
-    /// @notice Set the symbol manager
-    function setSymbolManager(address _symbolManager) public override onlyOwner {
-        symbolManager = _symbolManager;
-        emit SetSymbolManager(_symbolManager);
-    }
-
     /// @notice Set the status for a symbol given the symbolHash
-    function setAllowedSymbol(bytes32 _symbolHash, bool _allowed) public override onlySymbolManagerOrOwner {
+    function setAllowedSymbol(bytes32 _symbolHash, bool _allowed) public override onlyOwnerOrRole(SYMBOL_MANAGER_ROLE) {
         bool succ = false;
         if (_allowed) {
             succ = allowedSymbolSet.add(_symbolHash);
@@ -343,5 +344,17 @@ contract VaultManager is IVaultManager, LedgerComponent {
 
     function getProtocolVaultAddress() public view override returns (address) {
         return protocalVaultAddress;
+    }
+
+    /* ================ Override AccessControlRevised To Simplify Access Control ================ */
+
+    /// @notice Override grantRole
+    function grantRole(bytes32 role, address account) public override onlyOwner {
+        _grantRole(role, account);
+    }
+
+    /// @notice Override revokeRole
+    function revokeRole(bytes32 role, address account) public override onlyOwner {
+        _revokeRole(role, account);
     }
 }
