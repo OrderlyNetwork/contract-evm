@@ -16,6 +16,7 @@ import "./library/typesHelper/SafeCastHelper.sol";
 import "./interface/ILedgerImplA.sol";
 import "./interface/ILedgerImplB.sol";
 import "./interface/ILedgerImplC.sol";
+import "./interface/ILedgerImplD.sol";
 
 /// @title Ledger contract
 /// @author Orderly_Rubick
@@ -33,6 +34,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         address ledgerImplA;
         address ledgerImplB;
         address ledgerImplC;
+        address ledgerImplD;
     }
 
     // keccak256(abi.encode(uint256(keccak256("orderly.Ledger")) - 1)) & ~bytes32(uint256(0xff))
@@ -92,6 +94,12 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
     function setLedgerImplC(address _ledgerImplC) external override onlyOwner nonZeroAddress(_ledgerImplC) {
         emit ChangeLedgerImplC(_getLedgerStorage().ledgerImplC, _ledgerImplC);
         _getLedgerStorage().ledgerImplC = _ledgerImplC;
+    }
+
+    /// @notice Set the address of ledgerImplD contract
+    function setLedgerImplD(address _ledgerImplD) external onlyOwner nonZeroAddress(_ledgerImplD) {
+        emit ChangeLedgerImplD(_getLedgerStorage().ledgerImplD, _ledgerImplD);
+        _getLedgerStorage().ledgerImplD = _ledgerImplD;
     }
 
     /// @notice Set the address of operatorManager contract
@@ -476,8 +484,8 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         onlyOperatorManager
     {
         _delegatecall(
-            abi.encodeWithSelector(ILedgerImplC.executeWithdraw2Contract.selector, data, eventId),
-            _getLedgerStorage().ledgerImplC
+            abi.encodeWithSelector(ILedgerImplD.executeWithdraw2Contract.selector, data, eventId),
+            _getLedgerStorage().ledgerImplD
         );
     }
 

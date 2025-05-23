@@ -170,7 +170,8 @@ interface ILedgerEvent {
     event ChangeLedgerImplA(address oldAddress, address newAddress);
     event ChangeLedgerImplB(address oldAddress, address newAddress);
     event ChangeLedgerImplC(address oldAddress, address newAddress);
-
+    event ChangeLedgerImplD(address oldAddress, address newAddress);
+    
     // for Solana
     event AccountRegister(bytes32 indexed accountId, bytes32 indexed brokerId, bytes32 indexed pubkey);
     event AccountDepositSol(

@@ -19,8 +19,6 @@ interface IVault {
     error NotZeroCodeLength();
     error DepositExceedLimit();
     error NativeTokenDepositAmountMismatch();
-    error NotImplemented();
-    error ProtocolVaultAddressMismatch(address want, address got);
     error NotRebalanceEnableToken();
     error InvalidSwapNonce();
     error InvalidSwapSignature();
