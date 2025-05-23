@@ -154,23 +154,29 @@ contract LedgerImplC is ILedgerImplC, OwnableUpgradeable, LedgerDataLayout {
         external
         override
     {
+        
         bytes32 brokerHash = withdraw.brokerHash;
         bytes32 tokenHash = withdraw.tokenHash;
         if (!vaultManager.getAllowedBroker(brokerHash)) revert BrokerNotAllowed();
         if (!vaultManager.getAllowedChainToken(tokenHash, withdraw.chainId)) {
             revert TokenNotAllowed(tokenHash, withdraw.chainId);
         }
-        if (
-            !Utils.validateExtendedAccountId(
-                vaultManager.getProtocolVaultAddress(), withdraw.accountId, brokerHash, withdraw.sender
-            )
-        ) revert AccountIdInvalid();
+        address protocolVault = vaultManager.getProtocolVaultAddress();
+        if (!Utils.validateExtendedAccountId(protocolVault, withdraw.accountId, brokerHash, withdraw.sender)) {
+            revert AccountIdInvalid();
+        }
+        if (withdraw.receiver == address(0)) revert WithdrawToAddressZero();
 
-        if (
-            idToPrimeWallet[withdraw.accountId] == address(0)
-                || withdraw.receiver != idToPrimeWallet[withdraw.accountId]
-        ) {
-            revert InvalidPrimeWallet();
+        if (withdraw.vaultType == EventTypes.VaultEnum.Ceffu) {
+            if (withdraw.receiver != idToPrimeWallet[withdraw.accountId]) {
+                revert InvalidPrimeWallet();
+            }
+        } else if (withdraw.vaultType == EventTypes.VaultEnum.ProtocolVault) {
+            if (withdraw.receiver != protocolVault) {
+                revert ProtocolVaultAddressMismatch(address(protocolVault), withdraw.receiver);
+            }
+        } else {
+            revert NotImplemented();
         }
 
         AccountTypes.Account storage account = userLedger[withdraw.accountId];
