@@ -500,6 +500,17 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         );
     }
 
+    function executeSwapResultUpload(EventTypes.SwapResult calldata swapResultUpload, uint64 eventId) 
+        external
+        override
+        onlyOperatorManager
+    {
+        _delegatecall(
+            abi.encodeWithSelector(ILedgerImplD.executeSwapResultUpload.selector, swapResultUpload, eventId),
+            _getLedgerStorage().ledgerImplD
+        );
+    }
+
     // inner function for delegatecall
     function _delegatecall(bytes memory data, address impl) private {
         (bool success, bytes memory returnData) = impl.delegatecall(data);

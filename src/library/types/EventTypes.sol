@@ -15,7 +15,7 @@ library EventTypes {
     }
 
     struct EventUploadData {
-        uint8 bizType; // 1 - withdraw, 2 - settlement, 3 - adl, 4 - liquidation, 5 - fee distribution, 6 - delegate signer, 7 - delegate withdraw
+        uint8 bizType; // 1 - withdraw, 2 - settlement, 3 - adl, 4 - liquidation, 5 - fee distribution, 6 - delegate signer, 7 - delegate withdraw, 12 - balance transfer, 13 - swap result upload
         uint64 eventId;
         bytes data;
     }
@@ -173,5 +173,13 @@ library EventTypes {
         bytes32 tokenHash;
         bool isFromAccountId;
         uint8 transferType;
+    }
+
+    struct SwapResult {
+      bytes32 accountId;
+      bytes32 buyTokenHash;
+      bytes32 sellTokenHash;
+      uint256 buyQuantity;
+      uint256 sellQuantity;
     }
 }

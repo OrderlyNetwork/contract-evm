@@ -8,6 +8,10 @@ import "../../src/Ledger.sol";
 import "../../src/LedgerImplA.sol";
 import "../../src/LedgerImplB.sol";
 import "../../src/LedgerImplC.sol";
+import "../../src/LedgerImplD.sol";
+import "../../src/OperatorManager.sol";
+import "../../src/OperatorManagerImplA.sol";
+import "../../src/OperatorManagerImplB.sol";
 
 contract DeployLedger is Script {
     function run() external {
@@ -24,12 +28,20 @@ contract DeployLedger is Script {
         LedgerImplA ledgerImplA = new LedgerImplA();
         LedgerImplB ledgerImplB = new LedgerImplB();
         LedgerImplC ledgerImplC = new LedgerImplC();
+        LedgerImplD ledgerImplD = new LedgerImplD();
+
+        OperatorManager operatorManager = new OperatorManager();
+        OperatorManagerImplA operatorManagerImplA = new OperatorManagerImplA();
+        OperatorManagerImplB operatorManagerImplB = new OperatorManagerImplB();
 
         console.log("ledger: ", address(ledger));
         console.log("ledgerImplA: ", address(ledgerImplA));
         console.log("ledgerImplB: ", address(ledgerImplB));
         console.log("ledgerImplC: ", address(ledgerImplC));
-        
+        console.log("ledgerImplD: ", address(ledgerImplD));
+        console.log("operatorManager: ", address(operatorManager));
+        console.log("operatorManagerImplA: ", address(operatorManagerImplA));
+        console.log("operatorManagerImplB: ", address(operatorManagerImplB));
         // admin.upgrade(ledgerProxy, address(ledgerImpl));
         // admin.upgradeAndCall(ledgerProxy, address(ledgerImpl), abi.encodeWithSignature("initialize()"));
 
