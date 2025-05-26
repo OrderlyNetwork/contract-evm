@@ -79,7 +79,7 @@ contract DelegateSwapTest is Test {
         );
         
         VaultTypes.DelegateSwap memory swapData = VaultTypes.DelegateSwap({
-            swapNonce: 0, // Current nonce in the vault
+            tradeId: bytes32(0), // Current nonce in the vault
             chainId: block.chainid,
             inTokenHash: ETH_HASH,
             inTokenAmount: SWAP_AMOUNT,
@@ -120,7 +120,7 @@ contract DelegateSwapTest is Test {
         uint256 usdcAmount = 1000 * 10**6; // 1000 USDC
         
         VaultTypes.DelegateSwap memory swapData = VaultTypes.DelegateSwap({
-            swapNonce: 0, // Current nonce in the vault
+            tradeId: bytes32(uint256(0x01)),
             chainId: block.chainid,
             inTokenHash: USDC_HASH,
             inTokenAmount: usdcAmount,
@@ -144,10 +144,10 @@ contract DelegateSwapTest is Test {
         // Execute the swap as the operator
         vm.prank(swapOperator);
         vault.delegateSwap(swapData);
-        
-        // Router contract doesn't actually handle tokens in the mock, 
-        // but we can verify the approval happened and the nonce incremented
-        assertEq(vault.swapNonce(), 1, "Swap nonce should increment");
+
+        // Verify the swap was submitted
+        assertEq(vault.getSubmittedSwaps().length, 1, "Swap should be submitted");
+        assertEq(vault.getSubmittedSwaps()[0], swapData.tradeId, "Swap should be submitted");
         
         // Verify token balance
         assertEq(usdc.balanceOf(address(vault)), initialVaultUSDC, "Vault USDC balance should remain the same in this mock test");
@@ -164,7 +164,7 @@ contract DelegateSwapTest is Test {
         );
         
         VaultTypes.DelegateSwap memory swapData1 = VaultTypes.DelegateSwap({
-            swapNonce: 0, // First nonce
+            tradeId: bytes32(uint256(0x01)), 
             chainId: block.chainid,
             inTokenHash: ETH_HASH,
             inTokenAmount: SWAP_AMOUNT / 2,
@@ -186,13 +186,14 @@ contract DelegateSwapTest is Test {
         vault.delegateSwap(swapData1);
         
         // Verify nonce incremented
-        assertEq(vault.swapNonce(), 1, "Swap nonce should increment to 1");
+        assertEq(vault.getSubmittedSwaps().length, 1, "Swap should be submitted");
+        assertEq(vault.getSubmittedSwaps()[0], swapData1.tradeId, "Swap should be submitted");
         
         // Second swap (USDC)
         uint256 usdcAmount = 500 * 10**6; // 500 USDC
         
         VaultTypes.DelegateSwap memory swapData2 = VaultTypes.DelegateSwap({
-            swapNonce: 1, // Second nonce
+            tradeId: bytes32(uint256(0x02)),
             chainId: block.chainid,
             inTokenHash: USDC_HASH,
             inTokenAmount: usdcAmount,
@@ -214,17 +215,18 @@ contract DelegateSwapTest is Test {
         vault.delegateSwap(swapData2);
         
         // Verify nonce incremented again
-        assertEq(vault.swapNonce(), 2, "Swap nonce should increment to 2");
+        assertEq(vault.getSubmittedSwaps().length, 2, "Swap should be submitted");
+        assertEq(vault.getSubmittedSwaps()[1], swapData2.tradeId, "Swap should be submitted");
     }
     
     // Test invalid nonce
-    function test_invalidNonce() public {
+    function test_swapAlreadySubmitted() public {
         bytes memory swapCalldata = abi.encodeWithSelector(
             OdosSwapRouterMock.swapCompact.selector
         );
         
         VaultTypes.DelegateSwap memory swapData = VaultTypes.DelegateSwap({
-            swapNonce: 1, // Invalid nonce (should be 0)
+            tradeId: bytes32(uint256(0x01)),
             chainId: block.chainid,
             inTokenHash: ETH_HASH,
             inTokenAmount: SWAP_AMOUNT,
@@ -244,7 +246,9 @@ contract DelegateSwapTest is Test {
         
         // Should fail due to invalid nonce
         vm.prank(swapOperator);
-        vm.expectRevert(IVault.InvalidSwapNonce.selector);
+        vault.delegateSwap(swapData);
+        vm.prank(swapOperator);
+        vm.expectRevert(IVault.SwapAlreadySubmitted.selector);
         vault.delegateSwap(swapData);
     }
     
@@ -255,7 +259,7 @@ contract DelegateSwapTest is Test {
         );
         
         VaultTypes.DelegateSwap memory swapData = VaultTypes.DelegateSwap({
-            swapNonce: 0,
+            tradeId: bytes32(uint256(0x01)),
             chainId: block.chainid,
             inTokenHash: ETH_HASH,
             inTokenAmount: SWAP_AMOUNT,
@@ -280,7 +284,7 @@ contract DelegateSwapTest is Test {
         );
 
         VaultTypes.DelegateSwap memory swapData = VaultTypes.DelegateSwap({
-            swapNonce: 0,
+            tradeId: bytes32(uint256(0x01)),
             chainId: block.chainid,
             inTokenHash: ETH_HASH,
             inTokenAmount: SWAP_AMOUNT,
@@ -327,7 +331,7 @@ contract DelegateSwapTest is Test {
         bytes32 structHash = keccak256(
             abi.encode(
                 DELEGATE_SWAP_TYPEHASH,
-                swap.swapNonce,
+                swap.tradeId,
                 swap.chainId,
                 swap.inTokenHash,
                 swap.inTokenAmount,
@@ -352,7 +356,7 @@ contract DelegateSwapTest is Test {
         );
         
         VaultTypes.DelegateSwap memory swapData = VaultTypes.DelegateSwap({
-            swapNonce: 0,
+            tradeId: bytes32(uint256(0x01)),
             chainId: block.chainid,
             inTokenHash: ETH_HASH,
             inTokenAmount: SWAP_AMOUNT,

@@ -156,7 +156,7 @@ contract SwapSignatureTest is Test {
     // Helper function to create test swap data
     function createTestSwapData() internal view returns (VaultTypes.DelegateSwap memory) {
         return VaultTypes.DelegateSwap({
-            swapNonce: 1,
+            tradeId: bytes32(uint256(0x01)),
             chainId: block.chainid,
             inTokenHash: USDC_HASH,
             inTokenAmount: 1000000, // 1 USDC
@@ -177,7 +177,7 @@ contract SwapSignatureTest is Test {
     {
         // Deep copy the swap data
         signedSwap = VaultTypes.DelegateSwap({
-            swapNonce: swap.swapNonce,
+            tradeId: swap.tradeId,
             chainId: swap.chainId,
             inTokenHash: swap.inTokenHash,
             inTokenAmount: swap.inTokenAmount,
@@ -200,7 +200,7 @@ contract SwapSignatureTest is Test {
         bytes32 structHash = keccak256(
             abi.encode(
                 DELEGATE_SWAP_TYPEHASH,
-                signedSwap.swapNonce,
+                signedSwap.tradeId,
                 signedSwap.chainId,
                 signedSwap.inTokenHash,
                 signedSwap.inTokenAmount,
