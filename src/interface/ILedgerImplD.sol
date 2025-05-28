@@ -11,4 +11,5 @@ import "./ILedgerEvent.sol";
 
 interface ILedgerImplD is IError, ILedgerEvent {
     function executeWithdraw2Contract(EventTypes.Withdraw2Contract calldata data, uint64 eventId) external;
+    function executeSwapResultUpload(EventTypes.SwapResult calldata swapResultUpload, uint64 eventId) external;
 } 

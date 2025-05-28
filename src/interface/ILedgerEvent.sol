@@ -231,6 +231,16 @@ interface ILedgerEvent {
     );
 
     event PrimeWalletSet(bytes32 id, address primeWallet);
+
+    event SwapResultUploaded(
+        uint64 indexed eventId,
+        bytes32 indexed accountId,
+        bytes32 buyTokenHash,
+        bytes32 sellTokenHash,
+        uint256 buyQuantity,
+        uint256 sellQuantity
+    );
+
     // All events below are deprecated
     // Keep them for indexer backward compatibility
 

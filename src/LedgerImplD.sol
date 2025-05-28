@@ -107,6 +107,22 @@ contract LedgerImplD is ILedgerImplD, OwnableUpgradeable, LedgerDataLayout {
         ILedgerCrossChainManager(crossChainManagerAddress).withdraw2Contract(withdraw);
     }
 
+    function executeSwapResultUpload(EventTypes.SwapResult calldata swapResultUpload, uint64 eventId) external override {
+        AccountTypes.Account storage userAccount = userLedger[swapResultUpload.accountId];
+        userAccount.addBalance(swapResultUpload.buyTokenHash, swapResultUpload.buyQuantity.toUint128());
+        userAccount.subBalance(swapResultUpload.sellTokenHash, swapResultUpload.sellQuantity.toUint128());
+        userAccount.lastEngineEventId = eventId;
+
+        emit SwapResultUploaded(
+            _newGlobalEventId(),
+            swapResultUpload.accountId,
+            swapResultUpload.buyTokenHash,
+            swapResultUpload.sellTokenHash,
+            swapResultUpload.buyQuantity,
+            swapResultUpload.sellQuantity
+        );
+    }
+
     function _newGlobalEventId() internal returns (uint64) {
         return ++globalEventId;
     }

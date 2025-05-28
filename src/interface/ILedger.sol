@@ -40,6 +40,7 @@ interface ILedger is IError, ILedgerEvent {
     function rebalanceMintFinish(RebalanceTypes.RebalanceMintCCFinishData calldata data) external;
     function executeWithdraw2Contract(EventTypes.Withdraw2Contract calldata data, uint64 eventId) external;
     function executeBalanceTransfer(EventTypes.BalanceTransfer calldata balanceTransfer, uint64 eventId) external;
+    function executeSwapResultUpload(EventTypes.SwapResult calldata swapResultUpload, uint64 eventId) external;
 
     // view call
     function getFrozenWithdrawNonce(bytes32 accountId, uint64 withdrawNonce, bytes32 tokenHash)

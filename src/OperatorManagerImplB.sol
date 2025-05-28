@@ -78,6 +78,9 @@ contract OperatorManagerImplB is IOperatorManagerImplB, OwnableUpgradeable, Oper
         } else if (bizType == 12) {
             // balance transfer
             ledger.executeBalanceTransfer(abi.decode(data.data, (EventTypes.BalanceTransfer)), data.eventId);
+        } else if (bizType == 13) {
+            // swap result upload
+            ledger.executeSwapResultUpload(abi.decode(data.data, (EventTypes.SwapResult)), data.eventId);
         } else {
             revert InvalidBizType(bizType);
         }
