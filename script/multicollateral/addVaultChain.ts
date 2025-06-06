@@ -145,6 +145,10 @@ class VaultChainDeployer {
   }
 
   private async upgradeLedgerContract(upgradeConfig: LedgerUpgradeConfig) {
+    if (!upgradeConfig.ledger && !upgradeConfig.ledgerImplA && !upgradeConfig.ledgerImplB && !upgradeConfig.ledgerImplC && !upgradeConfig.ledgerImplD && !upgradeConfig.operatorManager && !upgradeConfig.operatorManagerImplA && !upgradeConfig.operatorManagerImplB && !upgradeConfig.vaultManager) {
+        this.log(`${colors.yellow}   Skipping ledger upgrade because no upgrade config provided.${colors.reset}`);
+        return;
+    }
     this.log('\n🔧 Pre-requisite: Upgrade Ledger Contract', colors.magenta);
 
     const ledgerChainInfo = this.contractInfo[this.ledgerChain];
@@ -972,26 +976,26 @@ class VaultChainDeployer {
     this.log(`   First Time Setup: ${isFirstTime ? 'Yes' : 'No'}`, colors.blue);
 
     try {
-    // Prerequisites
-    await this.upgradeLedgerContract(upgradeLedgerConfig);
+      // Prerequisites
+      await this.upgradeLedgerContract(upgradeLedgerConfig);
 
-    //   // Step 1: Deploy Vault Contract
+    //   // Deploy Vault Contract
     //   const contractAddress = await this.deployVaultContract(deployUsdt);
 
-    //   // Step 2: Upgrade Vault Contract
+    //   // Upgrade Vault Contract
     //   const upgradeSafeHash = await this.upgradeVaultContract(contractAddress);
     //   await this.signAndSubmitProposal(this.vaultChain, upgradeSafeHash, 'vault upgrade proposal');
 
-    //   // Step 3: Setup Vault
+    //   // Setup Vault
     //   const vaultSetupSafeHash = await this.setupVault();
     //   await this.signAndSubmitProposal(this.vaultChain, vaultSetupSafeHash, 'vault setup proposal');
 
-    //   // Step 4: Setup Ledger
-    //   const ledgerSetupSafeHash = await this.setupLedger(isFirstTime);
-    //   await this.signAndSubmitProposal(this.ledgerChain, ledgerSetupSafeHash, 'ledger setup proposal');
+      // Setup Ledger
+      const ledgerSetupSafeHash = await this.setupLedger(isFirstTime);
+      await this.signAndSubmitProposal(this.ledgerChain, ledgerSetupSafeHash, 'ledger setup proposal');
 
-      // Step 5: Check Configuration
-    //   await this.checkContractConfig();
+      // Check Configuration
+      await this.checkContractConfig();
 
       this.log('\n🎉 All steps completed successfully!', colors.green);
       this.log('✨ Vault chain deployment and setup finished.', colors.green);
