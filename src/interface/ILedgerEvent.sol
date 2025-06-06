@@ -237,8 +237,8 @@ interface ILedgerEvent {
         bytes32 indexed accountId,
         bytes32 buyTokenHash,
         bytes32 sellTokenHash,
-        uint256 buyQuantity,
-        uint256 sellQuantity
+        int128 buyQuantity,
+        int128 sellQuantity
     );
 
     // All events below are deprecated
