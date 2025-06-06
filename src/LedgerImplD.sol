@@ -109,8 +109,8 @@ contract LedgerImplD is ILedgerImplD, OwnableUpgradeable, LedgerDataLayout {
 
     function executeSwapResultUpload(EventTypes.SwapResult calldata swapResultUpload, uint64 eventId) external override {
         AccountTypes.Account storage userAccount = userLedger[swapResultUpload.accountId];
-        userAccount.addBalance(swapResultUpload.buyTokenHash, swapResultUpload.buyQuantity.toUint128());
-        userAccount.subBalance(swapResultUpload.sellTokenHash, swapResultUpload.sellQuantity.toUint128());
+        userAccount.applyDelta(swapResultUpload.buyTokenHash, swapResultUpload.buyQuantity);
+        userAccount.applyDelta(swapResultUpload.sellTokenHash, swapResultUpload.sellQuantity);
         userAccount.lastEngineEventId = eventId;
 
         emit SwapResultUploaded(

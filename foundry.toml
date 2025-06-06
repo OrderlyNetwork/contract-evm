@@ -20,9 +20,9 @@ hyperspace = "${RPC_URL_HYPERSPACE}"
 sepolia = "${RPC_URL_SEPOLIA}"
 fuji = "${RPC_URL_FUJI}"
 
-[etherscan]
-mainnet = { key = "${ETHERSCAN_KEY}" }
-goerli = { key = "${ETHERSCAN_KEY}", url = "https://api-goerli.etherscan.io/api" }
-sepolia = { key = "${ETHERSCAN_KEY}", url = "https://api-sepolia.etherscan.io/api" }
+# [etherscan]
+# mainnet = { key = "${ETHERSCAN_KEY}" }
+# goerli = { key = "${ETHERSCAN_KEY}", url = "https://api-goerli.etherscan.io/api" }
+# sepolia = { key = "${ETHERSCAN_KEY}", url = "https://api-sepolia.etherscan.io/api" }
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

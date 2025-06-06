@@ -179,7 +179,7 @@ library EventTypes {
       bytes32 accountId;
       bytes32 buyTokenHash;
       bytes32 sellTokenHash;
-      uint256 buyQuantity;
-      uint256 sellQuantity;
+      int128 buyQuantity;
+      int128 sellQuantity;
     }
 }

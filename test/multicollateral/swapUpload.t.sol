@@ -41,8 +41,8 @@ contract SwapUploadTest is Test {
 
     uint128 constant INITIAL_USDC_AMOUNT = 1000000; // 1 USDC
     uint128 constant INITIAL_WETH_AMOUNT = 500000000000000000; // 0.5 WETH
-    uint256 constant SWAP_BUY_QUANTITY = 300000000000000000; // 0.3 WETH
-    uint256 constant SWAP_SELL_QUANTITY = 600000; // 0.6 USDC
+    int128 constant SWAP_BUY_QUANTITY = 300000000000000000; // 0.3 WETH
+    int128 constant SWAP_SELL_QUANTITY = -600000; // -0.6 USDC (negative for selling)
     
     address constant SENDER = 0xc7ef8C0853CCB92232Aa158b2AF3e364f1BaE9a1;
     bytes32 constant ACCOUNT_ID = 0x6b97733ca568eddf2559232fa831f8de390a76d4f29a2962c3a9d0020383f7e3;
@@ -191,8 +191,8 @@ contract SwapUploadTest is Test {
         ledger.executeSwapResultUpload(swapResultData, eventId);
 
         // Verify balances after swap
-        int128 expectedUsdcBalance = INITIAL_USDC_AMOUNT.toInt128() - int128(uint128(SWAP_SELL_QUANTITY));
-        int128 expectedWethBalance = INITIAL_WETH_AMOUNT.toInt128() + int128(uint128(SWAP_BUY_QUANTITY));
+        int128 expectedUsdcBalance = INITIAL_USDC_AMOUNT.toInt128() + SWAP_SELL_QUANTITY;
+        int128 expectedWethBalance = INITIAL_WETH_AMOUNT.toInt128() + SWAP_BUY_QUANTITY;
         
         assertEq(ledger.getUserLedgerBalance(ACCOUNT_ID, USDC_TOKEN_HASH), expectedUsdcBalance);
         assertEq(ledger.getUserLedgerBalance(ACCOUNT_ID, WETH_TOKEN_HASH), expectedWethBalance);
@@ -241,8 +241,8 @@ contract SwapUploadTest is Test {
             accountId: ACCOUNT_ID,
             buyTokenHash: USDC_TOKEN_HASH,
             sellTokenHash: WETH_TOKEN_HASH,
-            buyQuantity: SWAP_SELL_QUANTITY / 2, // Buy half the USDC back
-            sellQuantity: SWAP_BUY_QUANTITY / 2  // Sell half the WETH
+            buyQuantity: -SWAP_SELL_QUANTITY / 2, // Buy half the USDC back (positive quantity)
+            sellQuantity: -SWAP_BUY_QUANTITY / 2  // Sell half the WETH (negative quantity)
         });
 
         vm.prank(address(operatorManager));
@@ -250,12 +250,12 @@ contract SwapUploadTest is Test {
 
         // Calculate expected final balances
         int128 finalUsdcBalance = INITIAL_USDC_AMOUNT.toInt128() 
-            - int128(uint128(SWAP_SELL_QUANTITY)) 
-            + int128(uint128(SWAP_SELL_QUANTITY / 2));
+            + SWAP_SELL_QUANTITY 
+            + (-SWAP_SELL_QUANTITY / 2);
             
         int128 finalWethBalance = INITIAL_WETH_AMOUNT.toInt128() 
-            + int128(uint128(SWAP_BUY_QUANTITY)) 
-            - int128(uint128(SWAP_BUY_QUANTITY / 2));
+            + SWAP_BUY_QUANTITY 
+            + (-SWAP_BUY_QUANTITY / 2);
 
         assertEq(ledger.getUserLedgerBalance(ACCOUNT_ID, USDC_TOKEN_HASH), finalUsdcBalance);
         assertEq(ledger.getUserLedgerBalance(ACCOUNT_ID, WETH_TOKEN_HASH), finalWethBalance);
@@ -307,8 +307,8 @@ contract SwapUploadTest is Test {
             accountId: ACCOUNT_ID,
             buyTokenHash: USDC_TOKEN_HASH,
             sellTokenHash: USDC_TOKEN_HASH,
-            buyQuantity: 100000, // 0.1 USDC
-            sellQuantity: 100000  // 0.1 USDC
+            buyQuantity: 100000, // 0.1 USDC (positive)
+            sellQuantity: -100000  // -0.1 USDC (negative for selling)
         });
 
         vm.prank(address(operatorManager));
@@ -324,7 +324,7 @@ contract SwapUploadTest is Test {
         bytes32 indexed accountId,
         bytes32 buyTokenHash,
         bytes32 sellTokenHash,
-        uint256 buyQuantity,
-        uint256 sellQuantity
+        int128 buyQuantity,
+        int128 sellQuantity
     );
 }

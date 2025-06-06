@@ -44,6 +44,11 @@ library AccountTypeHelper {
         account.balances[tokenHash] -= amount.toInt128();
     }
 
+    /// @notice apply delta to balance with a given tokenHash
+    function applyDelta(AccountTypes.Account storage account, bytes32 tokenHash, int128 delta) internal {
+        account.balances[tokenHash] += delta;
+    }
+
     /// @notice frozen balance with a given withdrawNonce & amount
     function frozenBalance(
         AccountTypes.Account storage account,
