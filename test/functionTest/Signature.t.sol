@@ -935,4 +935,35 @@ contract SignatureTest is Test {
         bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
         assertEq(succ, true);
     }
+
+    function test_eventUploadEncodeHash_swapUpload() public {
+        EventTypes.SwapResult memory s1 = EventTypes.SwapResult({
+            accountId: 0x9ff99a5d6cb71a3ef897b0fff5f5801af6dc5f72d8f1608e61409b8fc965bd68,
+            buyTokenHash: 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa,
+            sellTokenHash: 0x8b1a1d9c2b109e527c9134b25b1a1833b16b6594f92daa9f6d9b7a6024bce9d0,
+            buyQuantity: 1235364323,
+            sellQuantity: 124124
+        });
+        EventTypes.SwapResult memory s2 = EventTypes.SwapResult({
+            accountId: 0x9ff99a5d6cb71a3ef897b0fff5f5801af6dc5f72d8f1608e61409b8fc965bd68,
+            buyTokenHash: 0xe98e2830be1a7e4156d656a7505e65d08c67660dc618072422e9c78053c261e9,
+            sellTokenHash: 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa,
+            buyQuantity: 3545464364,
+            sellQuantity: 3234622324
+        });
+        EventTypes.EventUploadData[] memory events = new EventTypes.EventUploadData[](2);
+        events[0] = EventTypes.EventUploadData({bizType: 13, eventId: 1274, data: abi.encode(s1)});
+        events[1] = EventTypes.EventUploadData({bizType: 13, eventId: 1277, data: abi.encode(s2)});
+        EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
+            events: events,
+            r: 0x1954535ba7385a8a3552c6fc3fe2ab0ff996836068f22ab7c316d3a8e1c22608,
+            s: 0x7463a0b692633a6fbf6e9f962d013526bf9c7e9f7c5f877054153323642be9a5,
+            v: 0x1c,
+            count: 2,
+            batchId: 7888
+        });
+
+        bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
+        assertEq(succ, true);
+    }
 }
