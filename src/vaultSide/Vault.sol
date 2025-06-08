@@ -16,14 +16,14 @@ import "../interface/cctp/IMessageTransmitter.sol";
 import "../interface/IProtocolVault.sol";
 import "../library/SwapSignature.sol";
 import "../oz5Revised/ReentrancyGuardRevised.sol";
-
+import "../library/Version.sol";
 /// @title Vault contract
 /// @author Orderly_Rubick, Orderly_Zion
 /// @notice Vault is responsible for saving user's erc20 token.
 /// EACH CHAIN SHOULD HAVE ONE Vault CONTRACT.
 /// User can deposit erc20 (USDC) from Vault.
 /// Only crossChainManager can approve withdraw request.
-contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGuardRevised {
+contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGuardRevised, Version {
     using EnumerableSet for EnumerableSet.Bytes32Set;
     using SafeERC20 for IERC20;
     using Address for address payable;

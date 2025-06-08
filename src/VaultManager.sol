@@ -5,12 +5,13 @@ import "./interface/IVaultManager.sol";
 import "./LedgerComponent.sol";
 import "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 import "./oz5Revised/AccessControlRevised.sol";
+import "./library/Version.sol";
 
 /// @title Ledger call this manager for update vault data
 /// @author Orderly_Rubick
 /// @notice VaultManager is responsible for saving vaults' balance, to ensure the cross-chain tx should success
 /// @notice VaultManager also saves the allowed brokerIds, tokenHash, symbolHash
-contract VaultManager is IVaultManager, LedgerComponent, AccessControlRevised {
+contract VaultManager is IVaultManager, LedgerComponent, AccessControlRevised, Version {
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
     // A mapping to record how much balance each token has on each chain: tokenHash => chainId => balance

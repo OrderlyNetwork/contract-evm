@@ -17,13 +17,14 @@ import "./interface/ILedgerImplA.sol";
 import "./interface/ILedgerImplB.sol";
 import "./interface/ILedgerImplC.sol";
 import "./interface/ILedgerImplD.sol";
+import "./library/Version.sol";
 
 /// @title Ledger contract
 /// @author Orderly_Rubick
 /// @notice Ledger is responsible for saving traders' Account (balance, perpPosition, and other meta)
 /// and global state (e.g. futuresUploadBatchId)
 /// This contract should only have one in main-chain (e.g. OP orderly L2)
-contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
+contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, Version {
     using AccountTypeHelper for AccountTypes.Account;
     using AccountTypePositionHelper for AccountTypes.PerpPosition;
     using SafeCastHelper for *;

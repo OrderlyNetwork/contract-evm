@@ -5,10 +5,11 @@ import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.s
 import "./dataLayout/OperatorManagerDataLayout.sol";
 import "./interface/IOperatorManagerImplB.sol";
 import "./library/Signature.sol";
+import "./library/Version.sol";
 
 /// @title OperatorManager contract, implementation part B contract, for resolve EIP170 limit
 /// @author Orderly_Rubick
-contract OperatorManagerImplB is IOperatorManagerImplB, OwnableUpgradeable, OperatorManagerDataLayout {
+contract OperatorManagerImplB is IOperatorManagerImplB, OwnableUpgradeable, OperatorManagerDataLayout, Version {
     constructor() {
         _disableInitializers();
     }
