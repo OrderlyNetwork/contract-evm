@@ -5,11 +5,12 @@ import "./interface/IMarketManager.sol";
 import "./library/typesHelper/MarketTypeHelper.sol";
 import "./LedgerComponent.sol";
 import "./OperatorManagerComponent.sol";
+import "./library/Version.sol";
 
 /// @title A component of Ledger, saves market data
 /// @author Orderly_Rubick
 /// @notice MarketManager saves perpMarketCfg
-contract MarketManager is IMarketManager, LedgerComponent, OperatorManagerComponent {
+contract MarketManager is IMarketManager, LedgerComponent, OperatorManagerComponent, Version {
     using MarketTypeHelper for MarketTypes.PerpMarketCfg;
 
     // pairSymbol => PerpMarketCfg

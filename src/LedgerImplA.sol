@@ -14,10 +14,11 @@ import "./library/Signature.sol";
 import "./library/typesHelper/AccountTypeHelper.sol";
 import "./library/typesHelper/AccountTypePositionHelper.sol";
 import "./library/typesHelper/SafeCastHelper.sol";
+import "./library/Version.sol";
 
 /// @title Ledger contract, implementation part A contract, for resolve EIP170 limit
 /// @author Orderly_Rubick
-contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
+contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout, Version {
     using AccountTypeHelper for AccountTypes.Account;
     using AccountTypePositionHelper for AccountTypes.PerpPosition;
     using SafeCastHelper for *;
