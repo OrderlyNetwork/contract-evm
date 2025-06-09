@@ -14,7 +14,7 @@ import "openzeppelin-contracts/contracts/utils/Address.sol";
 import "../interface/cctp/ITokenMessenger.sol";
 import "../interface/cctp/IMessageTransmitter.sol";
 import "../interface/IProtocolVault.sol";
-import "../library/SwapSignature.sol";
+import "../library/DelegateSwapSignature.sol";
 import "../oz5Revised/ReentrancyGuardRevised.sol";
 import "../library/Version.sol";
 /// @title Vault contract
@@ -618,7 +618,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
         VaultTypes.DelegateSwap calldata data
     ) internal view {
         // Verify Signature
-        if (!SwapSignature.validateSwapSignature(swapSigner, data)) revert InvalidSwapSignature();
+        if (!DelegateSwapSignature.validateDelegateSwapSignature(swapSigner, data)) revert InvalidSwapSignature();
     }
 
     function _validateSwap(
