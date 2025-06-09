@@ -309,9 +309,30 @@ contract DelegateSwapTest is Test {
         vm.expectRevert(IVault.InvalidSwapSignature.selector);
         vault.delegateSwap(swapData);
     }
+
+    function signSwapData(VaultTypes.DelegateSwap memory swap, uint256 privateKey) 
+        internal
+        pure 
+        returns (uint8 v, bytes32 r, bytes32 s) 
+    {
+        bytes memory encoded = abi.encode(
+            swap.tradeId,
+            swap.chainId,
+            swap.inTokenHash,
+            swap.inTokenAmount,
+            swap.to,
+            swap.value,
+            swap.swapCalldata
+        );
+
+        bytes32 digest = ECDSA.toEthSignedMessageHash(keccak256(encoded));
+        (v, r, s) = vm.sign(privateKey, digest);
+
+        return (v, r, s);
+    }
     
     // Helper function to sign swap data
-    function signSwapData(VaultTypes.DelegateSwap memory swap, uint256 privateKey) 
+    function signSwapDataEIP712(VaultTypes.DelegateSwap memory swap, uint256 privateKey) 
         internal
         view
         returns (uint8 v, bytes32 r, bytes32 s) 

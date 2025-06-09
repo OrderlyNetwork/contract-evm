@@ -115,19 +115,26 @@ class VaultChainDeployer {
     process.exit(1);
   }
 
-  private runCommand(command: string, cwd?: string): string {
-    try {
-      this.log(`🔄 Running: ${command}`, colors.cyan);
-      const result = execSync(command, { 
-        encoding: 'utf8', 
-        cwd: cwd || process.cwd(),
-        stdio: 'pipe'
-      });
-      return result.trim();
-    } catch (error: any) {
-      this.exitWithError(`Command failed: ${error.message}`, command);
-      return '';
+  private runCommand(command: string, retryNum: number = 1, cwd?: string, exitOnError: boolean = true): string {
+
+    while (retryNum > 0) {
+      try {
+        this.log(`🔄 Running: ${command}`, colors.cyan);
+        const result = execSync(command, { 
+          encoding: 'utf8', 
+          cwd: cwd || process.cwd(),
+          stdio: 'pipe'
+        });
+        return result.trim();
+      } catch (error: any) {
+        this.log(`⚠️  Command failed: ${error.message}`, colors.yellow);
+      }
     }
+    retryNum--;
+    if (exitOnError) {
+      this.exitWithError(`Command failed: ${command}`, command);
+    }
+    return '';
   }
 
   private async getUserConfirmation(message: string): Promise<boolean> {
@@ -142,6 +149,20 @@ class VaultChainDeployer {
         resolve(answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes');
       });
     });
+  }
+
+  private async verifyContract(contractAddress: string, chain: string) {
+    const network = this.networks[chain];
+    if (!network) {
+      this.exitWithError(`Network ${chain} not found in configuration`);
+    }
+
+    const isEtherscan = network.explorer_type === 'etherscan';
+    const verifier = isEtherscan ? 'etherscan' : 'blockscout';
+
+    const verifyCommand = `source .env && forge verify-contract ${contractAddress} -r ${network.rpc_url} --verifier ${verifier} --verifier-url ${network.explorer_api_url} ${isEtherscan ? `--etherscan-api-key $${chain.toUpperCase()}_ETHERSCAN_API_KEY` : ''} --chain-id ${network.chain_id}`;
+
+    this.runCommand(verifyCommand, 1, undefined, false);
   }
 
   private async upgradeLedgerContract(upgradeConfig: LedgerUpgradeConfig) {
@@ -214,59 +235,70 @@ class VaultChainDeployer {
 
     const newVaultManagerAddress = deployedToMatchVaultManager?.[1];
 
+
+
     if (upgradeConfig.ledger) {
         if (!newLedgerAddress) {
             this.exitWithError('Failed to extract deployed contract address from output');
             return ''; // This will never be reached due to process.exit in exitWithError
         }
+        await this.verifyContract(newLedgerAddress, this.ledgerChain);
     }
     if (upgradeConfig.ledgerImplA) {
         if (!newLedgerImplAAddress) {
             this.exitWithError('Failed to extract deployed contract address from output');
             return ''; // This will never be reached due to process.exit in exitWithError
         }
+        await this.verifyContract(newLedgerImplAAddress, this.ledgerChain);
     }
     if (upgradeConfig.ledgerImplB) {
         if (!newLedgerImplBAddress) {
             this.exitWithError('Failed to extract deployed contract address from output');
             return ''; // This will never be reached due to process.exit in exitWithError
         }
+        await this.verifyContract(newLedgerImplBAddress, this.ledgerChain);
     }
     if (upgradeConfig.ledgerImplC) {
         if (!newLedgerImplCAddress) {
             this.exitWithError('Failed to extract deployed contract address from output');
             return ''; // This will never be reached due to process.exit in exitWithError
         }
+        await this.verifyContract(newLedgerImplCAddress, this.ledgerChain);
     }
     if (upgradeConfig.ledgerImplD) {
         if (!newLedgerImplDAddress) {
             this.exitWithError('Failed to extract deployed contract address from output');
             return ''; // This will never be reached due to process.exit in exitWithError
         }
+        await this.verifyContract(newLedgerImplDAddress, this.ledgerChain);
     }
     if (upgradeConfig.operatorManager) {
         if (!newOperatorManagerAddress) {
             this.exitWithError('Failed to extract deployed contract address from output');
             return ''; // This will never be reached due to process.exit in exitWithError
         }
+        await this.verifyContract(newOperatorManagerAddress, this.ledgerChain);
     }
     if (upgradeConfig.operatorManagerImplA) {
         if (!newOperatorManagerImplAAddress) {
             this.exitWithError('Failed to extract deployed contract address from output');
             return ''; // This will never be reached due to process.exit in exitWithError   
         }
+        await this.verifyContract(newOperatorManagerImplAAddress, this.ledgerChain);
     }
     if (upgradeConfig.operatorManagerImplB) {
         if (!newOperatorManagerImplBAddress) {
             this.exitWithError('Failed to extract deployed contract address from output');
             return ''; // This will never be reached due to process.exit in exitWithError
         }
+        await this.verifyContract(newOperatorManagerImplBAddress, this.ledgerChain);
     }
     if (upgradeConfig.vaultManager) {
         if (!newVaultManagerAddress) {
             this.exitWithError('Failed to extract deployed contract address from output');
             return ''; // This will never be reached due to process.exit in exitWithError
         }
+        await this.verifyContract(newVaultManagerAddress, this.ledgerChain);
     }
 
     const proposals = [];
@@ -384,7 +416,7 @@ class VaultChainDeployer {
 
     // Submit proposal
     const proposeCommand = `yarn safe propose-multi --network ${this.ledgerChain.toLocaleLowerCase()} --env ${this.environment} ${proposalPath}`;
-    const proposeOutput = this.runCommand(proposeCommand, this.safeTasksPath);
+    const proposeOutput = this.runCommand(proposeCommand, 3, this.safeTasksPath);
 
     // Extract safe transaction hash
     const safeHashMatch = proposeOutput.match(/Safe transaction hash: (0x[a-fA-F0-9]{64})/);
@@ -435,6 +467,8 @@ class VaultChainDeployer {
     const txHash = txHashMatch?.[1] || 'N/A';
     const deployer = deployerMatch?.[1] || 'N/A';
 
+    await this.verifyContract(contractAddress, this.vaultChain);
+
     this.log(`✅ USDT deployed successfully!`, colors.green);
     this.log(`   Deployer: ${deployer}`, colors.blue);
     this.log(`   Contract Address: ${contractAddress}`, colors.blue);
@@ -461,7 +495,8 @@ class VaultChainDeployer {
     const isEtherscan = network.explorer_type === 'etherscan';
     const verifier = isEtherscan ? 'etherscan' : 'blockscout';
 
-    const deployCommand = `source .env && forge create src/vaultSide/Vault.sol:Vault -r ${network.rpc_url} --private-key $${this.environment.toUpperCase()}_PK --verifier ${verifier} --verifier-url ${network.explorer_api_url} ${isEtherscan ? `--etherscan-api-key $${this.vaultChain.toUpperCase()}_ETHERSCAN_API_KEY` : ''} --chain-id ${network.chain_id} --broadcast`;
+    const deployCommand = `source .env && forge create src/vaultSide/Vault.sol:Vault -r ${network.rpc_url} --private-key $${this.environment.toUpperCase()}_PK --verifier ${verifier} --verifier-url ${network.explorer_api_url} ${isEtherscan ? `--etherscan-api-key $${this.vaultChain.toUpperCase()}_ETHERSCAN_API_KEY` : ''} --chain-id ${network.chain_id} --broadcast --delay 10`;
+
 
     const output = this.runCommand(deployCommand);
     
@@ -475,9 +510,7 @@ class VaultChainDeployer {
       return ''; // This will never be reached due to process.exit in exitWithError
     }
 
-    const verifyCommand = `source .env && forge verify-contract ${deployedToMatch[1]} src/vaultSide/Vault.sol:Vault -r ${network.rpc_url} --verifier ${verifier} --verifier-url ${network.explorer_api_url} ${isEtherscan ? `--etherscan-api-key $${this.vaultChain.toUpperCase()}_ETHERSCAN_API_KEY` : ''} --chain-id ${network.chain_id}`;
-
-    // this.runCommand(verifyCommand);
+    await this.verifyContract(deployedToMatch[1], this.vaultChain);
 
     const contractAddress = deployedToMatch[1];
     const txHash = txHashMatch?.[1] || 'N/A';
@@ -526,7 +559,7 @@ class VaultChainDeployer {
 
     // Submit proposal
     const proposeCommand = `yarn safe propose-multi --network ${this.vaultChain.toLocaleLowerCase()} --env ${this.environment} ${proposalPath}`;
-    const proposeOutput = this.runCommand(proposeCommand, this.safeTasksPath);
+    const proposeOutput = this.runCommand(proposeCommand, 3, this.safeTasksPath);
 
     // Extract safe transaction hash
     const safeHashMatch = proposeOutput.match(/Safe transaction hash: (0x[a-fA-F0-9]{64})/);
@@ -546,12 +579,12 @@ class VaultChainDeployer {
 
     // Sign proposal (without --sync-sig)
     const signCommand = `yarn safe sign-proposal --network ${chain.toLocaleLowerCase()} ${safeTransactionHash}`;
-    this.runCommand(signCommand, this.safeTasksPath);
+    this.runCommand(signCommand, 3, this.safeTasksPath);
     this.log(`✅ Proposal signed`, colors.green);
 
     // Submit proposal (without --collect-sig)
     const submitCommand = `yarn safe submit-proposal --network ${chain.toLocaleLowerCase()} ${safeTransactionHash}`;
-    this.runCommand(submitCommand, this.safeTasksPath);
+    this.runCommand(submitCommand, 3, this.safeTasksPath);
     this.log(`✅ Proposal submitted and executed`, colors.green);
   }
 
@@ -664,7 +697,7 @@ class VaultChainDeployer {
 
     // Submit proposal
     const proposeCommand = `yarn safe propose-multi --network ${this.vaultChain.toLocaleLowerCase()} --env ${this.environment} ${proposalPath}`;
-    const proposeOutput = this.runCommand(proposeCommand, this.safeTasksPath);
+    const proposeOutput = this.runCommand(proposeCommand, 3, this.safeTasksPath);
 
     // Extract safe transaction hash
     const safeHashMatch = proposeOutput.match(/Safe transaction hash: (0x[a-fA-F0-9]{64})/);
@@ -694,7 +727,7 @@ class VaultChainDeployer {
 
     // Get token decimals for both chains
     const getTokenDecimal = (token: any, chainName: string) => {
-      return token.exceptions?.[chainName]?.decimal || token.decimal;
+      return token.exceptions?.[chainName]?.decimals || token.decimals;
     };
 
     const usdtVaultChainDecimal = getTokenDecimal(usdtToken, this.vaultChain);
@@ -810,7 +843,7 @@ class VaultChainDeployer {
 
     // Submit proposal
     const proposeCommand = `yarn safe propose-multi --network ${this.ledgerChain.toLocaleLowerCase()} --env ${this.environment} ${proposalPath}`;
-    const proposeOutput = this.runCommand(proposeCommand, this.safeTasksPath);
+    const proposeOutput = this.runCommand(proposeCommand, 3, this.safeTasksPath);
 
     // Extract safe transaction hash
     const safeHashMatch = proposeOutput.match(/Safe transaction hash: (0x[a-fA-F0-9]{64})/);
@@ -967,7 +1000,7 @@ class VaultChainDeployer {
     this.log('\n✅ Configuration check completed!', colors.green);
   }
 
-  async run(isFirstTime: boolean = false, deployUsdt: boolean = false, upgradeLedgerConfig: LedgerUpgradeConfig) {
+  async run(isFirstTime: boolean = false, deployUsdt: boolean = false, upgradeVaultOnly: boolean = false, upgradeLedgerOnly: boolean = false, upgradeLedgerConfig: LedgerUpgradeConfig) {
     this.log('🚀 Starting Vault Chain Deployment and Setup', colors.magenta);
     this.log(`   Vault Chain: ${this.vaultChain}`, colors.blue);
     this.log(`   Ledger Chain: ${this.ledgerChain}`, colors.blue);
@@ -975,20 +1008,48 @@ class VaultChainDeployer {
     this.log(`   Environment: ${this.environment}`, colors.blue);
     this.log(`   First Time Setup: ${isFirstTime ? 'Yes' : 'No'}`, colors.blue);
 
+    if (upgradeVaultOnly) {
+      this.log(`   Upgrade Vault Only: ${upgradeVaultOnly ? 'Yes' : 'No'}`, colors.blue);
+
+      // Deploy Vault Contract
+      const contractAddress = await this.deployVaultContract(deployUsdt);
+
+      // Upgrade Vault Contract
+      const upgradeSafeHash = await this.upgradeVaultContract(contractAddress);
+      await this.signAndSubmitProposal(this.vaultChain, upgradeSafeHash, 'vault upgrade proposal');
+
+      this.log('\n🎉 All steps completed successfully!', colors.green);
+      this.log('✨ Vault chain deployment and setup finished.', colors.green);
+
+      return;
+    }
+
+    if (upgradeLedgerOnly) {
+      this.log(`   Upgrade Ledger Only: ${upgradeLedgerOnly ? 'Yes' : 'No'}`, colors.blue);
+
+      // Upgrade Ledger Contract
+      await this.upgradeLedgerContract(upgradeLedgerConfig);
+
+      this.log('\n🎉 All steps completed successfully!', colors.green);
+      this.log('✨ Ledger chain upgrade finished.', colors.green);
+
+      return;
+    }
+
     try {
       // Prerequisites
       await this.upgradeLedgerContract(upgradeLedgerConfig);
 
-    //   // Deploy Vault Contract
-    //   const contractAddress = await this.deployVaultContract(deployUsdt);
+      // Deploy Vault Contract
+      const contractAddress = await this.deployVaultContract(deployUsdt);
 
-    //   // Upgrade Vault Contract
-    //   const upgradeSafeHash = await this.upgradeVaultContract(contractAddress);
-    //   await this.signAndSubmitProposal(this.vaultChain, upgradeSafeHash, 'vault upgrade proposal');
+      // Upgrade Vault Contract
+      const upgradeSafeHash = await this.upgradeVaultContract(contractAddress);
+      await this.signAndSubmitProposal(this.vaultChain, upgradeSafeHash, 'vault upgrade proposal');
 
-    //   // Setup Vault
-    //   const vaultSetupSafeHash = await this.setupVault();
-    //   await this.signAndSubmitProposal(this.vaultChain, vaultSetupSafeHash, 'vault setup proposal');
+      // Setup Vault
+      const vaultSetupSafeHash = await this.setupVault();
+      await this.signAndSubmitProposal(this.vaultChain, vaultSetupSafeHash, 'vault setup proposal');
 
       // Setup Ledger
       const ledgerSetupSafeHash = await this.setupLedger(isFirstTime);
@@ -1013,6 +1074,8 @@ interface ParsedArgs {
   environment: string;
   isFirstTime: boolean;
   deployUsdt: boolean;
+  upgradeVaultOnly: boolean;
+  upgradeLedgerOnly: boolean;
 }
 
 function setupYargs() {
@@ -1042,6 +1105,16 @@ function setupYargs() {
       default: 'dev',
       choices: ['dev', 'qa', 'staging', 'prod'],
       describe: 'Environment to use'
+    })
+    .option('upgrade-vault-only', {
+      type: 'boolean',
+      default: false,
+      describe: 'Upgrade vault only'
+    })
+    .option('upgrade-ledger-only', {
+      type: 'boolean',
+      default: false,
+      describe: 'Upgrade ledger only'
     })
     .option('first-time', {
       alias: 'f',
@@ -1131,7 +1204,9 @@ async function main() {
       safeTasksPath: argv.safeTasksPath as string,
       environment: argv.environment as string,
       isFirstTime: argv.firstTime as boolean,
-      deployUsdt: argv.deployUsdt as boolean
+      deployUsdt: argv.deployUsdt as boolean,
+      upgradeVaultOnly: argv.upgradeVaultOnly as boolean,
+      upgradeLedgerOnly: argv.upgradeLedgerOnly as boolean
     };
 
     const ledgerUpgradeConfig: LedgerUpgradeConfig = {
@@ -1158,6 +1233,11 @@ async function main() {
         ledgerUpgradeConfig.vaultManager = true;
     }
 
+    if (args.environment === 'dev') {
+      ledgerUpgradeConfig.vaultManager = false;
+      console.log(`${colors.yellow} Please upgrade Vault Manager manually ${colors.reset}`);
+    }
+
     console.log(`${colors.cyan}🚀 Starting Vault Chain Deployment and Setup${colors.reset}`);
     console.log(`${colors.blue}   Vault Chain: ${args.vaultChain}${colors.reset}`);
     console.log(`${colors.blue}   Ledger Chain: ${args.ledgerChain}${colors.reset}`);
@@ -1169,7 +1249,7 @@ async function main() {
     console.log(`${colors.blue}   Upgrade Config: ${JSON.stringify(ledgerUpgradeConfig, null, 2)}${colors.reset}`);
 
     const deployer = new VaultChainDeployer(args.vaultChain, args.ledgerChain, args.safeTasksPath, args.environment);
-    await deployer.run(args.isFirstTime, args.deployUsdt, ledgerUpgradeConfig);
+    await deployer.run(args.isFirstTime, args.deployUsdt, args.upgradeVaultOnly, args.upgradeLedgerOnly, ledgerUpgradeConfig);
     
   } catch (error) {
     console.error(`${colors.red}Error: ${error}${colors.reset}`);
