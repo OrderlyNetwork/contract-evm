@@ -3,6 +3,6 @@ pragma solidity ^0.8.0;
 
 contract Version {
     function version() external pure returns (string memory) {
-        return "0.6.1.alpha.1";
+        return "0.6.1.alpha.2";
     }
 }

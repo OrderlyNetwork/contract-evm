@@ -92,7 +92,6 @@ interface IVault {
     function setCrossChainManager(address _crossChainManagerAddress) external;
     function setDepositLimit(address _tokenAddress, uint256 _limit) external;
     function setProtocolVaultAddress(address _protocolVaultAddress) external;
-    function setCeffuAddress(address _ceFiAddress) external;
     function emergencyPause() external;
     function emergencyUnpause() external;
 

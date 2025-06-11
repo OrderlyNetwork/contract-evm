@@ -74,11 +74,6 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     // Swap Signer Address
     address public swapSigner;
 
-    /*=============== Ceffu ===============*/
-
-    // Ceffu address, the only address that can transfer out token by calling withdraw2Contract of type StrategyProvider
-    address public ceffuAddress;
-
     /*=============== Modifiers ===============*/
 
     /// @notice Require only swapOperator can call
@@ -141,12 +136,6 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     {
         emit SetProtocolVaultAddress(address(protocolVault), _protocolVaultAddress);
         protocolVault = IProtocolVault(_protocolVaultAddress);
-    }
-
-    /// @notice Set ceffu address
-    function setCeffuAddress(address _ceffuAddress) public override onlyOwner nonZeroAddress(_ceffuAddress) {
-        emit SetCeffuAddress(ceffuAddress, _ceffuAddress);
-        ceffuAddress = _ceffuAddress;
     }
 
     /// @notice Add contract address for an allowed token given the tokenHash
