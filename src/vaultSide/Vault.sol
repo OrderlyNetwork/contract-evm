@@ -603,6 +603,11 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
         return _submittedSwapSet.values();
     }
 
+    /// @notice If submittedSwapSet contains the tradeId, return true
+    function isSwapSubmitted(bytes32 tradeId) public view returns (bool) {
+        return _submittedSwapSet.contains(tradeId);
+    }
+
     function _verifySwapSignature(
         VaultTypes.DelegateSwap calldata data
     ) internal view {
