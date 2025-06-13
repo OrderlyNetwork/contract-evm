@@ -111,5 +111,6 @@ interface IVault {
     // Delegate swap function
     function setSwapOperator(address _swapOperator) external;
     function setSwapSigner(address _swapSigner) external;
+    function isSwapSubmitted(bytes32 tradeId) external view returns (bool);
     function delegateSwap(VaultTypes.DelegateSwap calldata data) external;
 }
