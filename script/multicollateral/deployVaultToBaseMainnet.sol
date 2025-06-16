@@ -4,6 +4,7 @@ pragma solidity ^0.8.18;
 import "forge-std/Script.sol";
 import "openzeppelin-contracts/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import "openzeppelin-contracts/contracts/proxy/transparent/ProxyAdmin.sol";
+import "../../test/multicollateral/vaultReceiveEth.sol";
 import "../../src/vaultSide/Vault.sol";
 import "../../src/vaultSide/tUSDC.sol";
 
@@ -14,16 +15,18 @@ contract DeployVault is Script {
     bytes32 constant BROKER_HASH = 0x083098c593f395bea1de45dda552d9f14e8fcb0be3faaa7a1903c5477d7ba7fd;
     address constant USDC_ADDRESS = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
     address constant USDT_ADDRESS = 0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2;
-    address constant SWAP_OPERATOR = 0x8706a41CAAd7213a3BE92604249Ff865fa36b781;
+    address constant SWAP_OPERATOR = 0x963c6dF1477a2C8153DF0636Be95f506A4A1B06C;
+    address constant PROXY_ADMIN = 0xBdbf4c04e0E137dC385c66e99793ab9B3ABa72e2;
 
     function run() external {
-        uint256 orderlyPrivateKey = vm.envUint("PRODUCTION_PK");
+        uint256 orderlyPrivateKey = vm.envUint("PROD_PK");
 
         vm.startBroadcast(orderlyPrivateKey);
 
-        ProxyAdmin admin = new ProxyAdmin();
+        // ProxyAdmin admin = new ProxyAdmin();
+        address admin = PROXY_ADMIN;
 
-        IVault vaultImpl = new Vault();
+        IVault vaultImpl = new VaultReceiveEth();
         TransparentUpgradeableProxy vaultProxy =
             new TransparentUpgradeableProxy(address(vaultImpl), address(admin), abi.encodeWithSignature("initialize()"));
         IVault vault = IVault(address(vaultProxy));
