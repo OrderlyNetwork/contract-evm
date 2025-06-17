@@ -117,6 +117,15 @@ contract VaultManager is IVaultManager, LedgerComponent, AccessControlRevised, V
         tokenBalanceOnchain[_tokenHash][_chainId] -= _deltaBalance;
     }
 
+    /// @notice Apply delta balance on the Vault contract given the tokenHash and chainId
+    function applyDeltaBalance(bytes32 _tokenHash, uint256 _chainId, int128 _deltaBalance) external override onlyLedger {
+        if (_deltaBalance >= 0) {
+            tokenBalanceOnchain[_tokenHash][_chainId] += uint128(_deltaBalance);
+        } else {
+            tokenBalanceOnchain[_tokenHash][_chainId] -= uint128(-_deltaBalance);
+        }
+    }
+
     /// @notice Get the frozen token balance on the Vault contract given the tokenHash and chainId
     function getFrozenBalance(bytes32 _tokenHash, uint256 _chainId) public view override returns (uint128) {
         return tokenFrozenBalanceOnchain[_tokenHash][_chainId];

@@ -114,13 +114,21 @@ contract LedgerImplD is ILedgerImplD, OwnableUpgradeable, LedgerDataLayout, Vers
         userAccount.applyDelta(swapResultUpload.sellTokenHash, swapResultUpload.sellQuantity);
         userAccount.lastEngineEventId = eventId;
 
+        // if on-chain success, update the balance on the vault contract
+        if (swapResultUpload.swapStatus == 1) {
+            vaultManager.applyDeltaBalance(swapResultUpload.buyTokenHash, swapResultUpload.chainId, swapResultUpload.buyQuantity);
+            vaultManager.applyDeltaBalance(swapResultUpload.sellTokenHash, swapResultUpload.chainId, swapResultUpload.sellQuantity);
+        }
+
         emit SwapResultUploaded(
             _newGlobalEventId(),
             swapResultUpload.accountId,
             swapResultUpload.buyTokenHash,
             swapResultUpload.sellTokenHash,
             swapResultUpload.buyQuantity,
-            swapResultUpload.sellQuantity
+            swapResultUpload.sellQuantity,
+            swapResultUpload.chainId,
+            swapResultUpload.swapStatus
         );
     }
 

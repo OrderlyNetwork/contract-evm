@@ -36,6 +36,8 @@ interface IVaultManager is IError, ILedgerComponent {
     function addBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) external;
     // sub balance
     function subBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) external;
+    // apply delta balance
+    function applyDeltaBalance(bytes32 _tokenHash, uint256 _chainId, int128 _deltaBalance) external;
 
     // get frozen balance
     function getFrozenBalance(bytes32 _tokenHash, uint256 _chainId) external view returns (uint128);
