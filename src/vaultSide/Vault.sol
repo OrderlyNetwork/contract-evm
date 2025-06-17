@@ -16,6 +16,7 @@ import "../interface/cctp/IMessageTransmitter.sol";
 import "../interface/IProtocolVault.sol";
 import "../library/DelegateSwapSignature.sol";
 import "../oz5Revised/ReentrancyGuardRevised.sol";
+import "../oz5Revised/AccessControlRevised.sol";
 import "../library/Version.sol";
 /// @title Vault contract
 /// @author Orderly_Rubick, Orderly_Zion
@@ -23,7 +24,7 @@ import "../library/Version.sol";
 /// EACH CHAIN SHOULD HAVE ONE Vault CONTRACT.
 /// User can deposit erc20 (USDC) from Vault.
 /// Only crossChainManager can approve withdraw request.
-contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGuardRevised, Version {
+contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGuardRevised, AccessControlRevised, Version {
     using EnumerableSet for EnumerableSet.Bytes32Set;
     using SafeERC20 for IERC20;
     using Address for address payable;
@@ -74,7 +75,17 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     // Swap Signer Address
     address public swapSigner;
 
+    /* ================ Role ================ */
+
+    bytes32 public constant BROKER_MANAGER_ROLE = keccak256("VAULT_MANAGER_BROKER_MANAGER_ROLE");
+
     /*=============== Modifiers ===============*/
+
+    /// @notice onlyRoleOrOwner
+    modifier onlyRoleOrOwner(bytes32 role) {
+        if (!hasRole(role, msg.sender) && msg.sender != owner()) revert AccessControlUnauthorizedAccount(msg.sender, role);
+        _;
+    }
 
     /// @notice Require only swapOperator can call
     modifier onlySwapOperator() {
@@ -169,7 +180,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     }
 
     /// @notice Add the hash value for an allowed brokerId
-    function setAllowedBroker(bytes32 _brokerHash, bool _allowed) public override onlyOwner {
+    function setAllowedBroker(bytes32 _brokerHash, bool _allowed) public override onlyRoleOrOwner(BROKER_MANAGER_ROLE) {
         bool succ = false;
         if (_allowed) {
             succ = allowedBrokerSet.add(_brokerHash);
@@ -680,6 +691,18 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
             data.to,
             data.value
         );
+    }
+
+    /* ================ Override AccessControlRevised To Simplify Access Control ================ */
+
+    /// @notice Override grantRole
+    function grantRole(bytes32 role, address account) public override onlyOwner {
+        _grantRole(role, account);
+    }
+
+    /// @notice Override revokeRole
+    function revokeRole(bytes32 role, address account) public override onlyOwner {
+        _revokeRole(role, account);
     }
 
 }
