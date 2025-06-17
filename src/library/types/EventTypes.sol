@@ -181,5 +181,7 @@ library EventTypes {
       bytes32 sellTokenHash;
       int128 buyQuantity;
       int128 sellQuantity;
+      uint256 chainId;
+      uint8 swapStatus; // OFF_CHAIN_SUCCESS(0), ON_CHAIN_SUCCESS(1), ON_CHAIN_FAILED(2)
     }
 }

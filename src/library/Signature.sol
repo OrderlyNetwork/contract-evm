@@ -275,6 +275,8 @@ library Signature {
         bytes32 sellTokenHash;
         int128 buyQuantity;
         int128 sellQuantity;
+        uint256 chainId;
+        uint8 swapStatus;
     }
 
     struct EventUploadSignature {
@@ -502,7 +504,9 @@ library Signature {
                     buyTokenHash: swap.buyTokenHash,
                     sellTokenHash: swap.sellTokenHash,
                     buyQuantity: swap.buyQuantity,
-                    sellQuantity: swap.sellQuantity
+                    sellQuantity: swap.sellQuantity,
+                    chainId: swap.chainId,
+                    swapStatus: swap.swapStatus
                 });
                 eventUploadSignature.swapUploads[countArray2[12]] = swapSignature;
                 countArray2[12]++;

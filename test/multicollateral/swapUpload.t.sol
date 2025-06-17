@@ -79,7 +79,9 @@ contract SwapUploadTest is Test {
         buyTokenHash: WETH_TOKEN_HASH,
         sellTokenHash: USDC_TOKEN_HASH,
         buyQuantity: SWAP_BUY_QUANTITY,
-        sellQuantity: SWAP_SELL_QUANTITY
+        sellQuantity: SWAP_SELL_QUANTITY,
+        chainId: CHAIN_ID,
+        swapStatus: 0
     });
 
     function setUp() public {
@@ -217,7 +219,9 @@ contract SwapUploadTest is Test {
             WETH_TOKEN_HASH,
             USDC_TOKEN_HASH,
             SWAP_BUY_QUANTITY,
-            SWAP_SELL_QUANTITY
+            SWAP_SELL_QUANTITY,
+            CHAIN_ID,
+            0
         );
 
         vm.prank(address(operatorManager));
@@ -242,7 +246,9 @@ contract SwapUploadTest is Test {
             buyTokenHash: USDC_TOKEN_HASH,
             sellTokenHash: WETH_TOKEN_HASH,
             buyQuantity: -SWAP_SELL_QUANTITY / 2, // Buy half the USDC back (positive quantity)
-            sellQuantity: -SWAP_BUY_QUANTITY / 2  // Sell half the WETH (negative quantity)
+            sellQuantity: -SWAP_BUY_QUANTITY / 2,  // Sell half the WETH (negative quantity)
+            chainId: CHAIN_ID,
+            swapStatus: 0
         });
 
         vm.prank(address(operatorManager));
@@ -286,7 +292,9 @@ contract SwapUploadTest is Test {
             buyTokenHash: WETH_TOKEN_HASH,
             sellTokenHash: USDC_TOKEN_HASH,
             buyQuantity: 0,
-            sellQuantity: 0
+            sellQuantity: 0,
+            chainId: CHAIN_ID,
+            swapStatus: 0
         });
 
         vm.prank(address(operatorManager));
@@ -308,7 +316,9 @@ contract SwapUploadTest is Test {
             buyTokenHash: USDC_TOKEN_HASH,
             sellTokenHash: USDC_TOKEN_HASH,
             buyQuantity: 100000, // 0.1 USDC (positive)
-            sellQuantity: -100000  // -0.1 USDC (negative for selling)
+            sellQuantity: -100000,  // -0.1 USDC (negative for selling)
+            chainId: CHAIN_ID,
+            swapStatus: 0
         });
 
         vm.prank(address(operatorManager));
@@ -325,6 +335,8 @@ contract SwapUploadTest is Test {
         bytes32 buyTokenHash,
         bytes32 sellTokenHash,
         int128 buyQuantity,
-        int128 sellQuantity
+        int128 sellQuantity,
+        uint256 chainId,
+        uint8 swapStatus
     );
 }

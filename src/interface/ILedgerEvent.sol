@@ -238,7 +238,9 @@ interface ILedgerEvent {
         bytes32 buyTokenHash,
         bytes32 sellTokenHash,
         int128 buyQuantity,
-        int128 sellQuantity
+        int128 sellQuantity,
+        uint256 chainId,
+        uint8 swapStatus
     );
 
     // All events below are deprecated

@@ -32,6 +32,14 @@ contract VaultManagerBuggy is IVaultManager, LedgerComponent {
         tokenBalanceOnchain[_tokenHash][_chainId] += _deltaBalance;
     }
 
+    function applyDeltaBalance(bytes32 _tokenHash, uint256 _chainId, int128 _deltaBalance) external override {
+        if (_deltaBalance >= 0) {
+            tokenBalanceOnchain[_tokenHash][_chainId] += uint128(_deltaBalance);
+        } else {
+            tokenBalanceOnchain[_tokenHash][_chainId] -= uint128(-_deltaBalance);
+        }
+    }
+
     function setAllowedBroker(bytes32 _brokerHash, bool _allowed) external override {}
 
     function getAllowedBroker(bytes32 _brokerHash) external view override returns (bool) {}
