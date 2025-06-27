@@ -13,7 +13,7 @@ import "./library/Version.sol";
 
 /// @title Ledger contract, implementation part D contract, for resolve EIP170 limit
 /// @notice This contract is designed for contract withdraw
-/// @author Orderly_Rubick
+/// @author Orderly_Zibin
 contract LedgerImplD is ILedgerImplD, OwnableUpgradeable, LedgerDataLayout, Version {
     using AccountTypeHelper for AccountTypes.Account;
     using SafeCast for uint256;

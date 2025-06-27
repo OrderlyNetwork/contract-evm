@@ -98,7 +98,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, Version {
     }
 
     /// @notice Set the address of ledgerImplD contract
-    function setLedgerImplD(address _ledgerImplD) external onlyOwner nonZeroAddress(_ledgerImplD) {
+    function setLedgerImplD(address _ledgerImplD) external override onlyOwner nonZeroAddress(_ledgerImplD) {
         emit ChangeLedgerImplD(_getLedgerStorage().ledgerImplD, _ledgerImplD);
         _getLedgerStorage().ledgerImplD = _ledgerImplD;
     }
@@ -501,7 +501,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, Version {
         );
     }
 
-    function executeSwapResultUpload(EventTypes.SwapResult calldata swapResultUpload, uint64 eventId) 
+    function executeSwapResultUpload(EventTypes.SwapResult calldata swapResultUpload, uint64 eventId)
         external
         override
         onlyOperatorManager
