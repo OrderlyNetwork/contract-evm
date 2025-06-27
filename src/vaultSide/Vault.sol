@@ -323,7 +323,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
 
         if (nativeDepositAmount < data.tokenAmount) revert NativeTokenDepositAmountMismatch();
         // check native token deposit limit
-        if (nativeTokenDepositLimit != 0 && data.tokenAmount + address(this).balance > nativeTokenDepositLimit) {
+        if (nativeTokenDepositLimit != 0 && (data.tokenAmount + address(this).balance - nativeDepositAmount) > nativeTokenDepositLimit) {
             revert DepositExceedLimit();
         }
         // cross-chain tx to ledger
