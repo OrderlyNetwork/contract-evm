@@ -32,8 +32,8 @@ contract VaultManagerAccessControlTest is Test {
     uint128 constant TEST_AMOUNT = 1000;
     
     // Role constants from VaultManager
-    bytes32 constant SYMBOL_MANAGER_ROLE = keccak256("VAULT_MANAGER_SYMBOL_MANAGER_ROLE");
-    bytes32 constant BROKER_MANAGER_ROLE = keccak256("VAULT_MANAGER_BROKER_MANAGER_ROLE");
+    bytes32 constant SYMBOL_MANAGER_ROLE = keccak256("ORDERLY_MANAGER_SYMBOL_MANAGER_ROLE");
+    bytes32 constant BROKER_MANAGER_ROLE = keccak256("ORDERLY_MANAGER_BROKER_MANAGER_ROLE");
     
     function setUp() public {
         // Setup test accounts
@@ -77,7 +77,7 @@ contract VaultManagerAccessControlTest is Test {
     function test_nonOwnerCannotSetAllowedToken() public {
         // Alice (non-owner) should not be able to set allowed token
         vm.prank(alice);
-        vm.expectRevert("Ownable: caller is not the owner");
+        vm.expectRevert(abi.encodeWithSelector(IAccessControlRevised.AccessControlUnauthorizedAccount.selector, alice, SYMBOL_MANAGER_ROLE));
         vaultManager.setAllowedToken(TEST_TOKEN_HASH, true);
     }
     
@@ -92,7 +92,8 @@ contract VaultManagerAccessControlTest is Test {
     
     function test_nonOwnerCannotSetAllowedChainToken() public {
         vm.prank(alice);
-        vm.expectRevert("Ownable: caller is not the owner");
+        // TODO: change to AccessControlUnauthorizedAccount
+        vm.expectRevert(abi.encodeWithSelector(IAccessControlRevised.AccessControlUnauthorizedAccount.selector, alice, SYMBOL_MANAGER_ROLE));
         vaultManager.setAllowedChainToken(TEST_TOKEN_HASH, TEST_CHAIN_ID, true);
     }
     
@@ -103,7 +104,7 @@ contract VaultManagerAccessControlTest is Test {
     
     function test_nonOwnerCannotSetMaxWithdrawFee() public {
         vm.prank(alice);
-        vm.expectRevert("Ownable: caller is not the owner");
+        vm.expectRevert(abi.encodeWithSelector(IAccessControlRevised.AccessControlUnauthorizedAccount.selector, alice, SYMBOL_MANAGER_ROLE));
         vaultManager.setMaxWithdrawFee(TEST_TOKEN_HASH, TEST_AMOUNT);
     }
     
