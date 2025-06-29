@@ -77,7 +77,9 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
 
     /* ================ Role ================ */
 
-    bytes32 public constant BROKER_MANAGER_ROLE = keccak256("VAULT_MANAGER_BROKER_MANAGER_ROLE");
+    bytes32 public constant SYMBOL_MANAGER_ROLE = keccak256("ORDERLY_MANAGER_SYMBOL_MANAGER_ROLE");
+
+    bytes32 public constant BROKER_MANAGER_ROLE = keccak256("ORDERLY_MANAGER_BROKER_MANAGER_ROLE");
 
     /*=============== Modifiers ===============*/
 
@@ -133,7 +135,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     }
 
     /// @notice Set deposit limit for a token
-    function setDepositLimit(address _tokenAddress, uint256 _limit) public override onlyOwner {
+    function setDepositLimit(address _tokenAddress, uint256 _limit) public override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE) {
         tokenAddress2DepositLimit[_tokenAddress] = _limit;
         emit ChangeDepositLimit(_tokenAddress, _limit);
     }
@@ -151,7 +153,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
 
     /// @notice Add contract address for an allowed token given the tokenHash
     /// @dev This function is only called when changing allow status for a token, not for initializing
-    function setAllowedToken(bytes32 _tokenHash, bool _allowed) public override onlyOwner {
+    function setAllowedToken(bytes32 _tokenHash, bool _allowed) public override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE) {
         bool succ = false;
         if (_allowed) {
             // require tokenAddress exist, except for native token
@@ -164,7 +166,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
         emit SetAllowedToken(_tokenHash, _allowed);
     }
 
-    function setRebalanceEnableToken(bytes32 _tokenHash, bool _allowed) public override onlyOwner {
+    function setRebalanceEnableToken(bytes32 _tokenHash, bool _allowed) public override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE) {
         bool succ = false;
         if (_allowed) {
             succ = _rebalanceEnableTokenSet.add(_tokenHash);
@@ -192,12 +194,12 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     }
 
     /// @notice Set native token hash
-    function setNativeTokenHash(bytes32 _nativeTokenHash) public override onlyOwner {
+    function setNativeTokenHash(bytes32 _nativeTokenHash) public override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE) {
         nativeTokenHash = _nativeTokenHash;
     }
 
     /// @notice Set native token deposit limit
-    function setNativeTokenDepositLimit(uint256 _nativeTokenDepositLimit) public override onlyOwner {
+    function setNativeTokenDepositLimit(uint256 _nativeTokenDepositLimit) public override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE) {
         nativeTokenDepositLimit = _nativeTokenDepositLimit;
     }
 
@@ -206,7 +208,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     function changeTokenAddressAndAllow(bytes32 _tokenHash, address _tokenAddress)
         public
         override
-        onlyOwner
+        onlyRoleOrOwner(SYMBOL_MANAGER_ROLE)
         nonZeroAddress(_tokenAddress)
     {
         allowedToken[_tokenHash] = _tokenAddress;
@@ -507,7 +509,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     function setTokenMessengerContract(address _tokenMessengerContract)
         public
         override
-        onlyOwner
+        onlyRoleOrOwner(SYMBOL_MANAGER_ROLE)
         nonZeroAddress(_tokenMessengerContract)
     {
         tokenMessengerContract = _tokenMessengerContract;
@@ -516,7 +518,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     function setRebalanceMessengerContract(address _rebalanceMessengerContract)
         public
         override
-        onlyOwner
+        onlyRoleOrOwner(SYMBOL_MANAGER_ROLE)
         nonZeroAddress(_rebalanceMessengerContract)
     {
         messageTransmitterContract = _rebalanceMessengerContract;

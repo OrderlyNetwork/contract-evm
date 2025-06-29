@@ -46,9 +46,9 @@ contract VaultManager is IVaultManager, LedgerComponent, AccessControlRevised, V
 
     /* ================ Role ================ */
 
-    bytes32 public constant SYMBOL_MANAGER_ROLE = keccak256("VAULT_MANAGER_SYMBOL_MANAGER_ROLE");
+    bytes32 public constant SYMBOL_MANAGER_ROLE = keccak256("ORDERLY_MANAGER_SYMBOL_MANAGER_ROLE");
 
-    bytes32 public constant BROKER_MANAGER_ROLE = keccak256("VAULT_MANAGER_BROKER_MANAGER_ROLE");
+    bytes32 public constant BROKER_MANAGER_ROLE = keccak256("ORDERLY_MANAGER_BROKER_MANAGER_ROLE");
 
     /* ================ Modifier ================ */
 
@@ -149,7 +149,7 @@ contract VaultManager is IVaultManager, LedgerComponent, AccessControlRevised, V
     }
 
     /// @notice Set the status for a token given the tokenHash and chainId
-    function setAllowedChainToken(bytes32 _tokenHash, uint256 _chainId, bool _allowed) public override onlyOwner {
+    function setAllowedChainToken(bytes32 _tokenHash, uint256 _chainId, bool _allowed) public override onlyOwnerOrRole(SYMBOL_MANAGER_ROLE) {
         allowedChainToken[_tokenHash][_chainId] = _allowed;
         emit SetAllowedChainToken(_tokenHash, _chainId, _allowed);
     }
@@ -192,7 +192,7 @@ contract VaultManager is IVaultManager, LedgerComponent, AccessControlRevised, V
     }
 
     /// @notice Set the status for a token given the tokenHash
-    function setAllowedToken(bytes32 _tokenHash, bool _allowed) public override onlyOwner {
+    function setAllowedToken(bytes32 _tokenHash, bool _allowed) public override onlyOwnerOrRole(SYMBOL_MANAGER_ROLE) {
         bool succ = false;
         if (_allowed) {
             succ = allowedTokenSet.add(_tokenHash);
@@ -209,7 +209,7 @@ contract VaultManager is IVaultManager, LedgerComponent, AccessControlRevised, V
     }
 
     /// @notice Set maxWithdrawFee
-    function setMaxWithdrawFee(bytes32 _tokenHash, uint128 _maxWithdrawFee) public override onlyOwner {
+    function setMaxWithdrawFee(bytes32 _tokenHash, uint128 _maxWithdrawFee) public override onlyOwnerOrRole(SYMBOL_MANAGER_ROLE) {
         maxWithdrawFee[_tokenHash] = _maxWithdrawFee;
         emit SetMaxWithdrawFee(_tokenHash, _maxWithdrawFee);
     }
