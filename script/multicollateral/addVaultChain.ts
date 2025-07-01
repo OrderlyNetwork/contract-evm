@@ -58,6 +58,7 @@ interface LedgerUpgradeConfig {
     operatorManagerImplA: boolean;
     operatorManagerImplB: boolean;
     vaultManager: boolean;
+    feeManager: boolean;
 }
 
 class VaultChainDeployer {
@@ -166,7 +167,7 @@ class VaultChainDeployer {
   }
 
   private async upgradeLedgerContract(upgradeConfig: LedgerUpgradeConfig) {
-    if (!upgradeConfig.ledger && !upgradeConfig.ledgerImplA && !upgradeConfig.ledgerImplB && !upgradeConfig.ledgerImplC && !upgradeConfig.ledgerImplD && !upgradeConfig.operatorManager && !upgradeConfig.operatorManagerImplA && !upgradeConfig.operatorManagerImplB && !upgradeConfig.vaultManager) {
+    if (!upgradeConfig.ledger && !upgradeConfig.ledgerImplA && !upgradeConfig.ledgerImplB && !upgradeConfig.ledgerImplC && !upgradeConfig.ledgerImplD && !upgradeConfig.operatorManager && !upgradeConfig.operatorManagerImplA && !upgradeConfig.operatorManagerImplB && !upgradeConfig.vaultManager && !upgradeConfig.feeManager) {
         this.log(`${colors.yellow}   Skipping ledger upgrade because no upgrade config provided.${colors.reset}`);
         return;
     }
@@ -199,6 +200,8 @@ class VaultChainDeployer {
 
     const vaultManagerDeployCmd = `source .env && forge create src/VaultManager.sol:VaultManager -r ${ledgerNetwork.rpc_url} --private-key $${this.environment.toUpperCase()}_PK --verifier ${verifier} --verifier-url ${ledgerNetwork.explorer_api_url} ${isEtherscan ? `--etherscan-api-key $${this.ledgerChain.toUpperCase()}_ETHERSCAN_API_KEY --chain-id ${ledgerNetwork.chain_id}` : ''} --broadcast`;
 
+    const feeManagerDeployCmd = `source .env && forge create src/FeeManager.sol:FeeManager -r ${ledgerNetwork.rpc_url} --private-key $${this.environment.toUpperCase()}_PK --verifier ${verifier} --verifier-url ${ledgerNetwork.explorer_api_url} ${isEtherscan ? `--etherscan-api-key $${this.ledgerChain.toUpperCase()}_ETHERSCAN_API_KEY --chain-id ${ledgerNetwork.chain_id}` : ''} --broadcast`;
+
     const ledgerDeployOutput = upgradeConfig.ledger ? this.runCommand(ledgerDeployCmd) : '';
     const ledgerImplADeployOutput = upgradeConfig.ledgerImplA ? this.runCommand(ledgerImplADeployCmd) : '';
     const ledgerImplBDeployOutput = upgradeConfig.ledgerImplB ? this.runCommand(ledgerImplBDeployCmd) : '';
@@ -210,6 +213,7 @@ class VaultChainDeployer {
     const operatorManagerImplBDeployOutput = upgradeConfig.operatorManagerImplB ? this.runCommand(operatorManagerImplBDeployCmd) : '';
 
     const vaultManagerDeployOutput = upgradeConfig.vaultManager ? this.runCommand(vaultManagerDeployCmd) : '';
+    const feeManagerDeployOutput = upgradeConfig.feeManager ? this.runCommand(feeManagerDeployCmd) : '';
 
     const deployedToMatch = ledgerDeployOutput.match(/Deployed to: (0x[a-fA-F0-9]{40})/);
     const deployedToMatchImplA = ledgerImplADeployOutput.match(/Deployed to: (0x[a-fA-F0-9]{40})/);
@@ -223,6 +227,8 @@ class VaultChainDeployer {
 
     const deployedToMatchVaultManager = vaultManagerDeployOutput.match(/Deployed to: (0x[a-fA-F0-9]{40})/);
 
+    const deployedToMatchFeeManager = feeManagerDeployOutput.match(/Deployed to: (0x[a-fA-F0-9]{40})/);
+
     const newLedgerAddress = deployedToMatch?.[1];
     const newLedgerImplAAddress = deployedToMatchImplA?.[1];
     const newLedgerImplBAddress = deployedToMatchImplB?.[1];
@@ -234,7 +240,7 @@ class VaultChainDeployer {
     const newOperatorManagerImplBAddress = deployedToMatchOperatorManagerImplB?.[1];
 
     const newVaultManagerAddress = deployedToMatchVaultManager?.[1];
-
+    const newFeeManagerAddress = deployedToMatchFeeManager?.[1];
 
 
     if (upgradeConfig.ledger) {
@@ -299,6 +305,13 @@ class VaultChainDeployer {
             return ''; // This will never be reached due to process.exit in exitWithError
         }
         await this.verifyContract(newVaultManagerAddress, this.ledgerChain);
+    }
+    if (upgradeConfig.feeManager) {
+        if (!newFeeManagerAddress) {
+            this.exitWithError('Failed to extract deployed contract address from output');
+            return ''; // This will never be reached due to process.exit in exitWithError
+        }
+        await this.verifyContract(newFeeManagerAddress, this.ledgerChain);
     }
 
     const proposals = [];
@@ -404,6 +417,18 @@ class VaultChainDeployer {
       ],
       "operation": 0
     };
+    const upgradeFeeManagerProposal = {
+      "_description": `Upgrade fee manager contract`,
+      "to": ledgerChainInfo.ledgerProxyAdmin,
+      "value": "0",
+      "method": "upgrade(address, address)",
+      "params": [
+        ledgerChainInfo.feeManager,
+        newFeeManagerAddress
+      ],
+      "operation": 0
+    };
+    if (upgradeConfig.feeManager) { proposals.push(upgradeFeeManagerProposal); }
     if (upgradeConfig.vaultManager && this.environment !== 'dev') { proposals.push(upgradeVaultManagerProposal); }
     if (this.environment === 'dev') {
         this.log(`${colors.yellow}   Skipping vault manager upgrade in dev environment, deploy it manually because of storage slot issue.${colors.reset}`);
@@ -428,9 +453,7 @@ class VaultChainDeployer {
     const safeTransactionHash = safeHashMatch[1];
     this.log(`✅ Upgrade proposal created: ${safeTransactionHash}`, colors.green);
 
-    this.signAndSubmitProposal(this.ledgerChain, safeTransactionHash, 'Upgrade ledger side contracts');
-
-    this.log(`✅ Upgrade proposal submitted and executed`, colors.green);
+    return safeTransactionHash;
   }
 
   private async deployUSDT(): Promise<string> {
@@ -727,7 +750,7 @@ class VaultChainDeployer {
 
     // Get token decimals for both chains
     const getTokenDecimal = (token: any, chainName: string) => {
-      return token.exceptions?.[chainName]?.decimals || token.decimals;
+      return token.exception?.[chainName]?.decimals || token.decimals;
     };
 
     const usdtVaultChainDecimal = getTokenDecimal(usdtToken, this.vaultChain);
@@ -735,8 +758,59 @@ class VaultChainDeployer {
     const usdtLedgerChainDecimal = getTokenDecimal(usdtToken, this.ledgerChain);
     const ethLedgerChainDecimal = getTokenDecimal(ethToken, this.ledgerChain);
 
+    const ledgerSetupProposal = [];
+
+    if (isFirstTime) {
+      ledgerSetupProposal.push({
+        "_description": "Set allowed token in VaultManager",
+        "to": vaultManager,
+        "value": "0",
+        "method": "setAllowedToken(bytes32,bool)",
+        "params": [
+          ethToken.tokenHash,
+          true
+        ],
+        "operation": 0
+      });
+      ledgerSetupProposal.push({
+        "_description": "Set allowed token in VaultManager",
+        "to": vaultManager,
+        "value": "0",
+        "method": "setAllowedToken(bytes32,bool)",
+        "params": [
+          usdtToken.tokenHash,
+          true
+        ],
+        "operation": 0
+      });
+      ledgerSetupProposal.push({
+        "_description": "Set token decimal of ETH in Ledger Chain on Ledger CC Manager",
+        "to": ledgerCCManager,
+        "value": "0",
+        "method": "setTokenDecimal(bytes32,uint256,uint128)",
+        "params": [
+          ethToken.tokenHash,
+          ledgerChainId,
+          ethLedgerChainDecimal
+        ],
+        "operation": 0
+      });
+      ledgerSetupProposal.push({
+        "_description": "Set token decimal of USDT in Ledger Chain on Ledger CC Manager",
+        "to": ledgerCCManager,
+        "value": "0",
+        "method": "setTokenDecimal(bytes32,uint256,uint128)",
+        "params": [
+          usdtToken.tokenHash,
+          ledgerChainId,
+          usdtLedgerChainDecimal
+        ],
+        "operation": 0
+      });
+    }
+
     // Create ledger setup proposal
-    const ledgerSetupProposal = [
+    const ledgerSetupProposal2 = [
       {
         "_description": "Set allowed token in VaultManager",
         "to": vaultManager,
@@ -787,54 +861,8 @@ class VaultChainDeployer {
       }
     ];
 
-    if (isFirstTime) {
-      ledgerSetupProposal.push({
-        "_description": "Set allowed token in VaultManager",
-        "to": vaultManager,
-        "value": "0",
-        "method": "setAllowedToken(bytes32,bool)",
-        "params": [
-          ethToken.tokenHash,
-          true
-        ],
-        "operation": 0
-      });
-      ledgerSetupProposal.push({
-        "_description": "Set allowed token in VaultManager",
-        "to": vaultManager,
-        "value": "0",
-        "method": "setAllowedToken(bytes32,bool)",
-        "params": [
-          usdtToken.tokenHash,
-          true
-        ],
-        "operation": 0
-      });
-      ledgerSetupProposal.push({
-        "_description": "Set token decimal of ETH in Ledger Chain on Ledger CC Manager",
-        "to": ledgerCCManager,
-        "value": "0",
-        "method": "setTokenDecimal(bytes32,uint256,uint128)",
-        "params": [
-          ethToken.tokenHash,
-          ledgerChainId,
-          ethLedgerChainDecimal
-        ],
-        "operation": 0
-      });
-      ledgerSetupProposal.push({
-        "_description": "Set token decimal of USDT in Ledger Chain on Ledger CC Manager",
-        "to": ledgerCCManager,
-        "value": "0",
-        "method": "setTokenDecimal(bytes32,uint256,uint128)",
-        "params": [
-          usdtToken.tokenHash,
-          ledgerChainId,
-          usdtLedgerChainDecimal
-        ],
-        "operation": 0
-      });
-    }
+    ledgerSetupProposal.push(...ledgerSetupProposal2);
+
 
     const proposalPath = path.join(this.safeTasksPath, `setup-ledger-${this.ledgerChain}-${Date.now()}.json`);
     fs.writeFileSync(proposalPath, JSON.stringify(ledgerSetupProposal, null, 2));
@@ -1000,63 +1028,100 @@ class VaultChainDeployer {
     this.log('\n✅ Configuration check completed!', colors.green);
   }
 
-  async run(isFirstTime: boolean = false, deployUsdt: boolean = false, upgradeVaultOnly: boolean = false, upgradeLedgerOnly: boolean = false, upgradeLedgerConfig: LedgerUpgradeConfig) {
+  async run(isFirstTime: boolean = false, deployUsdt: boolean = false, upgradeVaultOnly: boolean = false, upgradeLedgerOnly: boolean = false, upgradeLedgerConfig: LedgerUpgradeConfig, setupVaultOnly: boolean = false, setupLedgerOnly: boolean = false) {
     this.log('🚀 Starting Vault Chain Deployment and Setup', colors.magenta);
     this.log(`   Vault Chain: ${this.vaultChain}`, colors.blue);
     this.log(`   Ledger Chain: ${this.ledgerChain}`, colors.blue);
     this.log(`   Safe Tasks Path: ${this.safeTasksPath}`, colors.blue);
     this.log(`   Environment: ${this.environment}`, colors.blue);
     this.log(`   First Time Setup: ${isFirstTime ? 'Yes' : 'No'}`, colors.blue);
-
-    if (upgradeVaultOnly) {
-      this.log(`   Upgrade Vault Only: ${upgradeVaultOnly ? 'Yes' : 'No'}`, colors.blue);
-
-      // Deploy Vault Contract
-      const contractAddress = await this.deployVaultContract(deployUsdt);
-
-      // Upgrade Vault Contract
-      const upgradeSafeHash = await this.upgradeVaultContract(contractAddress);
-      await this.signAndSubmitProposal(this.vaultChain, upgradeSafeHash, 'vault upgrade proposal');
-
-      this.log('\n🎉 All steps completed successfully!', colors.green);
-      this.log('✨ Vault chain deployment and setup finished.', colors.green);
-
+  
+    if (setupVaultOnly) {
+      this.log(`   Setup Vault Only`, colors.blue);
+      // run setup vault
+      const vaultSetupSafeHash = await this.setupVault();
+      if (this.environment === 'dev' || this.environment === 'qa') {
+        await this.signAndSubmitProposal(this.vaultChain, vaultSetupSafeHash, 'vault setup proposal');
+      } else {
+        this.log(`✅ Vault setup proposal created: ${vaultSetupSafeHash}, environment: ${this.environment}`, colors.green);
+        this.log(`✅ Please check the proposal and sign&submit it manually`, colors.green);
+      }
+      return;
+    }
+    if (setupLedgerOnly) {
+      this.log(`   Setup Ledger Only`, colors.blue);
+      // run setup ledger
+      const ledgerSetupSafeHash = await this.setupLedger(isFirstTime);
+      if (this.environment === 'dev' || this.environment === 'qa') {
+        await this.signAndSubmitProposal(this.ledgerChain, ledgerSetupSafeHash, 'ledger setup proposal');
+      } else {
+        this.log(`✅ Ledger setup proposal created: ${ledgerSetupSafeHash}, environment: ${this.environment}`, colors.green);
+        this.log(`✅ Please check the proposal and sign&submit it manually`, colors.green);
+      }
       return;
     }
 
-    if (upgradeLedgerOnly) {
-      this.log(`   Upgrade Ledger Only: ${upgradeLedgerOnly ? 'Yes' : 'No'}`, colors.blue);
-
-      // Upgrade Ledger Contract
-      await this.upgradeLedgerContract(upgradeLedgerConfig);
-
-      this.log('\n🎉 All steps completed successfully!', colors.green);
-      this.log('✨ Ledger chain upgrade finished.', colors.green);
-
-      return;
-    }
 
     try {
-      // Prerequisites
-      await this.upgradeLedgerContract(upgradeLedgerConfig);
+      if (!upgradeVaultOnly) {
+        // Prerequisites
+        const upgradeLedgerSafeTransactionHash = await this.upgradeLedgerContract(upgradeLedgerConfig);
+        if (upgradeLedgerSafeTransactionHash) {
+          if (this.environment === 'dev' || this.environment === 'qa') {
+            await this.signAndSubmitProposal(this.ledgerChain, upgradeLedgerSafeTransactionHash, 'Upgrade ledger side contracts');
+          } else {
+            this.log(`✅ Upgrade proposal created: ${upgradeLedgerSafeTransactionHash}, environment: ${this.environment}`, colors.green);
+            this.log(`✅ Please check the proposal and sign&submit it manually`, colors.green);
+          }
+        }
+        if (upgradeLedgerOnly) {
+          this.log('\n🎉 All steps completed successfully!', colors.green);
+          this.log('✨ Ledger chain upgrade finished.', colors.green);
+          return;
+        }
+      }
 
       // Deploy Vault Contract
       const contractAddress = await this.deployVaultContract(deployUsdt);
 
       // Upgrade Vault Contract
       const upgradeSafeHash = await this.upgradeVaultContract(contractAddress);
-      await this.signAndSubmitProposal(this.vaultChain, upgradeSafeHash, 'vault upgrade proposal');
+      if (this.environment === 'dev' || this.environment === 'qa') {
+        await this.signAndSubmitProposal(this.vaultChain, upgradeSafeHash, 'vault upgrade proposal');
+      } else {
+        this.log(`✅ Upgrade proposal created: ${upgradeSafeHash}, environment: ${this.environment}`, colors.green);
+        this.log(`✅ Please check the proposal and sign&submit it manually`, colors.green);
+      }
+      if (upgradeVaultOnly) {
+        this.log('\n🎉 All steps completed successfully!', colors.green);
+        this.log('✨ Vault chain upgrade finished.', colors.green);
+        return;
+      }
 
       // Setup Vault
       const vaultSetupSafeHash = await this.setupVault();
-      await this.signAndSubmitProposal(this.vaultChain, vaultSetupSafeHash, 'vault setup proposal');
+      if (this.environment === 'dev' || this.environment === 'qa') {
+        await this.signAndSubmitProposal(this.vaultChain, vaultSetupSafeHash, 'vault setup proposal');
+      } else {
+        this.log(`✅ Vault setup proposal created: ${vaultSetupSafeHash}, environment: ${this.environment}`, colors.green);
+        this.log(`✅ Please check the proposal and sign&submit it manually`, colors.green);
+      }
 
       // Setup Ledger
       const ledgerSetupSafeHash = await this.setupLedger(isFirstTime);
-      await this.signAndSubmitProposal(this.ledgerChain, ledgerSetupSafeHash, 'ledger setup proposal');
+      if (this.environment === 'dev' || this.environment === 'qa') {
+        await this.signAndSubmitProposal(this.ledgerChain, ledgerSetupSafeHash, 'ledger setup proposal');
+      } else {
+        this.log(`✅ Ledger setup proposal created: ${ledgerSetupSafeHash}, environment: ${this.environment}`, colors.green);
+        this.log(`✅ Please check the proposal and sign&submit it manually`, colors.green);
+      }
 
       // Check Configuration
-      await this.checkContractConfig();
+      if (this.environment === 'dev' || this.environment === 'qa') {
+        await this.checkContractConfig();
+      } else {
+        this.log(`✅ Configuration check skipped, environment: ${this.environment}`, colors.green);
+      }
 
       this.log('\n🎉 All steps completed successfully!', colors.green);
       this.log('✨ Vault chain deployment and setup finished.', colors.green);
@@ -1076,6 +1141,8 @@ interface ParsedArgs {
   deployUsdt: boolean;
   upgradeVaultOnly: boolean;
   upgradeLedgerOnly: boolean;
+  setupVaultOnly: boolean;
+  setupLedgerOnly: boolean;
 }
 
 function setupYargs() {
@@ -1172,10 +1239,25 @@ function setupYargs() {
       default: false,
       describe: 'Upgrade vault manager contract'
     })
+    .option('feeManager', {
+      type: 'boolean',
+      default: false,
+      describe: 'Upgrade fee manager contract'
+    })
     .option('allLedgerContracts', {
       type: 'boolean',
       default: false,
       describe: 'Upgrade all ledger contracts'
+    })
+    .option('setup-vault-only', {
+      type: 'boolean',
+      default: false,
+      describe: 'Setup vault only'
+    })
+    .option('setup-ledger-only', {
+      type: 'boolean',
+      default: false,
+      describe: 'Setup ledger only'
     })
     .example('$0 baseSepolia orderlySepolia /path/to/safe-tasks', 'Basic usage')
     .example('$0 baseSepolia orderlySepolia /path/to/safe-tasks --first-time --deploy-usdt', 'First time setup with USDT deployment')
@@ -1206,7 +1288,9 @@ async function main() {
       isFirstTime: argv.firstTime as boolean,
       deployUsdt: argv.deployUsdt as boolean,
       upgradeVaultOnly: argv.upgradeVaultOnly as boolean,
-      upgradeLedgerOnly: argv.upgradeLedgerOnly as boolean
+      upgradeLedgerOnly: argv.upgradeLedgerOnly as boolean,
+      setupVaultOnly: argv.setupVaultOnly as boolean,
+      setupLedgerOnly: argv.setupLedgerOnly as boolean
     };
 
     const ledgerUpgradeConfig: LedgerUpgradeConfig = {
@@ -1218,7 +1302,8 @@ async function main() {
         operatorManager: argv.operatorManager as boolean,
         operatorManagerImplA: argv.operatorManagerA as boolean,
         operatorManagerImplB: argv.operatorManagerB as boolean,
-        vaultManager: argv.vaultManager as boolean
+        vaultManager: argv.vaultManager as boolean,
+        feeManager: argv.feeManager as boolean
     };
     const deployAllLedgerContracts = argv.allLedgerContracts as boolean;
     if (deployAllLedgerContracts) {
@@ -1231,6 +1316,7 @@ async function main() {
         ledgerUpgradeConfig.operatorManagerImplA = true;
         ledgerUpgradeConfig.operatorManagerImplB = true;
         ledgerUpgradeConfig.vaultManager = true;
+        ledgerUpgradeConfig.feeManager = true;
     }
 
     if (args.environment === 'dev') {
@@ -1249,7 +1335,7 @@ async function main() {
     console.log(`${colors.blue}   Upgrade Config: ${JSON.stringify(ledgerUpgradeConfig, null, 2)}${colors.reset}`);
 
     const deployer = new VaultChainDeployer(args.vaultChain, args.ledgerChain, args.safeTasksPath, args.environment);
-    await deployer.run(args.isFirstTime, args.deployUsdt, args.upgradeVaultOnly, args.upgradeLedgerOnly, ledgerUpgradeConfig);
+    await deployer.run(args.isFirstTime, args.deployUsdt, args.upgradeVaultOnly, args.upgradeLedgerOnly, ledgerUpgradeConfig, args.setupVaultOnly, args.setupLedgerOnly);
     
   } catch (error) {
     console.error(`${colors.red}Error: ${error}${colors.reset}`);
