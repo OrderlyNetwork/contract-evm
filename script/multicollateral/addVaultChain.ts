@@ -45,6 +45,9 @@ interface TokenInfo {
         decimal: number;
       };
     };
+    depositLimit?: {
+      [chainName: string]: string
+    };
   };
 }
 
@@ -671,16 +674,6 @@ class VaultChainDeployer {
         "operation": 0
       },
       {
-        "_description": "Set Native ETH Token Deposit Limit",
-        "to": vaultAddress,
-        "value": "0",
-        "method": "setNativeTokenDepositLimit(uint256)",
-        "params": [
-          "0"
-        ],
-        "operation": 0
-      },
-      {
         "_description": "Enable USDC Rebalance",
         "to": vaultAddress,
         "value": "0",
@@ -712,6 +705,32 @@ class VaultChainDeployer {
         "operation": 0
       }
     ];
+
+    if (usdtToken.depositLimit && usdtToken.depositLimit[this.vaultChain]) {
+      vaultSetupProposal.push({
+        "_description": "Set USDT Deposit Limit",
+        "to": vaultAddress,
+        "value": "0",
+        "method": "setDepositLimit(uint256)",
+        "params": [
+          usdtToken.depositLimit[this.vaultChain].replace(/_/g, '')
+        ],
+        "operation": 0
+      });
+    }
+
+    if (ethToken.depositLimit && ethToken.depositLimit[this.vaultChain]) {
+      vaultSetupProposal.push({
+        "_description": "Set ETH Deposit Limit",
+        "to": vaultAddress,
+        "value": "0",
+        "method": "setNativeTokenDepositLimit(uint256)",
+        "params": [
+          ethToken.depositLimit[this.vaultChain].replace(/_/g, '')
+        ],
+        "operation": 0
+      });
+    }
 
     const proposalPath = path.join(this.safeTasksPath, `setup-vault-${this.vaultChain}-${Date.now()}.json`);
     fs.writeFileSync(proposalPath, JSON.stringify(vaultSetupProposal, null, 2));
@@ -861,8 +880,21 @@ class VaultChainDeployer {
       }
     ];
 
-    ledgerSetupProposal.push(...ledgerSetupProposal2);
+    const ledgerSetupProposal3 = [
+      {
+        "_description": "Set Protocol Vault Address in VaultManager",
+        "to": vaultManager,
+        "value": "0",
+        "method": "setProtocolVaultAddress(address)",
+        "params": [
+          "0x0000000000000000000000000000000000000000"
+        ],
+        "operation": 0
+      }
+    ]
 
+    ledgerSetupProposal.push(...ledgerSetupProposal2);
+    ledgerSetupProposal.push(...ledgerSetupProposal3);
 
     const proposalPath = path.join(this.safeTasksPath, `setup-ledger-${this.ledgerChain}-${Date.now()}.json`);
     fs.writeFileSync(proposalPath, JSON.stringify(ledgerSetupProposal, null, 2));
@@ -1028,13 +1060,39 @@ class VaultChainDeployer {
     this.log('\n✅ Configuration check completed!', colors.green);
   }
 
-  async run(isFirstTime: boolean = false, deployUsdt: boolean = false, upgradeVaultOnly: boolean = false, upgradeLedgerOnly: boolean = false, upgradeLedgerConfig: LedgerUpgradeConfig, setupVaultOnly: boolean = false, setupLedgerOnly: boolean = false) {
+  async run(isFirstTime: boolean = false, deployUsdt: boolean = false, upgradeVaultOnly: boolean = false, upgradeLedgerOnly: boolean = false, upgradeLedgerConfig: LedgerUpgradeConfig, setupVaultOnly: boolean = false, setupLedgerOnly: boolean = false, executeProposal: boolean = false, proposalPath: string = '') {
     this.log('🚀 Starting Vault Chain Deployment and Setup', colors.magenta);
     this.log(`   Vault Chain: ${this.vaultChain}`, colors.blue);
     this.log(`   Ledger Chain: ${this.ledgerChain}`, colors.blue);
     this.log(`   Safe Tasks Path: ${this.safeTasksPath}`, colors.blue);
     this.log(`   Environment: ${this.environment}`, colors.blue);
     this.log(`   First Time Setup: ${isFirstTime ? 'Yes' : 'No'}`, colors.blue);
+
+    if (executeProposal) {
+      this.log(`   Execute Proposal`, colors.blue);
+      if (proposalPath) {
+        // e.g. safeTasksPath: ../safe-tasks
+        // e.g. proposalPath: ../safe-tasks/proposal/vault/upgrade.json
+        // relative proposal path: proposal/vault/upgrade.json
+        const relativeProposalPath = proposalPath.replace(this.safeTasksPath, '').replace(/^\//, '');
+        console.log(`   Relative Proposal Path: ${relativeProposalPath}`);
+        const cmd = `yarn safe propose-multi --network ${this.vaultChain.toLocaleLowerCase()} --env ${this.environment} ${relativeProposalPath}`;
+        this.log(`   Execute Proposal Command: ${cmd}`, colors.blue);
+        const output = this.runCommand(cmd, 3, this.safeTasksPath);
+        this.log(`   Execute Proposal Output: ${output}`, colors.blue);
+        const safeHashMatch = output.match(/Safe transaction hash: (0x[a-fA-F0-9]{64})/);
+        const safeTransactionHash = safeHashMatch?.[1];
+        if (safeTransactionHash) {
+          // run execute proposal
+          await this.signAndSubmitProposal(this.vaultChain, safeTransactionHash, 'submiting proposal');
+        } else {
+          this.exitWithError('Failed to get proposal hash');
+        }
+      } else {
+        this.exitWithError('Please provide a proposal path');
+      }
+      return;
+    }
   
     if (setupVaultOnly) {
       this.log(`   Setup Vault Only`, colors.blue);
@@ -1143,6 +1201,8 @@ interface ParsedArgs {
   upgradeLedgerOnly: boolean;
   setupVaultOnly: boolean;
   setupLedgerOnly: boolean;
+  executeProposal: boolean;
+  proposalPath: string;
 }
 
 function setupYargs() {
@@ -1259,6 +1319,16 @@ function setupYargs() {
       default: false,
       describe: 'Setup ledger only'
     })
+    .option('execute-proposal', {
+      type: 'boolean',
+      default: false,
+      describe: 'Execute proposal'
+    })
+    .option('proposal-path', {
+      type: 'string',
+      default: '',
+      describe: 'Path to the proposal file'
+    })
     .example('$0 baseSepolia orderlySepolia /path/to/safe-tasks', 'Basic usage')
     .example('$0 baseSepolia orderlySepolia /path/to/safe-tasks --first-time --deploy-usdt', 'First time setup with USDT deployment')
     .example('$0 baseSepolia orderlySepolia /path/to/safe-tasks -e qa -f -d', 'Using short flags')
@@ -1290,7 +1360,9 @@ async function main() {
       upgradeVaultOnly: argv.upgradeVaultOnly as boolean,
       upgradeLedgerOnly: argv.upgradeLedgerOnly as boolean,
       setupVaultOnly: argv.setupVaultOnly as boolean,
-      setupLedgerOnly: argv.setupLedgerOnly as boolean
+      setupLedgerOnly: argv.setupLedgerOnly as boolean,
+      executeProposal: argv.executeProposal as boolean,
+      proposalPath: argv.proposalPath as string
     };
 
     const ledgerUpgradeConfig: LedgerUpgradeConfig = {
@@ -1335,7 +1407,7 @@ async function main() {
     console.log(`${colors.blue}   Upgrade Config: ${JSON.stringify(ledgerUpgradeConfig, null, 2)}${colors.reset}`);
 
     const deployer = new VaultChainDeployer(args.vaultChain, args.ledgerChain, args.safeTasksPath, args.environment);
-    await deployer.run(args.isFirstTime, args.deployUsdt, args.upgradeVaultOnly, args.upgradeLedgerOnly, ledgerUpgradeConfig, args.setupVaultOnly, args.setupLedgerOnly);
+    await deployer.run(args.isFirstTime, args.deployUsdt, args.upgradeVaultOnly, args.upgradeLedgerOnly, ledgerUpgradeConfig, args.setupVaultOnly, args.setupLedgerOnly, args.executeProposal, args.proposalPath);
     
   } catch (error) {
     console.error(`${colors.red}Error: ${error}${colors.reset}`);
