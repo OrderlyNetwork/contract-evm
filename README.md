@@ -224,6 +224,8 @@ forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_BERACHAIN --verif
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_MODE --verifier-url 'https://api.routescan.io/v2/network/mainnet/evm/34443/etherscan' --etherscan-api-key "verifyContract" --broadcast
 # plume mainnet
 forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_PLUME --broadcast
+# bsc mainnet
+forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_BSC --verifier-url https://api.bscscan.com/api --verify --etherscan-api-key $BSC_ETHERSCAN_API_KEY --broadcast
 ```
 
 ### Deploy new implement command:
@@ -265,6 +267,8 @@ forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_BERACHAIN --broadca
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_MODE --verifier-url 'https://api.routescan.io/v2/network/mainnet/evm/34443/etherscan' --etherscan-api-key "verifyContract" --broadcast
 # plume mainnet
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_PLUME --broadcast
+# bsc mainnet
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_BSC --verifier-url https://api.bscscan.com/api --verify --etherscan-api-key $BSC_ETHERSCAN_API_KEY --broadcast
 ```
 
 ## Zip scripts

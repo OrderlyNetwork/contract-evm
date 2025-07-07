@@ -16,13 +16,15 @@ import "./library/typesHelper/SafeCastHelper.sol";
 import "./interface/ILedgerImplA.sol";
 import "./interface/ILedgerImplB.sol";
 import "./interface/ILedgerImplC.sol";
+import "./interface/ILedgerImplD.sol";
+import "./library/Version.sol";
 
 /// @title Ledger contract
 /// @author Orderly_Rubick
 /// @notice Ledger is responsible for saving traders' Account (balance, perpPosition, and other meta)
 /// and global state (e.g. futuresUploadBatchId)
 /// This contract should only have one in main-chain (e.g. OP orderly L2)
-contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
+contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, Version {
     using AccountTypeHelper for AccountTypes.Account;
     using AccountTypePositionHelper for AccountTypes.PerpPosition;
     using SafeCastHelper for *;
@@ -33,6 +35,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         address ledgerImplA;
         address ledgerImplB;
         address ledgerImplC;
+        address ledgerImplD;
     }
 
     // keccak256(abi.encode(uint256(keccak256("orderly.Ledger")) - 1)) & ~bytes32(uint256(0xff))
@@ -92,6 +95,12 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
     function setLedgerImplC(address _ledgerImplC) external override onlyOwner nonZeroAddress(_ledgerImplC) {
         emit ChangeLedgerImplC(_getLedgerStorage().ledgerImplC, _ledgerImplC);
         _getLedgerStorage().ledgerImplC = _ledgerImplC;
+    }
+
+    /// @notice Set the address of ledgerImplD contract
+    function setLedgerImplD(address _ledgerImplD) external override onlyOwner nonZeroAddress(_ledgerImplD) {
+        emit ChangeLedgerImplD(_getLedgerStorage().ledgerImplD, _ledgerImplD);
+        _getLedgerStorage().ledgerImplD = _ledgerImplD;
     }
 
     /// @notice Set the address of operatorManager contract
@@ -159,6 +168,14 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
     function setFeeManager(address _feeManagerAddress) external override onlyOwner nonZeroAddress(_feeManagerAddress) {
         emit ChangeFeeManager(address(feeManager), _feeManagerAddress);
         feeManager = IFeeManager(_feeManagerAddress);
+    }
+
+    /// @notice Set the address of prime wallet for a given accountId
+    /// @param id accountId or spId
+    /// @param _primeWallet address of the prime wallet
+    function setPrimeWallet(bytes32 id, address _primeWallet) external onlyOwner nonZeroAddress(_primeWallet) {
+        idToPrimeWallet[id] = _primeWallet;
+        emit PrimeWalletSet(id, _primeWallet);
     }
 
     /// @notice Get the amount of a token frozen balance for a given account and the corresponding withdrawNonce
@@ -468,8 +485,8 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         onlyOperatorManager
     {
         _delegatecall(
-            abi.encodeWithSelector(ILedgerImplC.executeWithdraw2Contract.selector, data, eventId),
-            _getLedgerStorage().ledgerImplC
+            abi.encodeWithSelector(ILedgerImplD.executeWithdraw2Contract.selector, data, eventId),
+            _getLedgerStorage().ledgerImplD
         );
     }
 
@@ -481,6 +498,17 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout {
         _delegatecall(
             abi.encodeWithSelector(ILedgerImplC.executeBalanceTransfer.selector, balanceTransfer, eventId),
             _getLedgerStorage().ledgerImplC
+        );
+    }
+
+    function executeSwapResultUpload(EventTypes.SwapResult calldata swapResultUpload, uint64 eventId)
+        external
+        override
+        onlyOperatorManager
+    {
+        _delegatecall(
+            abi.encodeWithSelector(ILedgerImplD.executeSwapResultUpload.selector, swapResultUpload, eventId),
+            _getLedgerStorage().ledgerImplD
         );
     }
 

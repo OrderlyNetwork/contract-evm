@@ -33,13 +33,14 @@ interface ILedger is IError, ILedgerEvent {
     function executeAdlV2(EventTypes.AdlV2 calldata adl, uint64 eventId) external;
     function executeFeeDistribution(EventTypes.FeeDistribution calldata feeDistribution, uint64 eventId) external;
     function executeDelegateSigner(EventTypes.DelegateSigner calldata delegateSigner, uint64 eventId) external;
-    function executeDelegateWithdrawAction(EventTypes.WithdrawData calldata withdraw, uint64 eventId) external;
+    function executeDelegateWithdrawAction(EventTypes.WithdrawData calldata delegateWithdraw, uint64 eventId) external;
     function executeRebalanceBurn(RebalanceTypes.RebalanceBurnUploadData calldata data) external;
     function rebalanceBurnFinish(RebalanceTypes.RebalanceBurnCCFinishData calldata data) external;
     function executeRebalanceMint(RebalanceTypes.RebalanceMintUploadData calldata data) external;
     function rebalanceMintFinish(RebalanceTypes.RebalanceMintCCFinishData calldata data) external;
     function executeWithdraw2Contract(EventTypes.Withdraw2Contract calldata data, uint64 eventId) external;
     function executeBalanceTransfer(EventTypes.BalanceTransfer calldata balanceTransfer, uint64 eventId) external;
+    function executeSwapResultUpload(EventTypes.SwapResult calldata swapResultUpload, uint64 eventId) external;
 
     // view call
     function getFrozenWithdrawNonce(bytes32 accountId, uint64 withdrawNonce, bytes32 tokenHash)
@@ -66,4 +67,5 @@ interface ILedger is IError, ILedgerEvent {
     function setLedgerImplA(address _ledgerImplA) external;
     function setLedgerImplB(address _ledgerImplB) external;
     function setLedgerImplC(address _ledgerImplC) external;
+    function setLedgerImplD(address _ledgerImplD) external;
 }

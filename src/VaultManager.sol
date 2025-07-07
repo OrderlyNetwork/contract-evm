@@ -4,12 +4,14 @@ pragma solidity ^0.8.18;
 import "./interface/IVaultManager.sol";
 import "./LedgerComponent.sol";
 import "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
+import "./oz5Revised/AccessControlRevised.sol";
+import "./library/Version.sol";
 
 /// @title Ledger call this manager for update vault data
 /// @author Orderly_Rubick
 /// @notice VaultManager is responsible for saving vaults' balance, to ensure the cross-chain tx should success
 /// @notice VaultManager also saves the allowed brokerIds, tokenHash, symbolHash
-contract VaultManager is IVaultManager, LedgerComponent {
+contract VaultManager is IVaultManager, LedgerComponent, AccessControlRevised, Version {
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
     // A mapping to record how much balance each token has on each chain: tokenHash => chainId => balance
@@ -39,6 +41,28 @@ contract VaultManager is IVaultManager, LedgerComponent {
     uint64 constant MAX_REBALACE_SLOT = 100;
     // for record latest rebalance status
     mapping(uint64 => RebalanceTypes.RebalanceStatus) private rebalanceStatus;
+    // protocal vault address
+    address private protocalVaultAddress;
+
+    /* ================ Role ================ */
+
+    bytes32 public constant SYMBOL_MANAGER_ROLE = keccak256("ORDERLY_MANAGER_SYMBOL_MANAGER_ROLE");
+
+    bytes32 public constant BROKER_MANAGER_ROLE = keccak256("ORDERLY_MANAGER_BROKER_MANAGER_ROLE");
+
+    /* ================ Modifier ================ */
+
+    /// @notice check non-zero address
+    modifier nonZeroAddress(address _address) {
+        if (_address == address(0)) revert AddressZero();
+        _;
+    }
+
+    /// @notice check if the caller is the owner or has the role
+    modifier onlyOwnerOrRole(bytes32 role) {
+        if (!hasRole(role, msg.sender) && msg.sender != owner()) revert AccessControlUnauthorizedAccount(msg.sender, role);
+        _;
+    }
 
     constructor() {
         _disableInitializers();
@@ -93,13 +117,22 @@ contract VaultManager is IVaultManager, LedgerComponent {
         tokenBalanceOnchain[_tokenHash][_chainId] -= _deltaBalance;
     }
 
+    /// @notice Apply delta balance on the Vault contract given the tokenHash and chainId
+    function applyDeltaBalance(bytes32 _tokenHash, uint256 _chainId, int128 _deltaBalance) external override onlyLedger {
+        if (_deltaBalance >= 0) {
+            tokenBalanceOnchain[_tokenHash][_chainId] += uint128(_deltaBalance);
+        } else {
+            tokenBalanceOnchain[_tokenHash][_chainId] -= uint128(-_deltaBalance);
+        }
+    }
+
     /// @notice Get the frozen token balance on the Vault contract given the tokenHash and chainId
     function getFrozenBalance(bytes32 _tokenHash, uint256 _chainId) public view override returns (uint128) {
         return tokenFrozenBalanceOnchain[_tokenHash][_chainId];
     }
 
     /// @notice Set the status for a broker given the brokerHash
-    function setAllowedBroker(bytes32 _brokerHash, bool _allowed) public override onlyOwner {
+    function setAllowedBroker(bytes32 _brokerHash, bool _allowed) public override onlyOwnerOrRole(BROKER_MANAGER_ROLE) {
         bool succ = false;
         if (_allowed) {
             succ = allowedBrokerSet.add(_brokerHash);
@@ -116,7 +149,7 @@ contract VaultManager is IVaultManager, LedgerComponent {
     }
 
     /// @notice Set the status for a token given the tokenHash and chainId
-    function setAllowedChainToken(bytes32 _tokenHash, uint256 _chainId, bool _allowed) public override onlyOwner {
+    function setAllowedChainToken(bytes32 _tokenHash, uint256 _chainId, bool _allowed) public override onlyOwnerOrRole(SYMBOL_MANAGER_ROLE) {
         allowedChainToken[_tokenHash][_chainId] = _allowed;
         emit SetAllowedChainToken(_tokenHash, _chainId, _allowed);
     }
@@ -127,7 +160,7 @@ contract VaultManager is IVaultManager, LedgerComponent {
     }
 
     /// @notice Set the status for a symbol given the symbolHash
-    function setAllowedSymbol(bytes32 _symbolHash, bool _allowed) public override onlyOwner {
+    function setAllowedSymbol(bytes32 _symbolHash, bool _allowed) public override onlyOwnerOrRole(SYMBOL_MANAGER_ROLE) {
         bool succ = false;
         if (_allowed) {
             succ = allowedSymbolSet.add(_symbolHash);
@@ -159,7 +192,7 @@ contract VaultManager is IVaultManager, LedgerComponent {
     }
 
     /// @notice Set the status for a token given the tokenHash
-    function setAllowedToken(bytes32 _tokenHash, bool _allowed) public override onlyOwner {
+    function setAllowedToken(bytes32 _tokenHash, bool _allowed) public override onlyOwnerOrRole(SYMBOL_MANAGER_ROLE) {
         bool succ = false;
         if (_allowed) {
             succ = allowedTokenSet.add(_tokenHash);
@@ -176,7 +209,7 @@ contract VaultManager is IVaultManager, LedgerComponent {
     }
 
     /// @notice Set maxWithdrawFee
-    function setMaxWithdrawFee(bytes32 _tokenHash, uint128 _maxWithdrawFee) public override onlyOwner {
+    function setMaxWithdrawFee(bytes32 _tokenHash, uint128 _maxWithdrawFee) public override onlyOwnerOrRole(SYMBOL_MANAGER_ROLE) {
         maxWithdrawFee[_tokenHash] = _maxWithdrawFee;
         emit SetMaxWithdrawFee(_tokenHash, _maxWithdrawFee);
     }
@@ -308,5 +341,30 @@ contract VaultManager is IVaultManager, LedgerComponent {
 
     function finishMintToken(bytes32 _tokenHash, uint256 _chainId, uint128 _amount) internal {
         tokenBalanceOnchain[_tokenHash][_chainId] += _amount;
+    }
+
+    function setProtocolVaultAddress(address _protocalVaultAddress)
+        external
+        onlyOwner
+        nonZeroAddress(_protocalVaultAddress)
+    {
+        emit SetProtocolVaultAddress(protocalVaultAddress, _protocalVaultAddress);
+        protocalVaultAddress = _protocalVaultAddress;
+    }
+
+    function getProtocolVaultAddress() public view override returns (address) {
+        return protocalVaultAddress;
+    }
+
+    /* ================ Override AccessControlRevised To Simplify Access Control ================ */
+
+    /// @notice Override grantRole
+    function grantRole(bytes32 role, address account) public override onlyOwner {
+        _grantRole(role, account);
+    }
+
+    /// @notice Override revokeRole
+    function revokeRole(bytes32 role, address account) public override onlyOwner {
+        _revokeRole(role, account);
     }
 }

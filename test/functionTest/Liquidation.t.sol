@@ -183,7 +183,7 @@ contract LiquidationTest is Test {
         assertEq(LiquidatedEthPosition.lastSumUnitaryFundings, 3000000000000003);
         assertEq(LiquidatedEthPosition.lastExecutedPrice, 180000000000);
 
-        uint128 liquidatedTokenBalance = ledger.getUserLedgerBalance(LIQUIDATED_ACCOUNT_ID, TOKEN_HASH);
+        int128 liquidatedTokenBalance = ledger.getUserLedgerBalance(LIQUIDATED_ACCOUNT_ID, TOKEN_HASH);
         assertEq(liquidatedTokenBalance, 400000000);
 
         AccountTypes.PerpPosition memory LiquidatorBtcPosition =
@@ -200,7 +200,7 @@ contract LiquidationTest is Test {
         assertEq(LiquidatorEthPosition.lastSumUnitaryFundings, 3000000000000003);
         assertEq(LiquidatorEthPosition.lastExecutedPrice, 180000000000);
 
-        uint128 liquidatorTokenBalance = ledger.getUserLedgerBalance(LIQUIDATOR_ACCOUNT_ID, TOKEN_HASH);
+        int128 liquidatorTokenBalance = ledger.getUserLedgerBalance(LIQUIDATOR_ACCOUNT_ID, TOKEN_HASH);
         assertEq(liquidatorTokenBalance, 100000000000);
 
         AccountTypes.PerpPosition memory InsuranceBtcPosition =
@@ -217,7 +217,7 @@ contract LiquidationTest is Test {
         assertEq(InsuranceEthPosition.lastSumUnitaryFundings, 3000000000000003);
         assertEq(InsuranceEthPosition.lastExecutedPrice, 180000000000);
 
-        uint128 insuranceTokenBalance = ledger.getUserLedgerBalance(INSURANCE_FUND, TOKEN_HASH);
+        int128 insuranceTokenBalance = ledger.getUserLedgerBalance(INSURANCE_FUND, TOKEN_HASH);
         assertEq(insuranceTokenBalance, 1000000000000);
     }
 
@@ -307,7 +307,7 @@ contract LiquidationTest is Test {
         assertEq(LiquidatedEthPosition.lastSumUnitaryFundings, 0);
         assertEq(LiquidatedEthPosition.lastExecutedPrice, 0);
 
-        uint128 liquidatedTokenBalance = ledger.getUserLedgerBalance(LIQUIDATED_ACCOUNT_ID, TOKEN_HASH);
+        int128 liquidatedTokenBalance = ledger.getUserLedgerBalance(LIQUIDATED_ACCOUNT_ID, TOKEN_HASH);
         assertEq(liquidatedTokenBalance, 0);
 
         AccountTypes.PerpPosition memory LiquidatorBtcPosition =
@@ -324,7 +324,7 @@ contract LiquidationTest is Test {
         assertEq(LiquidatorEthPosition.lastSumUnitaryFundings, 3000000000000003);
         assertEq(LiquidatorEthPosition.lastExecutedPrice, 150000000000);
 
-        uint128 liquidatorTokenBalance = ledger.getUserLedgerBalance(INSURANCE_FUND, TOKEN_HASH);
+        int128 liquidatorTokenBalance = ledger.getUserLedgerBalance(INSURANCE_FUND, TOKEN_HASH);
         assertEq(liquidatorTokenBalance, 1000000001000);
     }
 
@@ -453,7 +453,7 @@ contract LiquidationTest is Test {
         assertEq(LiquidatedEthPosition.lastSumUnitaryFundings, 3000000000000003);
         assertEq(LiquidatedEthPosition.lastExecutedPrice, 150000000000);
 
-        uint128 liquidatedTokenBalance = ledger.getUserLedgerBalance(LIQUIDATED_ACCOUNT_ID, TOKEN_HASH);
+        int128 liquidatedTokenBalance = ledger.getUserLedgerBalance(LIQUIDATED_ACCOUNT_ID, TOKEN_HASH);
         assertEq(liquidatedTokenBalance, 0);
 
         AccountTypes.PerpPosition memory LiquidatorBtcPosition =
@@ -470,7 +470,7 @@ contract LiquidationTest is Test {
         assertEq(LiquidatorEthPosition.lastSumUnitaryFundings, 3000000000000003);
         assertEq(LiquidatorEthPosition.lastExecutedPrice, 150000000000);
 
-        uint128 liquidatorTokenBalance = ledger.getUserLedgerBalance(INSURANCE_FUND, TOKEN_HASH);
+        int128 liquidatorTokenBalance = ledger.getUserLedgerBalance(INSURANCE_FUND, TOKEN_HASH);
         assertEq(liquidatorTokenBalance, 1000000001000);
     }
 }

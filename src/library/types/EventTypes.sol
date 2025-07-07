@@ -15,7 +15,7 @@ library EventTypes {
     }
 
     struct EventUploadData {
-        uint8 bizType; // 1 - withdraw, 2 - settlement, 3 - adl, 4 - liquidation, 5 - fee distribution, 6 - delegate signer, 7 - delegate withdraw
+        uint8 bizType; // 1 - withdraw, 2 - settlement, 3 - adl, 4 - liquidation, 5 - fee distribution, 6 - delegate signer, 7 - delegate withdraw, 12 - balance transfer, 13 - swap result upload
         uint64 eventId;
         bytes data;
     }
@@ -148,7 +148,8 @@ library EventTypes {
 
     enum VaultEnum {
         ProtocolVault,
-        UserVault
+        UserVault,
+        Ceffu
     }
 
     struct Withdraw2Contract {
@@ -172,5 +173,15 @@ library EventTypes {
         bytes32 tokenHash;
         bool isFromAccountId;
         uint8 transferType;
+    }
+
+    struct SwapResult {
+      bytes32 accountId;
+      bytes32 buyTokenHash;
+      bytes32 sellTokenHash;
+      int128 buyQuantity;
+      int128 sellQuantity;
+      uint256 chainId;
+      uint8 swapStatus; // OFF_CHAIN_SUCCESS(0), ON_CHAIN_SUCCESS(1), ON_CHAIN_FAILED(2)
     }
 }

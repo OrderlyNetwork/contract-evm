@@ -358,7 +358,7 @@ contract LiquidationV2Test is Test {
         // because we delete position, so all values becomes 0s, otherwise will be:
         // assertEq(LiquidatedEthPosition.lastSumUnitaryFundings, 304_849_000_000_000);
         // assertEq(LiquidatedEthPosition.lastExecutedPrice, 110_120_000);
-        uint128 liquidatedTokenBalance = ledger.getUserLedgerBalance(LIQUIDATED_ACCOUNT_ID, TOKEN_HASH);
+        int128 liquidatedTokenBalance = ledger.getUserLedgerBalance(LIQUIDATED_ACCOUNT_ID, TOKEN_HASH);
         assertEq(liquidatedTokenBalance, 0);
 
         // liquidator account (same as insurance account)
@@ -374,7 +374,7 @@ contract LiquidationV2Test is Test {
         assertEq(LiquidatorEthPosition.costPosition, 4_872_553);
         assertEq(LiquidatorEthPosition.lastSumUnitaryFundings, 304_849_000_000_000);
         assertEq(LiquidatorEthPosition.lastExecutedPrice, 110_120_000);
-        uint128 liquidatorTokenBalance = ledger.getUserLedgerBalance(LIQUIDATOR_ACCOUNT_ID, TOKEN_HASH);
+        int128 liquidatorTokenBalance = ledger.getUserLedgerBalance(LIQUIDATOR_ACCOUNT_ID, TOKEN_HASH);
         assertEq(liquidatorTokenBalance, 961_104_584_482);
     }
 
