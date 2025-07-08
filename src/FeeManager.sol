@@ -3,17 +3,28 @@ pragma solidity ^0.8.18;
 
 import "./interface/IFeeManager.sol";
 import "./LedgerComponent.sol";
+import "./library/Version.sol";
+import "./oz5Revised/AccessControlRevised.sol";
 
 /// @title FeeManager component for Ledger contract
 /// @author Orderly_Rubick
 /// @notice FeeManager saves FeeCollector accountId, both getter and setter
-contract FeeManager is IFeeManager, LedgerComponent {
+contract FeeManager is IFeeManager, LedgerComponent, AccessControlRevised, Version {
     // accountId
     bytes32 public withdrawFeeCollector;
     // accountId
     bytes32 public futuresFeeCollector;
     // broker fee accountId
     mapping(bytes32 => bytes32) public brokerHash2BrokerAccountId;
+
+    // broker manager role
+    bytes32 public constant BROKER_MANAGER_ROLE = keccak256("ORDERLY_MANAGER_BROKER_MANAGER_ROLE");
+
+    /// @notice check if the caller is the owner or has the role
+    modifier onlyOwnerOrRole(bytes32 role) {
+        if (!hasRole(role, msg.sender) && msg.sender != owner()) revert AccessControlUnauthorizedAccount(msg.sender, role);
+        _;
+    }
 
     constructor() {
         _disableInitializers();
@@ -56,9 +67,21 @@ contract FeeManager is IFeeManager, LedgerComponent {
     /// @notice Set the broker fee account id
     /// @param brokerHash The broker id
     /// @param brokerAccountId The broker fee account id
-    function setBrokerAccountId(bytes32 brokerHash, bytes32 brokerAccountId) external override onlyOwner {
+    function setBrokerAccountId(bytes32 brokerHash, bytes32 brokerAccountId) external override onlyOwnerOrRole(BROKER_MANAGER_ROLE) {
         if (brokerHash == bytes32(0) || brokerAccountId == bytes32(0)) revert Bytes32Zero();
         emit ChangeBrokerAccountId(brokerHash2BrokerAccountId[brokerHash], brokerAccountId);
         brokerHash2BrokerAccountId[brokerHash] = brokerAccountId;
+    }
+
+    /* ================ Override AccessControlRevised To Simplify Access Control ================ */
+
+    /// @notice Override grantRole
+    function grantRole(bytes32 role, address account) public override onlyOwner {
+        _grantRole(role, account);
+    }
+
+    /// @notice Override revokeRole
+    function revokeRole(bytes32 role, address account) public override onlyOwner {
+        _revokeRole(role, account);
     }
 }

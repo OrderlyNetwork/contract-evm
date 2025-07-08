@@ -5,10 +5,11 @@ import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.s
 import "./dataLayout/OperatorManagerDataLayout.sol";
 import "./interface/IOperatorManagerImplB.sol";
 import "./library/Signature.sol";
+import "./library/Version.sol";
 
 /// @title OperatorManager contract, implementation part B contract, for resolve EIP170 limit
 /// @author Orderly_Rubick
-contract OperatorManagerImplB is IOperatorManagerImplB, OwnableUpgradeable, OperatorManagerDataLayout {
+contract OperatorManagerImplB is IOperatorManagerImplB, OwnableUpgradeable, OperatorManagerDataLayout, Version {
     constructor() {
         _disableInitializers();
     }
@@ -73,11 +74,14 @@ contract OperatorManagerImplB is IOperatorManagerImplB, OwnableUpgradeable, Oper
             // withdraw sol
             ledger.executeWithdrawSolAction(abi.decode(data.data, (EventTypes.WithdrawDataSol)), data.eventId);
         } else if (bizType == 11) {
-            // withdraw to vault contract
+            // withdraw to external account
             ledger.executeWithdraw2Contract(abi.decode(data.data, (EventTypes.Withdraw2Contract)), data.eventId);
         } else if (bizType == 12) {
             // balance transfer
             ledger.executeBalanceTransfer(abi.decode(data.data, (EventTypes.BalanceTransfer)), data.eventId);
+        } else if (bizType == 13) {
+            // swap result upload
+            ledger.executeSwapResultUpload(abi.decode(data.data, (EventTypes.SwapResult)), data.eventId);
         } else {
             revert InvalidBizType(bizType);
         }

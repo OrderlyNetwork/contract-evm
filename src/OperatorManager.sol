@@ -7,12 +7,13 @@ import "./interface/IOperatorManager.sol";
 import "./interface/IOperatorManagerImplA.sol";
 import "./interface/IOperatorManagerImplB.sol";
 import "./library/Signature.sol";
+import "./library/Version.sol";
 
 /// @title Operator call this manager for update data
 /// @author Orderly_Rubick
 /// @notice OperatorManager is responsible for executing engine tx, only called by operator.
 /// @notice This contract should only have one in main-chain
-contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManagerDataLayout {
+contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManagerDataLayout, Version {
     // Using Storage as OZ 5.0 does
     struct OperatorManagerStorage {
         // Because of EIP170 size limit, the implementation should be split to impl contracts

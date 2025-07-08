@@ -25,3 +25,6 @@ broadcast/
 *.zip
 
 .DS_Store
+
+# some time we have some standard json files, no need to commit them
+/*.json

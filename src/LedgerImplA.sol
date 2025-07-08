@@ -14,10 +14,11 @@ import "./library/Signature.sol";
 import "./library/typesHelper/AccountTypeHelper.sol";
 import "./library/typesHelper/AccountTypePositionHelper.sol";
 import "./library/typesHelper/SafeCastHelper.sol";
+import "./library/Version.sol";
 
 /// @title Ledger contract, implementation part A contract, for resolve EIP170 limit
 /// @author Orderly_Rubick
-contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
+contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout, Version {
     using AccountTypeHelper for AccountTypes.Account;
     using AccountTypePositionHelper for AccountTypes.PerpPosition;
     using SafeCastHelper for *;
@@ -37,7 +38,11 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
         if (!vaultManager.getAllowedChainToken(data.tokenHash, data.srcChainId)) {
             revert TokenNotAllowed(data.tokenHash, data.srcChainId);
         }
-        if (!Utils.validateAccountId(data.accountId, data.brokerHash, data.userAddress)) revert AccountIdInvalid();
+        if (
+            !Utils.validateExtendedAccountId(
+                vaultManager.getProtocolVaultAddress(), data.accountId, data.brokerHash, data.userAddress
+            )
+        ) revert AccountIdInvalid();
 
         // a not registerd account can still deposit, because of the consistency
         AccountTypes.Account storage account = userLedger[data.accountId];
@@ -108,7 +113,11 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
         if (!vaultManager.getAllowedChainToken(tokenHash, withdraw.chainId)) {
             revert TokenNotAllowed(tokenHash, withdraw.chainId);
         }
-        if (!Utils.validateAccountId(withdraw.accountId, brokerHash, withdraw.sender)) revert AccountIdInvalid();
+        if (
+            !Utils.validateExtendedAccountId(
+                vaultManager.getProtocolVaultAddress(), withdraw.accountId, brokerHash, withdraw.sender
+            )
+        ) revert AccountIdInvalid();
         AccountTypes.Account storage account = userLedger[withdraw.accountId];
         uint8 state = 0;
         {
@@ -119,7 +128,7 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
             if (account.lastWithdrawNonce >= withdraw.withdrawNonce) {
                 // require withdraw nonce inc
                 state = 101;
-            } else if (account.balances[tokenHash] < withdraw.tokenAmount) {
+            } else if (account.balances[tokenHash] < withdraw.tokenAmount.toInt128()) {
                 // require balance enough
                 revert WithdrawBalanceNotEnough(account.balances[tokenHash], withdraw.tokenAmount);
             } else if (vaultManager.getBalance(tokenHash, withdraw.chainId) < withdraw.tokenAmount - withdraw.fee) {
@@ -237,10 +246,10 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
         AccountTypes.Account storage account = userLedger[settlement.accountId];
         if (settlement.insuranceTransferAmount != 0) {
             if (settlement.accountId == settlement.insuranceAccountId) revert InsuranceTransferToSelf();
-            uint128 balance = account.balances[settlement.settledAssetHash];
+            int128 balance = account.balances[settlement.settledAssetHash];
             // transfer insurance fund
             if (
-                balance.toInt128() + settlement.insuranceTransferAmount.toInt128() + settlement.settledAmount < 0
+                balance + settlement.insuranceTransferAmount.toInt128() + settlement.settledAmount < 0
                     || settlement.insuranceTransferAmount > settlement.settledAmount.abs()
             ) {
                 // overflow
@@ -263,12 +272,11 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
             position.lastExecutedPrice = ledgerExecution.markPrice;
             position.lastSettledPrice = ledgerExecution.markPrice;
             // check balance + settledAmount >= 0, where balance should cast to int128 first
-            uint128 balance = account.balances[settlement.settledAssetHash];
-            if (balance.toInt128() + ledgerExecution.settledAmount < 0) {
-                revert BalanceNotEnough(balance, ledgerExecution.settledAmount);
-            }
-            account.balances[settlement.settledAssetHash] =
-                (balance.toInt128() + ledgerExecution.settledAmount).toUint128();
+            int128 balance = account.balances[settlement.settledAssetHash];
+            // if (balance + ledgerExecution.settledAmount < 0) {
+            //     revert BalanceNotEnough(balance, ledgerExecution.settledAmount);
+            // }
+            account.balances[settlement.settledAssetHash] = balance + ledgerExecution.settledAmount;
             if (position.isFullSettled()) {
                 delete account.perpPositions[ledgerExecution.symbolHash];
             }
@@ -515,7 +523,11 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
         if (!vaultManager.getAllowedChainToken(tokenHash, withdraw.chainId)) {
             revert TokenNotAllowed(tokenHash, withdraw.chainId);
         }
-        if (!Utils.validateAccountId(withdraw.accountId, brokerHash, withdraw.sender)) {
+        if (
+            !Utils.validateExtendedAccountId(
+                vaultManager.getProtocolVaultAddress(), withdraw.accountId, brokerHash, withdraw.sender
+            )
+        ) {
             revert AccountIdInvalid();
         }
         AccountTypes.Account storage account = userLedger[withdraw.accountId];
@@ -528,7 +540,7 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
             if (account.lastWithdrawNonce >= withdraw.withdrawNonce) {
                 // require withdraw nonce inc
                 state = 101;
-            } else if (account.balances[tokenHash] < withdraw.tokenAmount) {
+            } else if (account.balances[tokenHash] < withdraw.tokenAmount.toInt128()) {
                 // require balance enough
                 state = 1;
             } else if (vaultManager.getBalance(tokenHash, withdraw.chainId) < withdraw.tokenAmount - withdraw.fee) {

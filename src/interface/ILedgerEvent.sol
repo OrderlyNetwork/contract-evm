@@ -170,7 +170,8 @@ interface ILedgerEvent {
     event ChangeLedgerImplA(address oldAddress, address newAddress);
     event ChangeLedgerImplB(address oldAddress, address newAddress);
     event ChangeLedgerImplC(address oldAddress, address newAddress);
-
+    event ChangeLedgerImplD(address oldAddress, address newAddress);
+    
     // for Solana
     event AccountRegister(bytes32 indexed accountId, bytes32 indexed brokerId, bytes32 indexed pubkey);
     event AccountDepositSol(
@@ -228,6 +229,20 @@ interface ILedgerEvent {
         bool isFromAccountId,
         uint8 transferType
     );
+
+    event PrimeWalletSet(bytes32 id, address primeWallet);
+
+    event SwapResultUploaded(
+        uint64 indexed eventId,
+        bytes32 indexed accountId,
+        bytes32 buyTokenHash,
+        bytes32 sellTokenHash,
+        int128 buyQuantity,
+        int128 sellQuantity,
+        uint256 chainId,
+        uint8 swapStatus
+    );
+
     // All events below are deprecated
     // Keep them for indexer backward compatibility
 

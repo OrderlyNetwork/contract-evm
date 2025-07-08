@@ -14,6 +14,7 @@ interface IVaultManager is IError, ILedgerComponent {
     event SetAllowedToken(bytes32 indexed _tokenHash, bool _allowed);
     event SetAllowedChainToken(bytes32 indexed _tokenHash, uint256 indexed _chainId, bool _allowed);
     event SetMaxWithdrawFee(bytes32 indexed _tokenHash, uint128 _maxWithdrawFee);
+    event SetSymbolManager(address indexed _symbolManager);
 
     // rebalance burn token
     event RebalanceBurn(
@@ -26,12 +27,17 @@ interface IVaultManager is IError, ILedgerComponent {
     // rebalance mint result
     event RebalanceMintResult(uint64 indexed rebalanceId, bool success);
 
+    // sv related
+    event SetProtocolVaultAddress(address _oldProtocolVaultAddress, address _newProtocolVaultAddress);
+
     // get balance
     function getBalance(bytes32 _tokenHash, uint256 _chainId) external view returns (uint128);
     // add balance
     function addBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) external;
     // sub balance
     function subBalance(bytes32 _tokenHash, uint256 _chainId, uint128 _deltaBalance) external;
+    // apply delta balance
+    function applyDeltaBalance(bytes32 _tokenHash, uint256 _chainId, int128 _deltaBalance) external;
 
     // get frozen balance
     function getFrozenBalance(bytes32 _tokenHash, uint256 _chainId) external view returns (uint128);
@@ -77,4 +83,8 @@ interface IVaultManager is IError, ILedgerComponent {
     function executeRebalanceMint(RebalanceTypes.RebalanceMintUploadData calldata data) external;
     function rebalanceMintFinish(RebalanceTypes.RebalanceMintCCFinishData calldata data) external;
     function getRebalanceStatus(uint64 rebalanceId) external view returns (RebalanceTypes.RebalanceStatus memory);
+
+    // sv related
+    function setProtocolVaultAddress(address _protocolVaultAddress) external;
+    function getProtocolVaultAddress() external view returns (address);
 }

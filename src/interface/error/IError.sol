@@ -23,7 +23,7 @@ interface IError {
     error TotalSettleAmountNotMatch(int128 amount);
     error BalanceNotEnough(uint128 balance, int128 amount);
     error InsuranceTransferToSelf();
-    error InsuranceTransferAmountInvalid(uint128 balance, uint128 insuranceTransferAmount, int128 settledAmount);
+    error InsuranceTransferAmountInvalid(int128 balance, uint128 insuranceTransferAmount, int128 settledAmount);
     error UserPerpPositionQtyZero(bytes32 accountId, bytes32 symbolHash);
     error InsurancePositionQtyInvalid(int128 adlPositionQtyTransfer, int128 userPositionQty);
     error AccountIdInvalid();
@@ -36,10 +36,13 @@ interface IError {
     error ZeroChainId();
     error ZeroDelegateSigner();
     error ZeroDelegateContract();
-    error WithdrawBalanceNotEnough(uint128 balance, uint128 withdrawAmount);
+    error WithdrawBalanceNotEnough(int128 balance, uint128 withdrawAmount);
     error WithdrawVaultBalanceNotEnough(uint128 balance, uint128 withdrawAmount);
     error WithdrawFeeTooLarge(uint128 maxFee, uint128 withdrawFee);
     error WithdrawToAddressZero();
+    error InvalidPrimeWallet();
+    error ProtocolVaultAddressMismatch(address want, address got);
+    error NotImplemented();
 
     // OperatorManager Error
     error InvalidBizType(uint8 bizType);
@@ -55,6 +58,7 @@ interface IError {
     error RebalanceMintUnexpected(); // the rebalance burn state or something is wrong, so the rebalance mint is unexpected. Should never happen.
     error RebalanceChainIdInvalid(uint256 chainId);
     error RebalanceTokenNotSupported(bytes32 tokenHash, uint256 chainId);
+    error OnlySymbolManagerOrOwner();
 
     // FeeManager Error
     error InvalidFeeCollectorType();
