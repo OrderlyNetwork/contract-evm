@@ -3,6 +3,7 @@ pragma solidity ^0.8.18;
 
 import "./../library/types/VaultTypes.sol";
 import "./../library/types/RebalanceTypes.sol";
+import "./../library/types/EventTypes.sol";
 
 interface IVault {
     error OnlyCrossChainManagerCanCall();
@@ -75,6 +76,10 @@ interface IVault {
     event DisableDepositToken(bytes32 indexed _tokenHash);
     event EnableDepositToken(bytes32 indexed _tokenHash);
 
+    // SetBroker from ledger events
+    event SetBrokerFromLedgerAlreadySet(bytes32 indexed brokerHash, uint256 dstChainId, bool allowed);
+    event SetBrokerFromLedgerSuccess(bytes32 indexed brokerHash, uint256 dstChainId, bool allowed);
+
     function initialize() external;
 
     function deposit(VaultTypes.VaultDepositFE calldata data) external payable;
@@ -112,6 +117,9 @@ interface IVault {
     function getAllAllowedToken() external view returns (bytes32[] memory);
     function getAllAllowedBroker() external view returns (bytes32[] memory);
     function getAllRebalanceEnableToken() external view returns (bytes32[] memory);
+
+    // cross-chain broker management
+    function setBrokerFromLedger(EventTypes.SetBrokerData calldata data) external;
 
     // Delegate swap function
     function setSwapOperator(address _swapOperator) external;

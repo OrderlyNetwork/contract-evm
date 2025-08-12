@@ -184,4 +184,11 @@ library EventTypes {
       uint256 chainId;
       uint8 swapStatus; // OFF_CHAIN_SUCCESS(0), ON_CHAIN_SUCCESS(1), ON_CHAIN_FAILED(2)
     }
+
+    // SetBrokerData - for cross-chain broker addition or removal
+    struct SetBrokerData {
+        bytes32 brokerHash;  // The hash of the broker to be added or removed
+        uint256 dstChainId;  // The destination chain ID where broker should be modified
+        bool allowed;        // true = add broker, false = remove broker
+    }
 }

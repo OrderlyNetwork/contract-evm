@@ -135,6 +135,38 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
 
     /*=============== Setters ===============*/
 
+    /// @notice Sets broker status via cross-chain message from ledger
+    /// @dev Only callable by the cross-chain manager, validates chain ID
+    /// @param data The SetBrokerData containing broker information and status
+    function setBrokerFromLedger(EventTypes.SetBrokerData calldata data) external override onlyCrossChainManager {
+        // Chain ID validation (defense in depth) - using Solidity's built-in block.chainid
+        require(data.dstChainId == block.chainid, "Vault: dstChainId mismatch");
+        
+        bool currentStatus = allowedBrokerSet.contains(data.brokerHash);
+        
+        if (data.allowed) {
+            // Add broker operation
+            if (currentStatus) {
+                // Broker already exists, emit already set event
+                emit SetBrokerFromLedgerAlreadySet(data.brokerHash, data.dstChainId, data.allowed);
+                return;
+            }
+            // Add the broker using EnumerableSet
+            allowedBrokerSet.add(data.brokerHash);
+        } else {
+            // Remove broker operation
+            if (!currentStatus) {
+                // Broker doesn't exist, emit already set event (broker already not present)
+                emit SetBrokerFromLedgerAlreadySet(data.brokerHash, data.dstChainId, data.allowed);
+                return;
+            }
+            // Remove the broker using EnumerableSet
+            allowedBrokerSet.remove(data.brokerHash);
+        }
+        
+        emit SetBrokerFromLedgerSuccess(data.brokerHash, data.dstChainId, data.allowed);
+    }
+
     /// @notice Change crossChainManager address
     function setCrossChainManager(address _crossChainManagerAddress)
         public
