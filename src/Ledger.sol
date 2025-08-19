@@ -102,7 +102,8 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, Version {
         emit ChangeLedgerImplD(_getLedgerStorage().ledgerImplD, _ledgerImplD);
         _getLedgerStorage().ledgerImplD = _ledgerImplD;
     }
-
+    
+    
     /// @notice Set the address of operatorManager contract
     /// @param _operatorManagerAddress new operatorManagerAddress
     function setOperatorManagerAddress(address _operatorManagerAddress)
