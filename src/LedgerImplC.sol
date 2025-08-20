@@ -262,8 +262,8 @@ contract LedgerImplC is ILedgerImplC, OwnableUpgradeable, LedgerDataLayout, Vers
             amount
         );
     }
-
-    // internal functions
+    
+    // ==================== Internal Functions ====================
 
     function _newGlobalEventId() internal returns (uint64) {
         return ++globalEventId;
