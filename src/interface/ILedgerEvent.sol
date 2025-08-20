@@ -221,13 +221,46 @@ interface ILedgerEvent {
         address receiver
     );
 
+    /// @dev Emitted when a balance transfer event is processed
+    /// @param eventId Global event ID for this transfer event
+    /// @param transferId Unique identifier linking debit and credit events
+    /// @param fromAccountId Source account ID
+    /// @param toAccountId Destination account ID
+    /// @param amount Transfer amount
+    /// @param tokenHash Token hash identifier
+    /// @param isFromAccountId True for debit event, false for credit event
+    /// @param transferType Type of transfer:
+    ///        0: BROKER_FEE - Broker fee distribution
+    ///        1: REFEREE_REBATE - Referee rebate
+    ///        2: REFERRER_REBATE - Referrer rebate
+    ///        3: INTERNAL_TRANSFER - Internal transfer between accounts
+    ///        4: SV_INTERNAL_TRANSFER - Special vault internal transfer
+    ///        5: SP_LIQUIDATION_FEE - Spot liquidation fee
+    ///        6: SP_ORDERLY_REVENUE - Spot Orderly revenue
+    ///        255: UNKNOWN - Unknown transfer type (fallback)
     event BalanceTransfer(
         uint64 indexed eventId,
-        bytes32 indexed accountId,
+        uint256 indexed transferId,
+        bytes32 fromAccountId,
+        bytes32 toAccountId,
         uint128 amount,
         bytes32 tokenHash,
         bool isFromAccountId,
         uint8 transferType
+    );
+
+    /// @dev Emitted when an internal transfer is finalized (both debit and credit processed)
+    /// @param eventId Global event ID for this finalization
+    /// @param transferId Unique identifier of the completed transfer
+    /// @param toAccountId Receiver account ID
+    /// @param tokenHash Token hash identifier
+    /// @param amount Transfer amount
+    event InternalTransferFinalised(
+        uint64 indexed eventId,
+        uint256 indexed transferId,
+        bytes32 toAccountId,
+        bytes32 tokenHash,
+        uint128 amount
     );
 
     event PrimeWalletSet(bytes32 id, address primeWallet);
