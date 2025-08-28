@@ -75,6 +75,9 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     // Swap Signer Address
     address public swapSigner;
 
+    // EnumerableSet for disabled deposit tokens
+    EnumerableSet.Bytes32Set private disabledDepositTokenSet;
+
     /* ================ Role ================ */
 
     bytes32 public constant SYMBOL_MANAGER_ROLE = keccak256("ORDERLY_MANAGER_SYMBOL_MANAGER_ROLE");
@@ -104,6 +107,15 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     /// @notice check non-zero address
     modifier nonZeroAddress(address _address) {
         if (_address == address(0)) revert AddressZero();
+        _;
+    }
+
+    /// @notice Check if the token is supported and not disabled
+    modifier checkDepositToken(bytes32 _tokenHash) {
+        if (!allowedTokenSet.contains(_tokenHash)) revert TokenNotAllowed();
+        if (disabledDepositTokenSet.contains(_tokenHash)) revert DepositTokenDisabled();
+        // check the token address if the token is not native token
+        if (_tokenHash != nativeTokenHash && allowedToken[_tokenHash] == address(0)) revert InvalidTokenAddress();
         _;
     }
 
@@ -153,7 +165,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
 
     /// @notice Add contract address for an allowed token given the tokenHash
     /// @dev This function is only called when changing allow status for a token, not for initializing
-    function setAllowedToken(bytes32 _tokenHash, bool _allowed) public override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE) {
+    function setAllowedToken(bytes32 _tokenHash, bool _allowed) public override onlyOwner {
         bool succ = false;
         if (_allowed) {
             // require tokenAddress exist, except for native token
@@ -166,7 +178,23 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
         emit SetAllowedToken(_tokenHash, _allowed);
     }
 
-    function setRebalanceEnableToken(bytes32 _tokenHash, bool _allowed) public override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE) {
+    function disableDepositToken(bytes32 _tokenHash) public override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE) {
+        require(allowedTokenSet.contains(_tokenHash), "Token not allowed");
+        disabledDepositTokenSet.add(_tokenHash);
+        emit DisableDepositToken(_tokenHash);
+    }
+
+    function enableDepositToken(bytes32 _tokenHash) public override onlyOwner {
+        require(disabledDepositTokenSet.contains(_tokenHash), "Token not disabled");
+        disabledDepositTokenSet.remove(_tokenHash);
+        emit EnableDepositToken(_tokenHash);
+    }
+
+    function getDisabledDepositToken() public view returns (bytes32[] memory) {
+        return disabledDepositTokenSet.values();
+    }
+
+    function setRebalanceEnableToken(bytes32 _tokenHash, bool _allowed) public override onlyOwner {
         bool succ = false;
         if (_allowed) {
             succ = _rebalanceEnableTokenSet.add(_tokenHash);
@@ -208,7 +236,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     function changeTokenAddressAndAllow(bytes32 _tokenHash, address _tokenAddress)
         public
         override
-        onlyRoleOrOwner(SYMBOL_MANAGER_ROLE)
+        onlyOwner
         nonZeroAddress(_tokenAddress)
     {
         allowedToken[_tokenHash] = _tokenAddress;
@@ -286,7 +314,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     }
 
     /// @notice The function to call deposit of CCManager contract
-    function _deposit(address receiver, VaultTypes.VaultDepositFE calldata data) internal whenNotPaused {
+    function _deposit(address receiver, VaultTypes.VaultDepositFE calldata data) internal {
         _validateDeposit(receiver, data);
         // avoid reentrancy, so `transferFrom` token at the beginning
         IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
@@ -349,9 +377,12 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     }
 
     /// @notice The function to validate deposit data
-    function _validateDeposit(address receiver, VaultTypes.VaultDepositFE calldata data) internal view {
+    function _validateDeposit(address receiver, VaultTypes.VaultDepositFE calldata data)
+        internal
+        view
+        checkDepositToken(data.tokenHash)
+    {
         // check if tokenHash and brokerHash are allowed
-        if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
         // check if accountId = keccak256(abi.encodePacked(brokerHash, receiver))
         if (!Utils.validateExtendedAccountId(address(protocolVault), data.accountId, data.brokerHash, receiver)) {
@@ -509,7 +540,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     function setTokenMessengerContract(address _tokenMessengerContract)
         public
         override
-        onlyRoleOrOwner(SYMBOL_MANAGER_ROLE)
+        onlyOwner
         nonZeroAddress(_tokenMessengerContract)
     {
         tokenMessengerContract = _tokenMessengerContract;
@@ -518,7 +549,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     function setRebalanceMessengerContract(address _rebalanceMessengerContract)
         public
         override
-        onlyRoleOrOwner(SYMBOL_MANAGER_ROLE)
+        onlyOwner
         nonZeroAddress(_rebalanceMessengerContract)
     {
         messageTransmitterContract = _rebalanceMessengerContract;
