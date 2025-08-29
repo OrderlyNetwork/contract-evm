@@ -24,12 +24,21 @@ import "../library/Version.sol";
 /// EACH CHAIN SHOULD HAVE ONE Vault CONTRACT.
 /// User can deposit erc20 (USDC) from Vault.
 /// Only crossChainManager can approve withdraw request.
-contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGuardRevised, AccessControlRevised, Version {
+
+contract Vault is
+    IVault,
+    PausableUpgradeable,
+    OwnableUpgradeable,
+    ReentrancyGuardRevised,
+    AccessControlRevised,
+    Version
+{
     using EnumerableSet for EnumerableSet.Bytes32Set;
     using SafeERC20 for IERC20;
     using Address for address payable;
     using SafeCast for uint256;
     // The cross-chain manager address on Vault side
+
     address public crossChainManagerAddress;
     // An incrasing deposit id / nonce on Vault side
     uint64 public depositId;
@@ -77,6 +86,8 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
 
     // EnumerableSet for disabled deposit tokens
     EnumerableSet.Bytes32Set private disabledDepositTokenSet;
+    // Vault Adapter Address
+    address public vaultAdapter;
 
     /* ================ Role ================ */
 
@@ -88,7 +99,9 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
 
     /// @notice onlyRoleOrOwner
     modifier onlyRoleOrOwner(bytes32 role) {
-        if (!hasRole(role, msg.sender) && msg.sender != owner()) revert AccessControlUnauthorizedAccount(msg.sender, role);
+        if (!hasRole(role, msg.sender) && msg.sender != owner()) {
+            revert AccessControlUnauthorizedAccount(msg.sender, role);
+        }
         _;
     }
 
@@ -147,7 +160,11 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     }
 
     /// @notice Set deposit limit for a token
-    function setDepositLimit(address _tokenAddress, uint256 _limit) public override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE) {
+    function setDepositLimit(address _tokenAddress, uint256 _limit)
+        public
+        override
+        onlyRoleOrOwner(SYMBOL_MANAGER_ROLE)
+    {
         tokenAddress2DepositLimit[_tokenAddress] = _limit;
         emit ChangeDepositLimit(_tokenAddress, _limit);
     }
@@ -210,7 +227,11 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     }
 
     /// @notice Add the hash value for an allowed brokerId
-    function setAllowedBroker(bytes32 _brokerHash, bool _allowed) public override onlyRoleOrOwner(BROKER_MANAGER_ROLE) {
+    function setAllowedBroker(bytes32 _brokerHash, bool _allowed)
+        public
+        override
+        onlyRoleOrOwner(BROKER_MANAGER_ROLE)
+    {
         bool succ = false;
         if (_allowed) {
             succ = allowedBrokerSet.add(_brokerHash);
@@ -227,7 +248,11 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     }
 
     /// @notice Set native token deposit limit
-    function setNativeTokenDepositLimit(uint256 _nativeTokenDepositLimit) public override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE) {
+    function setNativeTokenDepositLimit(uint256 _nativeTokenDepositLimit)
+        public
+        override
+        onlyRoleOrOwner(SYMBOL_MANAGER_ROLE)
+    {
         nativeTokenDepositLimit = _nativeTokenDepositLimit;
     }
 
@@ -353,7 +378,10 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
 
         if (nativeDepositAmount < data.tokenAmount) revert NativeTokenDepositAmountMismatch();
         // check native token deposit limit
-        if (nativeTokenDepositLimit != 0 && (data.tokenAmount + address(this).balance - nativeDepositAmount) > nativeTokenDepositLimit) {
+        if (
+            nativeTokenDepositLimit != 0
+                && (data.tokenAmount + address(this).balance - nativeDepositAmount) > nativeTokenDepositLimit
+        ) {
             revert DepositExceedLimit();
         }
         // cross-chain tx to ledger
@@ -384,10 +412,20 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     {
         // check if tokenHash and brokerHash are allowed
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
-        // check if accountId = keccak256(abi.encodePacked(brokerHash, receiver))
-        if (!Utils.validateExtendedAccountId(address(protocolVault), data.accountId, data.brokerHash, receiver)) {
-            revert AccountIdInvalid();
+
+        // check accountId validation based on caller
+        if (msg.sender == vaultAdapter) {
+            // Only vault adapter can use extended account ID validation (supports both legacy and SP account IDs)
+            if (!Utils.validateExtendedAccountId(address(protocolVault), data.accountId, data.brokerHash, receiver)) {
+                revert AccountIdInvalid();
+            }
+        } else {
+            // Regular users can only use legacy account ID validation
+            if (!Utils.validateAccountId(data.accountId, data.brokerHash, receiver)) {
+                revert AccountIdInvalid();
+            }
         }
+
         // check if tokenAmount > 0
         if (data.tokenAmount == 0) revert ZeroDeposit();
     }
@@ -641,6 +679,13 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     function setSwapSigner(address _swapSigner) public override onlyOwner {
         swapSigner = _swapSigner;
     }
+    
+    /// @notice Set the vault adapter address
+    function setVaultAdapter(address _vaultAdapter) public onlyOwner nonZeroAddress(_vaultAdapter) {
+        vaultAdapter = _vaultAdapter;
+
+        emit VaultAdapterSet(vaultAdapter);
+    }
 
     /// @notice Get all submitted swaps
     function getSubmittedSwaps() public view returns (bytes32[] memory) {
@@ -652,16 +697,12 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
         return _submittedSwapSet.contains(tradeId);
     }
 
-    function _verifySwapSignature(
-        VaultTypes.DelegateSwap calldata data
-    ) internal view {
+    function _verifySwapSignature(VaultTypes.DelegateSwap calldata data) internal view {
         // Verify Signature
         if (!DelegateSwapSignature.validateDelegateSwapSignature(swapSigner, data)) revert InvalidSwapSignature();
     }
 
-    function _validateSwap(
-        VaultTypes.DelegateSwap calldata data
-    ) internal view {
+    function _validateSwap(VaultTypes.DelegateSwap calldata data) internal view {
         // require nonce == swapNonce
         if (_submittedSwapSet.contains(data.tradeId)) revert SwapAlreadySubmitted();
 
@@ -682,12 +723,16 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
 
     /*=============== Delegate Swap ===============*/
 
-    function delegateSwap(
-        VaultTypes.DelegateSwap calldata data
-    ) external override whenNotPaused onlySwapOperator nonReentrant {
+    function delegateSwap(VaultTypes.DelegateSwap calldata data)
+        external
+        override
+        whenNotPaused
+        onlySwapOperator
+        nonReentrant
+    {
         _validateSwap(data);
         _submittedSwapSet.add(data.tradeId);
-        
+
         // Execute the transaction
         // Verify that the owner has enough tokens
         if (data.inTokenHash != nativeTokenHash) {
@@ -701,7 +746,7 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
         if (data.inTokenHash == nativeTokenHash) {
             value = data.value;
         }
-        
+
         // Execute the transaction
         (bool success, bytes memory result) = data.to.call{value: value}(data.swapCalldata);
         if (!success) {
@@ -716,14 +761,8 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
             IERC20 token = IERC20(tokenAddress);
             token.safeApprove(data.to, 0);
         }
-        
-        emit DelegateSwapExecuted(
-            data.tradeId,
-            data.inTokenHash,
-            data.inTokenAmount,
-            data.to,
-            data.value
-        );
+
+        emit DelegateSwapExecuted(data.tradeId, data.inTokenHash, data.inTokenAmount, data.to, data.value);
     }
 
     /* ================ Override AccessControlRevised To Simplify Access Control ================ */
@@ -737,5 +776,4 @@ contract Vault is IVault, PausableUpgradeable, OwnableUpgradeable, ReentrancyGua
     function revokeRole(bytes32 role, address account) public override onlyOwner {
         _revokeRole(role, account);
     }
-
 }
