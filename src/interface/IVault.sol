@@ -74,6 +74,7 @@ interface IVault {
     event SetCeffuAddress(address _oldCeffuAddress, address _newCeffuAddress);
     event DisableDepositToken(bytes32 indexed _tokenHash);
     event EnableDepositToken(bytes32 indexed _tokenHash);
+    event VaultAdapterSet(address adapter);
 
     function initialize() external;
 
