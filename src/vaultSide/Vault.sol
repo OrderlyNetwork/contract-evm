@@ -150,7 +150,7 @@ contract Vault is
 
     /// @notice Change crossChainManager address
     function setCrossChainManager(address _crossChainManagerAddress)
-        public
+        external
         override
         onlyOwner
         nonZeroAddress(_crossChainManagerAddress)
@@ -161,7 +161,7 @@ contract Vault is
 
     /// @notice Set deposit limit for a token
     function setDepositLimit(address _tokenAddress, uint256 _limit)
-        public
+        external
         override
         onlyRoleOrOwner(SYMBOL_MANAGER_ROLE)
     {
@@ -171,7 +171,7 @@ contract Vault is
 
     /// @notice Set protocolVault address
     function setProtocolVaultAddress(address _protocolVaultAddress)
-        public
+        external
         override
         onlyOwner
         nonZeroAddress(_protocolVaultAddress)
@@ -182,7 +182,7 @@ contract Vault is
 
     /// @notice Add contract address for an allowed token given the tokenHash
     /// @dev This function is only called when changing allow status for a token, not for initializing
-    function setAllowedToken(bytes32 _tokenHash, bool _allowed) public override onlyOwner {
+    function setAllowedToken(bytes32 _tokenHash, bool _allowed) external override onlyOwner {
         bool succ = false;
         if (_allowed) {
             // require tokenAddress exist, except for native token
@@ -195,23 +195,23 @@ contract Vault is
         emit SetAllowedToken(_tokenHash, _allowed);
     }
 
-    function disableDepositToken(bytes32 _tokenHash) public override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE) {
+    function disableDepositToken(bytes32 _tokenHash) external override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE) {
         require(allowedTokenSet.contains(_tokenHash), "Token not allowed");
         disabledDepositTokenSet.add(_tokenHash);
         emit DisableDepositToken(_tokenHash);
     }
 
-    function enableDepositToken(bytes32 _tokenHash) public override onlyOwner {
+    function enableDepositToken(bytes32 _tokenHash) external override onlyOwner {
         require(disabledDepositTokenSet.contains(_tokenHash), "Token not disabled");
         disabledDepositTokenSet.remove(_tokenHash);
         emit EnableDepositToken(_tokenHash);
     }
 
-    function getDisabledDepositToken() public view returns (bytes32[] memory) {
+    function getDisabledDepositToken() external view returns (bytes32[] memory) {
         return disabledDepositTokenSet.values();
     }
 
-    function setRebalanceEnableToken(bytes32 _tokenHash, bool _allowed) public override onlyOwner {
+    function setRebalanceEnableToken(bytes32 _tokenHash, bool _allowed) external override onlyOwner {
         bool succ = false;
         if (_allowed) {
             succ = _rebalanceEnableTokenSet.add(_tokenHash);
@@ -222,13 +222,13 @@ contract Vault is
         emit SetRebalanceEnableToken(_tokenHash, _allowed);
     }
 
-    function getAllRebalanceEnableToken() public view returns (bytes32[] memory) {
+    function getAllRebalanceEnableToken() external view returns (bytes32[] memory) {
         return _rebalanceEnableTokenSet.values();
     }
 
     /// @notice Add the hash value for an allowed brokerId
     function setAllowedBroker(bytes32 _brokerHash, bool _allowed)
-        public
+        external
         override
         onlyRoleOrOwner(BROKER_MANAGER_ROLE)
     {
@@ -243,13 +243,13 @@ contract Vault is
     }
 
     /// @notice Set native token hash
-    function setNativeTokenHash(bytes32 _nativeTokenHash) public override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE) {
+    function setNativeTokenHash(bytes32 _nativeTokenHash) external override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE) {
         nativeTokenHash = _nativeTokenHash;
     }
 
     /// @notice Set native token deposit limit
     function setNativeTokenDepositLimit(uint256 _nativeTokenDepositLimit)
-        public
+        external
         override
         onlyRoleOrOwner(SYMBOL_MANAGER_ROLE)
     {
@@ -259,7 +259,7 @@ contract Vault is
     /// @notice Change the token address for an allowed token, used when a new token is added
     /// @dev maybe should called `addTokenAddressAndAllow`, because it's for initializing
     function changeTokenAddressAndAllow(bytes32 _tokenHash, address _tokenAddress)
-        public
+        external
         override
         onlyOwner
         nonZeroAddress(_tokenAddress)
@@ -679,7 +679,7 @@ contract Vault is
     function setSwapSigner(address _swapSigner) public override onlyOwner {
         swapSigner = _swapSigner;
     }
-    
+
     /// @notice Set the vault adapter address
     function setVaultAdapter(address _vaultAdapter) public onlyOwner nonZeroAddress(_vaultAdapter) {
         vaultAdapter = _vaultAdapter;
