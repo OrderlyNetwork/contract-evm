@@ -512,6 +512,34 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, Version {
         );
     }
 
+    /// @notice Initiates cross-chain broker status modification to multiple vault chains
+    /// @dev Only callable by owner, triggers cross-contract calls to VaultManager and LedgerCrossChainManager
+    /// @param chainIds Array of destination chain IDs where broker status should be modified
+    /// @param brokerHash Hash of the broker to be modified
+    /// @param allowed true to add broker, false to remove broker
+    function setBrokerFromLedger(
+        uint256[] calldata chainIds, 
+        bytes32 brokerHash, 
+        bool allowed
+    ) external override onlyOwner {
+        // Validate input parameters
+        require(chainIds.length > 0, "Ledger: empty chainIds");
+        
+        // Step 1: Update local VaultManager state for the broker
+        // This updates the broker status in the local Ledger chain
+        vaultManager.setAllowedBroker(brokerHash, allowed);
+        
+        // Step 2: Trigger cross-chain messages
+        // Call LedgerCrossChainManager to send messages to vault chains
+        ILedgerCrossChainManager(crossChainManagerAddress).setBrokerCrossChain(
+            chainIds, 
+            brokerHash, 
+            allowed
+        );
+        
+        emit SetBrokerFromLedgerInitiated(chainIds, brokerHash, allowed);
+    }
+
     // inner function for delegatecall
     function _delegatecall(bytes memory data, address impl) private {
         (bool success, bytes memory returnData) = impl.delegatecall(data);

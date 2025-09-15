@@ -321,4 +321,14 @@ interface ILedgerEvent {
         uint64 timestamp,
         bool side
     );
+    
+    /// @notice Emitted when SetBroker operation is initiated from Ledger
+    /// @param chainIds Array of destination chain IDs where broker status will be modified
+    /// @param brokerHash Hash of the broker being modified
+    /// @param allowed true if adding broker, false if removing broker
+    event SetBrokerFromLedgerInitiated(
+        uint256[] chainIds, 
+        bytes32 indexed brokerHash, 
+        bool allowed
+    );
 }

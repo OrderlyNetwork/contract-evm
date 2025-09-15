@@ -57,4 +57,13 @@ contract LedgerCrossChainManagerMock is ILedgerCrossChainManager, Ownable {
     }
 
     function withdraw2Contract(EventTypes.Withdraw2Contract memory data) external override {}
+    
+    function setBrokerCrossChain(
+        uint256[] calldata chainIds, 
+        bytes32 brokerHash, 
+        bool allowed
+    ) external override {
+        // Mock implementation - just emit an event or set a flag for testing
+        // In real implementation, this would send cross-chain messages
+    }
 }
