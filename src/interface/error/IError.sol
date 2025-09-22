@@ -42,8 +42,8 @@ interface IError {
     error WithdrawFeeTooLarge(uint128 maxFee, uint128 withdrawFee);
     error WithdrawToAddressZero();
     error InvalidPrimeWallet();
-    error ProtocolVaultAddressMismatch(address want, address got);
     error NotImplemented();
+    error InvalidVault();
 
     // OperatorManager Error
     error InvalidBizType(uint8 bizType);

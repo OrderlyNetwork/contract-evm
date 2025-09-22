@@ -275,7 +275,7 @@ interface ILedgerEvent {
         uint256 chainId,
         uint8 swapStatus
     );
-
+    event VaultSet(address vault, bool isValid);
     // All events below are deprecated
     // Keep them for indexer backward compatibility
 

@@ -414,12 +414,7 @@ contract Vault is
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
 
         // check accountId validation based on caller
-        if (msg.sender == vaultAdapter) {
-            // Only vault adapter can use extended account ID validation (supports both legacy and SP account IDs)
-            if (!Utils.validateExtendedAccountId(address(protocolVault), data.accountId, data.brokerHash, receiver)) {
-                revert AccountIdInvalid();
-            }
-        } else {
+        if (msg.sender != vaultAdapter) {
             // Regular users can only use legacy account ID validation
             if (!Utils.validateAccountId(data.accountId, data.brokerHash, receiver)) {
                 revert AccountIdInvalid();
@@ -512,7 +507,7 @@ contract Vault is
                 // because we check type at the beginning, so we can safely check the type here
                 if (data.vaultType == VaultTypes.VaultEnum.ProtocolVault) {
                     tokenAddress.safeApprove(data.receiver, amount);
-                    protocolVault.depositFromStrategy(data.clientId, address(tokenAddress), amount);
+                    IProtocolVault(data.receiver).depositFromStrategy(data.clientId, address(tokenAddress), amount);
                 } else if (data.vaultType == VaultTypes.VaultEnum.Ceffu) {
                     tokenAddress.safeTransfer(data.receiver, amount);
                 }
