@@ -35,9 +35,6 @@ contract LedgerImplD is ILedgerImplD, OwnableUpgradeable, LedgerDataLayout, Vers
             revert TokenNotAllowed(tokenHash, withdraw.chainId);
         }
         {
-            if (!Utils.validateExtendedAccountId(withdraw.receiver, withdraw.accountId, brokerHash, withdraw.sender)) {
-                revert AccountIdInvalid();
-            }
             if (withdraw.receiver == address(0)) revert WithdrawToAddressZero();
 
             if (withdraw.vaultType == EventTypes.VaultEnum.Ceffu) {
@@ -45,6 +42,11 @@ contract LedgerImplD is ILedgerImplD, OwnableUpgradeable, LedgerDataLayout, Vers
                     revert InvalidPrimeWallet();
                 }
             } else if (withdraw.vaultType == EventTypes.VaultEnum.ProtocolVault) {
+                if (
+                    !Utils.validateExtendedAccountId(withdraw.receiver, withdraw.accountId, brokerHash, withdraw.sender)
+                ) {
+                    revert AccountIdInvalid();
+                }
                 if (!isValidVault[withdraw.receiver]) {
                     revert InvalidVault();
                 }
