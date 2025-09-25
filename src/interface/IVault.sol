@@ -35,10 +35,21 @@ interface IVault {
         uint128 tokenAmount
     );
 
+
+    // deprecated
     event AccountDepositTo(
         bytes32 indexed accountId,
         address indexed userAddress,
         uint64 indexed depositNonce,
+        bytes32 tokenHash,
+        uint128 tokenAmount
+    );
+
+    event AccountDepositTo(
+        bytes32 indexed accountId,
+        bytes32 indexed brokerHash,
+        address indexed userAddress,
+        uint64  depositNonce,
         bytes32 tokenHash,
         uint128 tokenAmount
     );
@@ -75,6 +86,7 @@ interface IVault {
     event SetCeffuAddress(address _oldCeffuAddress, address _newCeffuAddress);
     event DisableDepositToken(bytes32 indexed _tokenHash);
     event EnableDepositToken(bytes32 indexed _tokenHash);
+    event VaultAdapterSet(address adapter);
 
     // SetBroker from ledger events
     event SetBrokerFromLedgerAlreadySet(bytes32 indexed brokerHash, uint256 dstChainId, bool allowed);
