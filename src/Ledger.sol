@@ -13,18 +13,19 @@ import "./library/Signature.sol";
 import "./library/typesHelper/AccountTypeHelper.sol";
 import "./library/typesHelper/AccountTypePositionHelper.sol";
 import "./library/typesHelper/SafeCastHelper.sol";
+import "./interface/ILedgerCrossChainManagerV2.sol";
 import "./interface/ILedgerImplA.sol";
 import "./interface/ILedgerImplB.sol";
 import "./interface/ILedgerImplC.sol";
 import "./interface/ILedgerImplD.sol";
 import "./library/Version.sol";
-
+import "./oz5Revised/AccessControlRevised.sol";
 /// @title Ledger contract
 /// @author Orderly_Rubick
 /// @notice Ledger is responsible for saving traders' Account (balance, perpPosition, and other meta)
 /// and global state (e.g. futuresUploadBatchId)
 /// This contract should only have one in main-chain (e.g. OP orderly L2)
-contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, Version {
+contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, AccessControlRevised, Version {
     using AccountTypeHelper for AccountTypes.Account;
     using AccountTypePositionHelper for AccountTypes.PerpPosition;
     using SafeCastHelper for *;
@@ -41,10 +42,20 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, Version {
     // keccak256(abi.encode(uint256(keccak256("orderly.Ledger")) - 1)) & ~bytes32(uint256(0xff))
     bytes32 private constant LedgerStorageLocation = 0x220427b0bfdd3e8fe9a4c85265eee2c38bb3f4591655846e819d36b613b63200;
 
+    /* ================ Role ================ */
+    bytes32 public constant SYMBOL_MANAGER_ROLE = keccak256("ORDERLY_MANAGER_SYMBOL_MANAGER_ROLE");
+    bytes32 public constant BROKER_MANAGER_ROLE = keccak256("ORDERLY_MANAGER_BROKER_MANAGER_ROLE");
+
     function _getLedgerStorage() private pure returns (LedgerStorage storage $) {
         assembly {
             $.slot := LedgerStorageLocation
         }
+    }
+
+    /// @notice check if the caller is the owner or has the role
+    modifier onlyOwnerOrRole(bytes32 role) {
+        if (!hasRole(role, msg.sender) && msg.sender != owner()) revert AccessControlUnauthorizedAccount(msg.sender, role);
+        _;
     }
 
     /// @notice require operator
@@ -559,8 +570,9 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, Version {
     function setBrokerFromLedger(
         uint256[] calldata chainIds, 
         bytes32 brokerHash, 
+        uint16 brokerIndex,
         bool allowed
-    ) external override onlyOwner {
+    ) external override onlyOwnerOrRole(BROKER_MANAGER_ROLE) {
         // Validate input parameters
         require(chainIds.length > 0, "Ledger: empty chainIds");
         
@@ -575,8 +587,23 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, Version {
             brokerHash, 
             allowed
         );
+
+        // Step 3: Set broker hash and its index number on SolConnector if the broker should be supported on Solana
+        ILedgerCrossChainManagerV2(crossChainManagerV2Address).setBrokerFromeLedger(msg.sender, brokerHash, brokerIndex);
         
         emit SetBrokerFromLedgerInitiated(chainIds, brokerHash, allowed);
+    }
+
+    /* ================ Override AccessControlRevised To Simplify Access Control ================ */
+
+    /// @notice Override grantRole
+    function grantRole(bytes32 role, address account) public override onlyOwner {
+        _grantRole(role, account);
+    }
+
+    /// @notice Override revokeRole
+    function revokeRole(bytes32 role, address account) public override onlyOwner {
+        _revokeRole(role, account);
     }
 
     // inner function for delegatecall

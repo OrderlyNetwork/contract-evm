@@ -85,6 +85,7 @@ interface ILedger is IError, ILedgerEvent {
     function setBrokerFromLedger(
         uint256[] calldata chainIds, 
         bytes32 brokerHash, 
+        uint16 brokerIndex,
         bool allowed
     ) external;
 }
