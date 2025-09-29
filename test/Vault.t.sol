@@ -23,7 +23,7 @@ contract VaultTest is Test {
     VaultCrossChainManagerMock vaultCrossChainManager;
     LedgerCrossChainManagerMock ledgerCrossChainManager;
     TestUSDC tUSDC;
-    IVault vault;
+    Vault vault;
     TransparentUpgradeableProxy vaultProxy;
     uint128 constant AMOUNT = 1000000;
     address constant SENDER = 0x4FDDB51ADe1fa66952de254bE7E1a84EEB153331;
@@ -60,14 +60,20 @@ contract VaultTest is Test {
     TransparentUpgradeableProxy feeProxy;
     TransparentUpgradeableProxy marketProxy;
 
+    address constant OPERATOR = address(bytes20(keccak256("operator")));
+    bytes32 constant SYMBOL_MANAGER_ROLE = keccak256("ORDERLY_MANAGER_SYMBOL_MANAGER_ROLE");
+    bytes32 constant BROKER_MANAGER_ROLE = keccak256("ORDERLY_MANAGER_BROKER_MANAGER_ROLE");
+
     function setUp() public {
         admin = new ProxyAdmin();
 
         tUSDC = new TestUSDC();
         IVault vaultImpl = new Vault();
         vaultProxy = new TransparentUpgradeableProxy(address(vaultImpl), address(admin), "");
-        vault = IVault(address(vaultProxy));
+        vault = Vault(address(vaultProxy));
         vault.initialize();
+        vault.grantRole(SYMBOL_MANAGER_ROLE, OPERATOR);
+        vault.grantRole(BROKER_MANAGER_ROLE, OPERATOR);
 
         vault.changeTokenAddressAndAllow(TOKEN_HASH, address(tUSDC));
         vault.setAllowedBroker(BROKER_HASH, true);
@@ -130,6 +136,12 @@ contract VaultTest is Test {
         ledgerCrossChainManager.setLedger(address(ledger));
     }
 
+    function test_check() public {
+        assertEq(vault.owner(), address(this));
+        assertTrue(vault.hasRole(SYMBOL_MANAGER_ROLE, OPERATOR));
+        assertTrue(vault.hasRole(BROKER_MANAGER_ROLE, OPERATOR));
+    }
+
     function test_deposit() public {
         vm.startPrank(SENDER);
         tUSDC.mint(SENDER, AMOUNT);
@@ -189,6 +201,36 @@ contract VaultTest is Test {
         vm.expectRevert(IVault.AccountIdInvalid.selector);
         vault.deposit(depositData);
         vm.stopPrank();
+    }
+
+    function test_depositDisabledToken() public {
+        // Operator disables deposit token
+        vm.startPrank(OPERATOR);
+        vault.disableDepositToken(TOKEN_HASH);
+        vm.stopPrank();
+
+        // Sender fails to deposit with disabled token
+        vm.startPrank(SENDER);
+        vm.expectRevert(IVault.DepositTokenDisabled.selector);
+        vault.deposit(depositData);
+        vm.stopPrank();
+
+        // Operator fails to enable deposit token
+        vm.startPrank(OPERATOR);
+        vm.expectRevert("Ownable: caller is not the owner");
+        vault.enableDepositToken(TOKEN_HASH);
+        vm.stopPrank();
+
+        // Owner enables deposit token
+        vm.startPrank(vault.owner());
+        vault.enableDepositToken(TOKEN_HASH);
+        vm.stopPrank();
+
+        // Sender deposits with enabled token
+        vm.startPrank(SENDER);
+        tUSDC.mint(SENDER, AMOUNT);
+        tUSDC.approve(address(vault), AMOUNT);
+        vault.deposit(depositData);
     }
 
     function test_withdraw() public {
