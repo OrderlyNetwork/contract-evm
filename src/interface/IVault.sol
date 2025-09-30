@@ -9,8 +9,6 @@ interface IVault {
     error OnlyCrossChainManagerCanCall();
     error AccountIdInvalid();
     error TokenNotAllowed();
-    error TokenNotDisabled();
-    error DepositTokenDisabled();
     error InvalidTokenAddress();
     error BrokerNotAllowed();
     error BalanceNotEnough(uint256 balance, uint128 amount);
@@ -71,26 +69,24 @@ interface IVault {
     event WithdrawFailed(address indexed token, address indexed receiver, uint256 amount);
     event SetRebalanceEnableToken(bytes32 indexed _tokenHash, bool _allowed);
     event DelegateSwapExecuted(bytes32 indexed tradeId, bytes32 inTokenHash, uint256 inTokenAmount, address to, uint256 value);
-
     event SetProtocolVaultAddress(address _oldProtocolVaultAddress, address _newProtocolVaultAddress);
     event SetCeffuAddress(address _oldCeffuAddress, address _newCeffuAddress);
-    event DisableDepositToken(bytes32 indexed _tokenHash);
-    event EnableDepositToken(bytes32 indexed _tokenHash);
-    event VaultAdapterSet(address adapter);
-
     // SetBroker from ledger events
     event SetBrokerFromLedgerAlreadySet(bytes32 indexed brokerHash, uint256 dstChainId, bool allowed);
     event SetBrokerFromLedgerSuccess(bytes32 indexed brokerHash, uint256 dstChainId, bool allowed);
 
     function initialize() external;
 
+    // user call
     function deposit(VaultTypes.VaultDepositFE calldata data) external payable;
     function depositTo(address receiver, VaultTypes.VaultDepositFE calldata data) external payable;
     function getDepositFee(address recevier, VaultTypes.VaultDepositFE calldata data) external view returns (uint256);
-    function enableDepositFee(bool _enabled) external;
+    
+    // cross-chain manager call
     function withdraw(VaultTypes.VaultWithdraw calldata data) external;
     function delegateSigner(VaultTypes.VaultDelegate calldata data) external;
     function withdraw2Contract(VaultTypes.VaultWithdraw2Contract calldata data) external;
+    function setBrokerFromLedger(EventTypes.SetBrokerData calldata data) external;
 
     // CCTP: functions for receive rebalance msg
     function rebalanceMint(RebalanceTypes.RebalanceMintCCData calldata data) external;
@@ -102,6 +98,7 @@ interface IVault {
     function setCrossChainManager(address _crossChainManagerAddress) external;
     function setDepositLimit(address _tokenAddress, uint256 _limit) external;
     function setProtocolVaultAddress(address _protocolVaultAddress) external;
+    function enableDepositFee(bool _enabled) external;
     function emergencyPause() external;
     function emergencyUnpause() external;
 
@@ -111,17 +108,13 @@ interface IVault {
     function setNativeTokenHash(bytes32 _nativeTokenHash) external;
     function setNativeTokenDepositLimit(uint256 _nativeTokenDepositLimit) external;
     function setRebalanceEnableToken(bytes32 _tokenHash, bool _allowed) external;
-    function disableDepositToken(bytes32 _tokenHash) external;
-    function enableDepositToken(bytes32 _tokenHash) external;
     function changeTokenAddressAndAllow(bytes32 _tokenHash, address _tokenAddress) external;
     function getAllowedToken(bytes32 _tokenHash) external view returns (address);
     function getAllowedBroker(bytes32 _brokerHash) external view returns (bool);
     function getAllAllowedToken() external view returns (bytes32[] memory);
     function getAllAllowedBroker() external view returns (bytes32[] memory);
     function getAllRebalanceEnableToken() external view returns (bytes32[] memory);
-
-    // cross-chain broker management
-    function setBrokerFromLedger(EventTypes.SetBrokerData calldata data) external;
+        
 
     // Delegate swap function
     function setSwapOperator(address _swapOperator) external;
