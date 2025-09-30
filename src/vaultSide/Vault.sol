@@ -400,7 +400,7 @@ contract Vault is
         } else {
             IVaultCrossChainManager(crossChainManagerAddress).deposit(depositData);
         }
-        emit AccountDepositTo(data.accountId, data.brokerHash, receiver, depositId, data.tokenHash, data.tokenAmount);
+        emit AccountDepositTo(data.accountId, receiver, depositId, data.tokenHash, data.tokenAmount);
     }
 
     function _ethDeposit(address receiver, VaultTypes.VaultDepositFE calldata data) internal {
@@ -433,7 +433,7 @@ contract Vault is
         } else {
             IVaultCrossChainManager(crossChainManagerAddress).deposit(depositData);
         }
-        emit AccountDepositTo(data.accountId, data.brokerHash, receiver, depositId, data.tokenHash, data.tokenAmount);
+        emit AccountDepositTo(data.accountId, receiver, depositId, data.tokenHash, data.tokenAmount);
     }
 
     /// @notice The function to validate deposit data

@@ -35,21 +35,10 @@ interface IVault {
         uint128 tokenAmount
     );
 
-
-    // deprecated
     event AccountDepositTo(
         bytes32 indexed accountId,
         address indexed userAddress,
         uint64 indexed depositNonce,
-        bytes32 tokenHash,
-        uint128 tokenAmount
-    );
-
-    event AccountDepositTo(
-        bytes32 indexed accountId,
-        bytes32 indexed brokerHash,
-        address indexed userAddress,
-        uint64  depositNonce,
         bytes32 tokenHash,
         uint128 tokenAmount
     );
