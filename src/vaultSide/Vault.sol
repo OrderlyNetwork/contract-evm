@@ -84,6 +84,11 @@ contract Vault is
     // Swap Signer Address
     address public swapSigner;
 
+    // EnumerableSet for disabled deposit tokens
+    EnumerableSet.Bytes32Set private disabledDepositTokenSet;
+    // Vault Adapter Address
+    address public vaultAdapter;
+
     /* ================ Role ================ */
 
     bytes32 public constant SYMBOL_MANAGER_ROLE = keccak256("ORDERLY_MANAGER_SYMBOL_MANAGER_ROLE");
@@ -94,7 +99,9 @@ contract Vault is
 
     /// @notice onlyRoleOrOwner
     modifier onlyRoleOrOwner(bytes32 role) {
-        if (!hasRole(role, msg.sender) && msg.sender != owner()) revert AccessControlUnauthorizedAccount(msg.sender, role);
+        if (!hasRole(role, msg.sender) && msg.sender != owner()) {
+            revert AccessControlUnauthorizedAccount(msg.sender, role);
+        }
         _;
     }
 
@@ -116,6 +123,14 @@ contract Vault is
         _;
     }
 
+    /// @notice Check if the token is supported and not disabled
+    modifier checkDepositToken(bytes32 _tokenHash) {
+        if (!allowedTokenSet.contains(_tokenHash)) revert TokenNotAllowed();
+        if (disabledDepositTokenSet.contains(_tokenHash)) revert DepositTokenDisabled();
+        // check the token address if the token is not native token
+        if (_tokenHash != nativeTokenHash && allowedToken[_tokenHash] == address(0)) revert InvalidTokenAddress();
+        _;
+    }
 
     /*=============== Constructor ===============*/
 
@@ -212,6 +227,21 @@ contract Vault is
         emit SetAllowedToken(_tokenHash, _allowed);
     }
 
+    function disableDepositToken(bytes32 _tokenHash) external override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE) {
+        if (!allowedTokenSet.contains(_tokenHash)) revert TokenNotAllowed();
+        disabledDepositTokenSet.add(_tokenHash);
+        emit DisableDepositToken(_tokenHash);
+    }
+
+    function enableDepositToken(bytes32 _tokenHash) external override onlyOwner {
+        if (!disabledDepositTokenSet.contains(_tokenHash)) revert TokenNotDisabled();
+        disabledDepositTokenSet.remove(_tokenHash);
+        emit EnableDepositToken(_tokenHash);
+    }
+
+    function getDisabledDepositToken() external view returns (bytes32[] memory) {
+        return disabledDepositTokenSet.values();
+    }
 
     function setRebalanceEnableToken(bytes32 _tokenHash, bool _allowed) external override onlyOwner {
         bool succ = false;
@@ -410,13 +440,24 @@ contract Vault is
     function _validateDeposit(address receiver, VaultTypes.VaultDepositFE calldata data)
         internal
         view
+        checkDepositToken(data.tokenHash)
     {
-         if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
         // check if tokenHash and brokerHash are allowed
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
-        if (!Utils.validateExtendedAccountId(address(protocolVault), data.accountId, data.brokerHash, receiver)) {
-            revert AccountIdInvalid();
+
+        // check accountId validation based on caller
+        if (msg.sender == vaultAdapter) {
+            // Only vault adapter can use extended account ID validation (supports both legacy and SP account IDs)
+            if (!Utils.validateExtendedAccountId(address(protocolVault), data.accountId, data.brokerHash, receiver)) {
+                revert AccountIdInvalid();
+            }
+        } else {
+            // Regular users can only use legacy account ID validation
+            if (!Utils.validateAccountId(data.accountId, data.brokerHash, receiver)) {
+                revert AccountIdInvalid();
+            }
         }
+
         // check if tokenAmount > 0
         if (data.tokenAmount == 0) revert ZeroDeposit();
     }
@@ -669,6 +710,13 @@ contract Vault is
     /// @notice Set the signer for the Swap
     function setSwapSigner(address _swapSigner) public override onlyOwner {
         swapSigner = _swapSigner;
+    }
+
+    /// @notice Set the vault adapter address
+    function setVaultAdapter(address _vaultAdapter) public onlyOwner nonZeroAddress(_vaultAdapter) {
+        vaultAdapter = _vaultAdapter;
+
+        emit VaultAdapterSet(vaultAdapter);
     }
 
     /// @notice Get all submitted swaps
