@@ -588,8 +588,11 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, AccessControlR
             allowed
         );
 
-        // Step 3: Set broker hash and its index number on SolConnector if the broker should be supported on Solana
-        ILedgerCrossChainManagerV2(crossChainManagerV2Address).setBrokerFromeLedger(msg.sender, brokerHash, brokerIndex);
+        // Step 3: Set broker hash and its index number when first time allowed
+        if (allowed) {
+            ILedgerCrossChainManagerV2(crossChainManagerV2Address).setBrokerFromLedger(msg.sender, brokerHash, brokerIndex);
+        }
+
         
         emit SetBrokerFromLedgerInitiated(chainIds, brokerHash, allowed);
     }

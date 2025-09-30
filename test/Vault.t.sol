@@ -374,4 +374,39 @@ contract VaultTest is Test {
         vault.deposit(depositData);
         vm.stopPrank();
     }
+
+    function test_setBrokerFromLedger() public {
+        bytes32 brokerHash = keccak256("zion1");
+        EventTypes.SetBrokerData memory data = EventTypes.SetBrokerData(
+            {
+                brokerHash: brokerHash,
+            dstChainId: block.chainid,
+            allowed: true
+            }
+        );
+        vm.prank(address(vaultCrossChainManager));
+        vm.expectEmit();
+        emit IVault.SetBrokerFromLedgerSuccess(brokerHash, block.chainid, true);
+        vault.setBrokerFromLedger(data);
+        assertEq(vault.getAllowedBroker(brokerHash), true);
+
+        vm.prank(address(vaultCrossChainManager));
+        vm.expectEmit();
+        emit IVault.SetBrokerFromLedgerAlreadySet(brokerHash, block.chainid, true);
+        vault.setBrokerFromLedger(data);
+
+        data.allowed = false;
+        vm.prank(address(vaultCrossChainManager));
+        vm.expectEmit();
+        emit IVault.SetBrokerFromLedgerSuccess(brokerHash, block.chainid, false);
+        vault.setBrokerFromLedger(data);
+        assertEq(vault.getAllowedBroker(brokerHash), false);
+
+
+        vm.prank(address(vaultCrossChainManager));
+        vm.expectEmit();
+        emit IVault.SetBrokerFromLedgerAlreadySet(brokerHash, block.chainid, false);
+        vault.setBrokerFromLedger(data);
+    }
+    
 }
