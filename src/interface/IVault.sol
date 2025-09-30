@@ -9,6 +9,7 @@ interface IVault {
     error OnlyCrossChainManagerCanCall();
     error AccountIdInvalid();
     error TokenNotAllowed();
+    error TokenNotDisabled();
     error DepositTokenDisabled();
     error InvalidTokenAddress();
     error BrokerNotAllowed();

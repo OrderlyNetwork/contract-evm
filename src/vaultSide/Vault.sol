@@ -228,13 +228,13 @@ contract Vault is
     }
 
     function disableDepositToken(bytes32 _tokenHash) external override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE) {
-        require(allowedTokenSet.contains(_tokenHash), "Token not allowed");
+        if (!allowedTokenSet.contains(_tokenHash)) revert TokenNotAllowed();
         disabledDepositTokenSet.add(_tokenHash);
         emit DisableDepositToken(_tokenHash);
     }
 
     function enableDepositToken(bytes32 _tokenHash) external override onlyOwner {
-        require(disabledDepositTokenSet.contains(_tokenHash), "Token not disabled");
+        if (!disabledDepositTokenSet.contains(_tokenHash)) revert TokenNotDisabled();
         disabledDepositTokenSet.remove(_tokenHash);
         emit EnableDepositToken(_tokenHash);
     }

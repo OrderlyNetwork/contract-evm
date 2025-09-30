@@ -336,4 +336,42 @@ contract VaultTest is Test {
         vault.deposit(depositData);
         vm.stopPrank();
     }
+
+    function test_disableToken() public {
+        address symboleManager = address(bytes20(keccak256("symbolManager")));
+        vm.prank(vault.owner());
+        vault.grantRole(SYMBOL_MANAGER_ROLE, symboleManager);
+
+       
+        vm.startPrank(symboleManager);
+         // try to disable unallowed token and expect revert
+        bytes32 unallowedTokenHash = keccak256("unallowedToken");
+        vm.expectRevert(IVault.TokenNotAllowed.selector);
+        vault.disableDepositToken(unallowedTokenHash);
+        
+        // disable allowed token    
+        vault.disableDepositToken(TOKEN_HASH);
+        vm.stopPrank();
+
+        vm.prank(SENDER);
+        // try to deposit disabled token and expect revert
+        vm.expectRevert(IVault.DepositTokenDisabled.selector);
+        vault.deposit(depositData);
+
+        vm.prank(symboleManager);
+        vm.expectRevert("Ownable: caller is not the owner");
+        vault.enableDepositToken(TOKEN_HASH);
+
+        vm.startPrank(vault.owner());
+        vault.enableDepositToken(TOKEN_HASH);
+        vm.stopPrank();
+        
+        // deposit should succeed
+        tUSDC.mint(SENDER, AMOUNT);
+        vm.startPrank(SENDER);
+        tUSDC.approve(address(vault), AMOUNT);
+        
+        vault.deposit(depositData);
+        vm.stopPrank();
+    }
 }
