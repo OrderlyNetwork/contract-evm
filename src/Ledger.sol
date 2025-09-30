@@ -578,7 +578,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, AccessControlR
         
         // Step 1: Update local VaultManager state for the broker
         // This updates the broker status in the local Ledger chain
-        vaultManager.setAllowedBroker(brokerHash, allowed);
+        vaultManager.setBrokerFromLedger(brokerHash, allowed);
         
         // Step 2: Trigger cross-chain messages
         // Call LedgerCrossChainManager to send messages to vault chains
