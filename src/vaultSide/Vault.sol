@@ -84,10 +84,6 @@ contract Vault is
     // Swap Signer Address
     address public swapSigner;
 
-    // EnumerableSet for disabled deposit tokens
-    EnumerableSet.Bytes32Set private disabledDepositTokenSet;
-    // Vault Adapter Address
-    address public vaultAdapter;
 
     /* ================ Role ================ */
 
@@ -120,15 +116,6 @@ contract Vault is
     /// @notice check non-zero address
     modifier nonZeroAddress(address _address) {
         if (_address == address(0)) revert AddressZero();
-        _;
-    }
-
-    /// @notice Check if the token is supported and not disabled
-    modifier checkDepositToken(bytes32 _tokenHash) {
-        if (!allowedTokenSet.contains(_tokenHash)) revert TokenNotAllowed();
-        if (disabledDepositTokenSet.contains(_tokenHash)) revert DepositTokenDisabled();
-        // check the token address if the token is not native token
-        if (_tokenHash != nativeTokenHash && allowedToken[_tokenHash] == address(0)) revert InvalidTokenAddress();
         _;
     }
 
@@ -227,22 +214,6 @@ contract Vault is
         emit SetAllowedToken(_tokenHash, _allowed);
     }
 
-    function disableDepositToken(bytes32 _tokenHash) external override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE) {
-        if (!allowedTokenSet.contains(_tokenHash)) revert TokenNotAllowed();
-        disabledDepositTokenSet.add(_tokenHash);
-        emit DisableDepositToken(_tokenHash);
-    }
-
-    function enableDepositToken(bytes32 _tokenHash) external override onlyOwner {
-        if (!disabledDepositTokenSet.contains(_tokenHash)) revert TokenNotDisabled();
-        disabledDepositTokenSet.remove(_tokenHash);
-        emit EnableDepositToken(_tokenHash);
-    }
-
-    function getDisabledDepositToken() external view returns (bytes32[] memory) {
-        return disabledDepositTokenSet.values();
-    }
-
     function setRebalanceEnableToken(bytes32 _tokenHash, bool _allowed) external override onlyOwner {
         bool succ = false;
         if (_allowed) {
@@ -275,7 +246,7 @@ contract Vault is
     }
 
     /// @notice Set native token hash
-    function setNativeTokenHash(bytes32 _nativeTokenHash) external override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE) {
+    function setNativeTokenHash(bytes32 _nativeTokenHash) external override onlyOwner {
         nativeTokenHash = _nativeTokenHash;
     }
 
@@ -411,8 +382,7 @@ contract Vault is
         if (nativeDepositAmount < data.tokenAmount) revert NativeTokenDepositAmountMismatch();
         // check native token deposit limit
         if (
-            nativeTokenDepositLimit != 0
-                && (data.tokenAmount + address(this).balance - nativeDepositAmount) > nativeTokenDepositLimit
+            nativeTokenDepositLimit != 0 && (data.tokenAmount + address(this).balance - nativeDepositAmount) > nativeTokenDepositLimit
         ) {
             revert DepositExceedLimit();
         }
@@ -437,25 +407,15 @@ contract Vault is
     }
 
     /// @notice The function to validate deposit data
-    function _validateDeposit(address receiver, VaultTypes.VaultDepositFE calldata data)
-        internal
-        view
-        checkDepositToken(data.tokenHash)
+    function _validateDeposit(address receiver, VaultTypes.VaultDepositFE calldata data) internal view
     {
         // check if tokenHash and brokerHash are allowed
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
 
         // check accountId validation based on caller
-        if (msg.sender == vaultAdapter) {
-            // Only vault adapter can use extended account ID validation (supports both legacy and SP account IDs)
-            if (!Utils.validateExtendedAccountId(address(protocolVault), data.accountId, data.brokerHash, receiver)) {
-                revert AccountIdInvalid();
-            }
-        } else {
-            // Regular users can only use legacy account ID validation
-            if (!Utils.validateAccountId(data.accountId, data.brokerHash, receiver)) {
-                revert AccountIdInvalid();
-            }
+        // check if accountId = keccak256(abi.encodePacked(brokerHash, receiver))
+        if (!Utils.validateExtendedAccountId(address(protocolVault), data.accountId, data.brokerHash, receiver)) {
+            revert AccountIdInvalid();
         }
 
         // check if tokenAmount > 0
@@ -712,12 +672,6 @@ contract Vault is
         swapSigner = _swapSigner;
     }
 
-    /// @notice Set the vault adapter address
-    function setVaultAdapter(address _vaultAdapter) public onlyOwner nonZeroAddress(_vaultAdapter) {
-        vaultAdapter = _vaultAdapter;
-
-        emit VaultAdapterSet(vaultAdapter);
-    }
 
     /// @notice Get all submitted swaps
     function getSubmittedSwaps() public view returns (bytes32[] memory) {

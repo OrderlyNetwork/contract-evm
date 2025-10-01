@@ -203,35 +203,35 @@ contract VaultTest is Test {
         vm.stopPrank();
     }
 
-    function test_depositDisabledToken() public {
-        // Operator disables deposit token
-        vm.startPrank(OPERATOR);
-        vault.disableDepositToken(TOKEN_HASH);
-        vm.stopPrank();
+    // function test_depositDisabledToken() public {
+    //     // Operator disables deposit token
+    //     vm.startPrank(OPERATOR);
+    //     vault.disableDepositToken(TOKEN_HASH);
+    //     vm.stopPrank();
 
-        // Sender fails to deposit with disabled token
-        vm.startPrank(SENDER);
-        vm.expectRevert(IVault.DepositTokenDisabled.selector);
-        vault.deposit(depositData);
-        vm.stopPrank();
+    //     // Sender fails to deposit with disabled token
+    //     vm.startPrank(SENDER);
+    //     vm.expectRevert(IVault.DepositTokenDisabled.selector);
+    //     vault.deposit(depositData);
+    //     vm.stopPrank();
 
-        // Operator fails to enable deposit token
-        vm.startPrank(OPERATOR);
-        vm.expectRevert("Ownable: caller is not the owner");
-        vault.enableDepositToken(TOKEN_HASH);
-        vm.stopPrank();
+    //     // Operator fails to enable deposit token
+    //     vm.startPrank(OPERATOR);
+    //     vm.expectRevert("Ownable: caller is not the owner");
+    //     vault.enableDepositToken(TOKEN_HASH);
+    //     vm.stopPrank();
 
-        // Owner enables deposit token
-        vm.startPrank(vault.owner());
-        vault.enableDepositToken(TOKEN_HASH);
-        vm.stopPrank();
+    //     // Owner enables deposit token
+    //     vm.startPrank(vault.owner());
+    //     vault.enableDepositToken(TOKEN_HASH);
+    //     vm.stopPrank();
 
-        // Sender deposits with enabled token
-        vm.startPrank(SENDER);
-        tUSDC.mint(SENDER, AMOUNT);
-        tUSDC.approve(address(vault), AMOUNT);
-        vault.deposit(depositData);
-    }
+    //     // Sender deposits with enabled token
+    //     vm.startPrank(SENDER);
+    //     tUSDC.mint(SENDER, AMOUNT);
+    //     tUSDC.approve(address(vault), AMOUNT);
+    //     vault.deposit(depositData);
+    // }
 
     function test_withdraw() public {
         vm.startPrank(SENDER);
@@ -337,43 +337,43 @@ contract VaultTest is Test {
         vm.stopPrank();
     }
 
-    function test_disableToken() public {
-        address symboleManager = address(bytes20(keccak256("symbolManager")));
-        vm.prank(vault.owner());
-        vault.grantRole(SYMBOL_MANAGER_ROLE, symboleManager);
+    // function test_disableToken() public {
+    //     address symboleManager = address(bytes20(keccak256("symbolManager")));
+    //     vm.prank(vault.owner());
+    //     vault.grantRole(SYMBOL_MANAGER_ROLE, symboleManager);
 
        
-        vm.startPrank(symboleManager);
-         // try to disable unallowed token and expect revert
-        bytes32 unallowedTokenHash = keccak256("unallowedToken");
-        vm.expectRevert(IVault.TokenNotAllowed.selector);
-        vault.disableDepositToken(unallowedTokenHash);
+    //     vm.startPrank(symboleManager);
+    //      // try to disable unallowed token and expect revert
+    //     bytes32 unallowedTokenHash = keccak256("unallowedToken");
+    //     vm.expectRevert(IVault.TokenNotAllowed.selector);
+    //     vault.disableDepositToken(unallowedTokenHash);
         
-        // disable allowed token    
-        vault.disableDepositToken(TOKEN_HASH);
-        vm.stopPrank();
+    //     // disable allowed token    
+    //     vault.disableDepositToken(TOKEN_HASH);
+    //     vm.stopPrank();
 
-        vm.prank(SENDER);
-        // try to deposit disabled token and expect revert
-        vm.expectRevert(IVault.DepositTokenDisabled.selector);
-        vault.deposit(depositData);
+    //     vm.prank(SENDER);
+    //     // try to deposit disabled token and expect revert
+    //     vm.expectRevert(IVault.DepositTokenDisabled.selector);
+    //     vault.deposit(depositData);
 
-        vm.prank(symboleManager);
-        vm.expectRevert("Ownable: caller is not the owner");
-        vault.enableDepositToken(TOKEN_HASH);
+    //     vm.prank(symboleManager);
+    //     vm.expectRevert("Ownable: caller is not the owner");
+    //     vault.enableDepositToken(TOKEN_HASH);
 
-        vm.startPrank(vault.owner());
-        vault.enableDepositToken(TOKEN_HASH);
-        vm.stopPrank();
+    //     vm.startPrank(vault.owner());
+    //     vault.enableDepositToken(TOKEN_HASH);
+    //     vm.stopPrank();
         
-        // deposit should succeed
-        tUSDC.mint(SENDER, AMOUNT);
-        vm.startPrank(SENDER);
-        tUSDC.approve(address(vault), AMOUNT);
+    //     // deposit should succeed
+    //     tUSDC.mint(SENDER, AMOUNT);
+    //     vm.startPrank(SENDER);
+    //     tUSDC.approve(address(vault), AMOUNT);
         
-        vault.deposit(depositData);
-        vm.stopPrank();
-    }
+    //     vault.deposit(depositData);
+    //     vm.stopPrank();
+    // }
 
     function test_setBrokerFromLedger() public {
         bytes32 brokerHash = keccak256("zion1");
