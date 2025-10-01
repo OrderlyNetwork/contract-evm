@@ -95,9 +95,7 @@ contract Vault is
 
     /// @notice onlyRoleOrOwner
     modifier onlyRoleOrOwner(bytes32 role) {
-        if (!hasRole(role, msg.sender) && msg.sender != owner()) {
-            revert AccessControlUnauthorizedAccount(msg.sender, role);
-        }
+        if (!hasRole(role, msg.sender) && msg.sender != owner()) revert AccessControlUnauthorizedAccount(msg.sender, role);
         _;
     }
 
@@ -230,11 +228,7 @@ contract Vault is
     }
 
     /// @notice Add the hash value for an allowed brokerId
-    function setAllowedBroker(bytes32 _brokerHash, bool _allowed)
-        external
-        override
-        onlyRoleOrOwner(BROKER_MANAGER_ROLE)
-    {
+    function setAllowedBroker(bytes32 _brokerHash, bool _allowed) external override onlyRoleOrOwner(BROKER_MANAGER_ROLE) {
         bool succ = false;
         if (_allowed) {
             succ = allowedBrokerSet.add(_brokerHash);
@@ -251,10 +245,7 @@ contract Vault is
     }
 
     /// @notice Set native token deposit limit
-    function setNativeTokenDepositLimit(uint256 _nativeTokenDepositLimit)
-        external
-        override
-        onlyRoleOrOwner(SYMBOL_MANAGER_ROLE)
+    function setNativeTokenDepositLimit(uint256 _nativeTokenDepositLimit) external override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE)
     {
         nativeTokenDepositLimit = _nativeTokenDepositLimit;
     }
