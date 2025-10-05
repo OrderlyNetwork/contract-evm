@@ -95,7 +95,9 @@ contract Vault is
 
     /// @notice onlyRoleOrOwner
     modifier onlyRoleOrOwner(bytes32 role) {
-        if (!hasRole(role, msg.sender) && msg.sender != owner()) revert AccessControlUnauthorizedAccount(msg.sender, role);
+        if (!hasRole(role, msg.sender) && msg.sender != owner()) {
+            revert AccessControlUnauthorizedAccount(msg.sender, role);
+        }
         _;
     }
 
