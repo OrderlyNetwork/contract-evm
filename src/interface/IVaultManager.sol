@@ -49,6 +49,7 @@ interface IVaultManager is IError, ILedgerComponent {
 
     // allow broker
     function setAllowedBroker(bytes32 _brokerHash, bool _allowed) external;
+    function setBrokerFromLedger(bytes32 _brokerHash, bool _allowed) external;
     function getAllowedBroker(bytes32 _brokerHash) external view returns (bool);
 
     // allow chain+token. in some chain, some token is not allowed for safety

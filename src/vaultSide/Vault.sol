@@ -84,10 +84,6 @@ contract Vault is
     // Swap Signer Address
     address public swapSigner;
 
-    // EnumerableSet for disabled deposit tokens
-    EnumerableSet.Bytes32Set private disabledDepositTokenSet;
-    // Vault Adapter Address
-    address public vaultAdapter;
 
     /* ================ Role ================ */
 
@@ -123,15 +119,6 @@ contract Vault is
         _;
     }
 
-    /// @notice Check if the token is supported and not disabled
-    modifier checkDepositToken(bytes32 _tokenHash) {
-        if (!allowedTokenSet.contains(_tokenHash)) revert TokenNotAllowed();
-        if (disabledDepositTokenSet.contains(_tokenHash)) revert DepositTokenDisabled();
-        // check the token address if the token is not native token
-        if (_tokenHash != nativeTokenHash && allowedToken[_tokenHash] == address(0)) revert InvalidTokenAddress();
-        _;
-    }
-
     /*=============== Constructor ===============*/
 
     constructor() {
@@ -147,6 +134,38 @@ contract Vault is
     }
 
     /*=============== Setters ===============*/
+
+    /// @notice Sets broker status via cross-chain message from ledger
+    /// @dev Only callable by the cross-chain manager, validates chain ID
+    /// @param data The SetBrokerData containing broker information and status
+    function setBrokerFromLedger(EventTypes.SetBrokerData calldata data) external override onlyCrossChainManager {
+        // Chain ID validation (defense in depth) - using Solidity's built-in block.chainid
+        require(data.dstChainId == block.chainid, "Vault: dstChainId mismatch");
+        
+        bool currentStatus = allowedBrokerSet.contains(data.brokerHash);
+        
+        if (data.allowed) {
+            // Add broker operation
+            if (currentStatus) {
+                // Broker already exists, emit already set event
+                emit SetBrokerFromLedgerAlreadySet(data.brokerHash, data.dstChainId, data.allowed);
+                return;
+            }
+            // Add the broker using EnumerableSet
+            allowedBrokerSet.add(data.brokerHash);
+        } else {
+            // Remove broker operation
+            if (!currentStatus) {
+                // Broker doesn't exist, emit already set event (broker already not present)
+                emit SetBrokerFromLedgerAlreadySet(data.brokerHash, data.dstChainId, data.allowed);
+                return;
+            }
+            // Remove the broker using EnumerableSet
+            allowedBrokerSet.remove(data.brokerHash);
+        }
+        
+        emit SetBrokerFromLedgerSuccess(data.brokerHash, data.dstChainId, data.allowed);
+    }
 
     /// @notice Change crossChainManager address
     function setCrossChainManager(address _crossChainManagerAddress)
@@ -195,22 +214,6 @@ contract Vault is
         emit SetAllowedToken(_tokenHash, _allowed);
     }
 
-    function disableDepositToken(bytes32 _tokenHash) external override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE) {
-        require(allowedTokenSet.contains(_tokenHash), "Token not allowed");
-        disabledDepositTokenSet.add(_tokenHash);
-        emit DisableDepositToken(_tokenHash);
-    }
-
-    function enableDepositToken(bytes32 _tokenHash) external override onlyOwner {
-        require(disabledDepositTokenSet.contains(_tokenHash), "Token not disabled");
-        disabledDepositTokenSet.remove(_tokenHash);
-        emit EnableDepositToken(_tokenHash);
-    }
-
-    function getDisabledDepositToken() external view returns (bytes32[] memory) {
-        return disabledDepositTokenSet.values();
-    }
-
     function setRebalanceEnableToken(bytes32 _tokenHash, bool _allowed) external override onlyOwner {
         bool succ = false;
         if (_allowed) {
@@ -227,11 +230,7 @@ contract Vault is
     }
 
     /// @notice Add the hash value for an allowed brokerId
-    function setAllowedBroker(bytes32 _brokerHash, bool _allowed)
-        external
-        override
-        onlyRoleOrOwner(BROKER_MANAGER_ROLE)
-    {
+    function setAllowedBroker(bytes32 _brokerHash, bool _allowed) external override onlyRoleOrOwner(BROKER_MANAGER_ROLE) {
         bool succ = false;
         if (_allowed) {
             succ = allowedBrokerSet.add(_brokerHash);
@@ -243,15 +242,12 @@ contract Vault is
     }
 
     /// @notice Set native token hash
-    function setNativeTokenHash(bytes32 _nativeTokenHash) external override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE) {
+    function setNativeTokenHash(bytes32 _nativeTokenHash) external override onlyOwner {
         nativeTokenHash = _nativeTokenHash;
     }
 
     /// @notice Set native token deposit limit
-    function setNativeTokenDepositLimit(uint256 _nativeTokenDepositLimit)
-        external
-        override
-        onlyRoleOrOwner(SYMBOL_MANAGER_ROLE)
+    function setNativeTokenDepositLimit(uint256 _nativeTokenDepositLimit) external override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE)
     {
         nativeTokenDepositLimit = _nativeTokenDepositLimit;
     }
@@ -379,8 +375,7 @@ contract Vault is
         if (nativeDepositAmount < data.tokenAmount) revert NativeTokenDepositAmountMismatch();
         // check native token deposit limit
         if (
-            nativeTokenDepositLimit != 0
-                && (data.tokenAmount + address(this).balance - nativeDepositAmount) > nativeTokenDepositLimit
+            nativeTokenDepositLimit != 0 && (data.tokenAmount + address(this).balance - nativeDepositAmount) > nativeTokenDepositLimit
         ) {
             revert DepositExceedLimit();
         }
@@ -405,25 +400,16 @@ contract Vault is
     }
 
     /// @notice The function to validate deposit data
-    function _validateDeposit(address receiver, VaultTypes.VaultDepositFE calldata data)
-        internal
-        view
-        checkDepositToken(data.tokenHash)
+    function _validateDeposit(address receiver, VaultTypes.VaultDepositFE calldata data) internal view
     {
         // check if tokenHash and brokerHash are allowed
+        if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
 
         // check accountId validation based on caller
-        if (msg.sender == vaultAdapter) {
-            // Only vault adapter can use extended account ID validation (supports both legacy and SP account IDs)
-            if (!Utils.validateExtendedAccountId(address(protocolVault), data.accountId, data.brokerHash, receiver)) {
-                revert AccountIdInvalid();
-            }
-        } else {
-            // Regular users can only use legacy account ID validation
-            if (!Utils.validateAccountId(data.accountId, data.brokerHash, receiver)) {
-                revert AccountIdInvalid();
-            }
+        // check if accountId = keccak256(abi.encodePacked(brokerHash, receiver))
+        if (!Utils.validateExtendedAccountId(address(protocolVault), data.accountId, data.brokerHash, receiver)) {
+            revert AccountIdInvalid();
         }
 
         // check if tokenAmount > 0
@@ -680,12 +666,6 @@ contract Vault is
         swapSigner = _swapSigner;
     }
 
-    /// @notice Set the vault adapter address
-    function setVaultAdapter(address _vaultAdapter) public onlyOwner nonZeroAddress(_vaultAdapter) {
-        vaultAdapter = _vaultAdapter;
-
-        emit VaultAdapterSet(vaultAdapter);
-    }
 
     /// @notice Get all submitted swaps
     function getSubmittedSwaps() public view returns (bytes32[] memory) {
