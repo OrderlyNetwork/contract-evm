@@ -3,12 +3,12 @@ pragma solidity ^0.8.18;
 
 import "./../library/types/VaultTypes.sol";
 import "./../library/types/RebalanceTypes.sol";
+import "./../library/types/EventTypes.sol";
 
 interface IVault {
     error OnlyCrossChainManagerCanCall();
     error AccountIdInvalid();
     error TokenNotAllowed();
-    error DepositTokenDisabled();
     error InvalidTokenAddress();
     error BrokerNotAllowed();
     error BalanceNotEnough(uint256 balance, uint128 amount);
@@ -72,9 +72,10 @@ interface IVault {
 
     event SetProtocolVaultAddress(address _oldProtocolVaultAddress, address _newProtocolVaultAddress);
     event SetCeffuAddress(address _oldCeffuAddress, address _newCeffuAddress);
-    event DisableDepositToken(bytes32 indexed _tokenHash);
-    event EnableDepositToken(bytes32 indexed _tokenHash);
-    event VaultAdapterSet(address adapter);
+
+    // SetBroker from ledger events
+    event SetBrokerFromLedgerAlreadySet(bytes32 indexed brokerHash, uint256 dstChainId, bool allowed);
+    event SetBrokerFromLedgerSuccess(bytes32 indexed brokerHash, uint256 dstChainId, bool allowed);
 
     function initialize() external;
 
@@ -105,14 +106,15 @@ interface IVault {
     function setNativeTokenHash(bytes32 _nativeTokenHash) external;
     function setNativeTokenDepositLimit(uint256 _nativeTokenDepositLimit) external;
     function setRebalanceEnableToken(bytes32 _tokenHash, bool _allowed) external;
-    function disableDepositToken(bytes32 _tokenHash) external;
-    function enableDepositToken(bytes32 _tokenHash) external;
     function changeTokenAddressAndAllow(bytes32 _tokenHash, address _tokenAddress) external;
     function getAllowedToken(bytes32 _tokenHash) external view returns (address);
     function getAllowedBroker(bytes32 _brokerHash) external view returns (bool);
     function getAllAllowedToken() external view returns (bytes32[] memory);
     function getAllAllowedBroker() external view returns (bytes32[] memory);
     function getAllRebalanceEnableToken() external view returns (bytes32[] memory);
+
+    // cross-chain broker management
+    function setBrokerFromLedger(EventTypes.SetBrokerData calldata data) external;
 
     // Delegate swap function
     function setSwapOperator(address _swapOperator) external;

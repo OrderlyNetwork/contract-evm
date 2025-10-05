@@ -33,4 +33,15 @@ interface ILedgerCrossChainManager {
     /// @notice Sets the cross-chain relay address.
     /// @param crossChainRelay Address of the new cross-chain relay.
     function setCrossChainRelay(address crossChainRelay) external;
+    
+    /// @notice Sends cross-chain broker status modification messages to vault chains
+    /// @dev Only callable by the Ledger contract
+    /// @param chainIds Array of destination chain IDs where broker status should be modified
+    /// @param brokerHash Hash of the broker to be modified
+    /// @param allowed true to add broker, false to remove broker
+    function setBrokerCrossChain(
+        uint256[] calldata chainIds, 
+        bytes32 brokerHash, 
+        bool allowed
+    ) external;
 }

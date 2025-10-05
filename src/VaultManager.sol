@@ -133,6 +133,15 @@ contract VaultManager is IVaultManager, LedgerComponent, AccessControlRevised, V
 
     /// @notice Set the status for a broker given the brokerHash
     function setAllowedBroker(bytes32 _brokerHash, bool _allowed) public override onlyOwnerOrRole(BROKER_MANAGER_ROLE) {
+        _setAllowedBroker(_brokerHash, _allowed);
+    }
+
+    /// @notice Set the status for a broker given the brokerHash
+    function setBrokerFromLedger(bytes32 _brokerHash, bool _allowed) public override onlyLedger {
+        _setAllowedBroker(_brokerHash, _allowed);
+    }
+
+    function _setAllowedBroker(bytes32 _brokerHash, bool _allowed) internal {
         bool succ = false;
         if (_allowed) {
             succ = allowedBrokerSet.add(_brokerHash);

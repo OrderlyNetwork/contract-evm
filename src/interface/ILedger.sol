@@ -76,4 +76,16 @@ interface ILedger is IError, ILedgerEvent {
     function setLedgerImplB(address _ledgerImplB) external;
     function setLedgerImplC(address _ledgerImplC) external;
     function setLedgerImplD(address _ledgerImplD) external;
+    
+    /// @notice Initiates cross-chain broker status modification to multiple vault chains
+    /// @dev Only callable by owner, triggers cross-contract calls to VaultManager and LedgerCrossChainManager
+    /// @param chainIds Array of destination chain IDs where broker status should be modified
+    /// @param brokerHash Hash of the broker to be modified
+    /// @param allowed true to add broker, false to remove broker
+    function setBrokerFromLedger(
+        uint256[] calldata chainIds, 
+        bytes32 brokerHash, 
+        uint16 brokerIndex,
+        bool allowed
+    ) external;
 }
