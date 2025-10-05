@@ -405,8 +405,6 @@ contract Vault is
         // check if tokenHash and brokerHash are allowed
         if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
-
-        // check accountId validation based on caller
         // check if accountId = keccak256(abi.encodePacked(brokerHash, receiver))
         if (!Utils.validateExtendedAccountId(address(protocolVault), data.accountId, data.brokerHash, receiver)) {
             revert AccountIdInvalid();
