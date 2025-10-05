@@ -401,6 +401,7 @@ contract Vault is
     function _validateDeposit(address receiver, VaultTypes.VaultDepositFE calldata data) internal view
     {
         // check if tokenHash and brokerHash are allowed
+        if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
 
         // check accountId validation based on caller
