@@ -3,7 +3,6 @@ pragma solidity ^0.8.18;
 
 import "../library/typesHelper/AccountTypeHelper.sol";
 import "../library/types/RebalanceTypes.sol";
-import "../library/types/EventTypes.sol";
 import "../interface/IVaultManager.sol";
 import "../interface/IMarketManager.sol";
 import "../interface/IFeeManager.sol";
@@ -34,15 +33,7 @@ contract LedgerDataLayout {
     address public crossChainManagerV2Address;
     // Id(accountId or spId) => Ceffu Prime Wallet
     mapping(bytes32 => address) public idToPrimeWallet;
-    
-    /// @dev Mapping from accountId => tokenHash => escrow balance
-    /// @notice Tracks amounts that have been credited but not yet finalized
-    mapping(bytes32 => mapping(bytes32 => uint128)) public escrowBalances;
-    
-    /// @dev Mapping from transferId => InternalTransferTrack
-    /// @notice Tracks the state of each internal transfer
-    mapping(uint256 => EventTypes.InternalTransferTrack) public transfers;
 
     // The storage gap to prevent overwriting by proxy
-    uint256[39] private __gap;
+    uint256[41] private __gap;
 }

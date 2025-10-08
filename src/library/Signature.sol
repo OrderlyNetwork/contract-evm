@@ -259,17 +259,13 @@ library Signature {
         uint256 clientId;
     }
 
-    /// @dev Signature structure for balance transfer events
-    /// @notice Used for signature verification of balance transfer operations
     struct BalanceTransferSignature {
-        uint64 eventId;          /// @dev Event ID for this transfer
-        bytes32 fromAccountId;   /// @dev Source account ID
-        bytes32 toAccountId;     /// @dev Destination account ID
-        uint128 amount;          /// @dev Transfer amount
-        bytes32 tokenHash;       /// @dev Token hash identifier
-        bool isFromAccountId;    /// @dev true: debit event, false: credit event
-        uint8 transferType;      /// @dev Transfer type classification
-        uint256 transferId;      /// @dev Unique transfer identifier
+        uint64 eventId; // flat map to this
+        bytes32 accountId;
+        uint128 amount;
+        bytes32 tokenHash;
+        bool isFromAccountId;
+        uint8 transferType;
     }
 
     struct SwapUploadSignature {
@@ -492,13 +488,11 @@ library Signature {
                     abi.decode(eventUploadData.data, (EventTypes.BalanceTransfer));
                 BalanceTransferSignature memory balanceTransferSignature = BalanceTransferSignature({
                     eventId: eventUploadData.eventId,
-                    fromAccountId: balanceTransfer.fromAccountId,
-                    toAccountId: balanceTransfer.toAccountId,
+                    accountId: balanceTransfer.accountId,
                     amount: balanceTransfer.amount,
                     tokenHash: balanceTransfer.tokenHash,
                     isFromAccountId: balanceTransfer.isFromAccountId,
-                    transferType: balanceTransfer.transferType,
-                    transferId: balanceTransfer.transferId
+                    transferType: balanceTransfer.transferType
                 });
                 eventUploadSignature.balanceTransfers[countArray2[11]] = balanceTransferSignature;
                 countArray2[11]++;

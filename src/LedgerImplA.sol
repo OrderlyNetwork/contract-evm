@@ -131,10 +131,6 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout, Vers
             } else if (account.balances[tokenHash] < withdraw.tokenAmount.toInt128()) {
                 // require balance enough
                 revert WithdrawBalanceNotEnough(account.balances[tokenHash], withdraw.tokenAmount);
-            } else if (account.balances[tokenHash] - escrowBalances[withdraw.accountId][tokenHash].toInt128() < withdraw.tokenAmount.toInt128()) {
-                /// @dev Check available balance (balance - escrow) to prevent withdrawal of in-flight transfer funds
-                // revert WithdrawEscrowBalanceNotEnough(account.balances[tokenHash] - escrowBalances[withdraw.accountId][tokenHash].toInt128(), withdraw.tokenAmount);
-                state = 9;
             } else if (vaultManager.getBalance(tokenHash, withdraw.chainId) < withdraw.tokenAmount - withdraw.fee) {
                 // require chain has enough balance
                 revert WithdrawVaultBalanceNotEnough(
@@ -547,9 +543,6 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout, Vers
             } else if (account.balances[tokenHash] < withdraw.tokenAmount.toInt128()) {
                 // require balance enough
                 state = 1;
-            } else if (account.balances[tokenHash] - escrowBalances[withdraw.accountId][tokenHash].toInt128() < withdraw.tokenAmount.toInt128()) {
-                /// @dev Check available balance (balance - escrow) to prevent withdrawal of in-flight transfer funds
-                state = 9;
             } else if (vaultManager.getBalance(tokenHash, withdraw.chainId) < withdraw.tokenAmount - withdraw.fee) {
                 // require chain has enough balance
                 state = 2;
