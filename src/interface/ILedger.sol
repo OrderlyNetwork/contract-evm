@@ -56,14 +56,6 @@ interface ILedger is IError, ILedgerEvent {
         external
         view
         returns (AccountTypes.AccountSnapshot[] memory);
-    function getUserTokenBalance(bytes32 accountId, bytes32 tokenHash) external view returns (int128);
-    function getUserEscrowBalance(bytes32 accountId, bytes32 tokenHash) external view returns (uint128);
-    function getUserTotalFrozenBalance(bytes32 accountId, bytes32 tokenHash) external view returns (uint128);
-    function getBalanceTransferState(uint256 transferId)
-        external
-        view
-        returns (EventTypes.InternalTransferTrack memory);
-    
 
     // admin call
     function setOperatorManagerAddress(address _operatorManagerAddress) external;
