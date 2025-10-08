@@ -29,6 +29,6 @@ broadcast/
 # some time we have some standard json files, no need to commit them
 /*.json
 
-# claude code
+# Claude Code related files and directories
+.claude/
 CLAUDE.md
-.claude

@@ -3,11 +3,9 @@ pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
 import "../../src/library/Signature.sol";
-import "openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
 
 contract SignatureTest is Test {
     address constant addr = 0x6a9961Ace9bF0C1B8B98ba11558A4125B1f5EA3f;
-    uint256 constant PRIVATE_KEY = 0xff965a6595be51798d16a8e3f4c10db72af43e2f65d27784a8f92fab1919fd15; // Test private key from documentation
 
     // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/299009164/Test+vector
     function test_perpUploadEncodeHash_1() public {
@@ -905,33 +903,20 @@ contract SignatureTest is Test {
 
     // https://wootraders.atlassian.net/wiki/spaces/ORDER/pages/1113948191/Event+upload+-+FeeDistribution+change+2025-04
     function test_eventUploadEncodeHash_balanceTransfer() public {
-        // Test real multi-account balance transfer between different accounts
-        bytes32 fromAccountId = 0x9ff99a5d6cb71a3ef897b0fff5f5801af6dc5f72d8f1608e61409b8fc965bd68; // Account A
-        bytes32 toAccountId = 0xaff99a5d6cb71a3ef897b0fff5f5801af6dc5f72d8f1608e61409b8fc965bd68;   // Account B (different!)
-        uint128 amount = 1231245125;
-        bytes32 tokenHash = 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa;
-        uint256 transferId = 123;
-
-        // First event: debit from sender account A
         EventTypes.BalanceTransfer memory b1 = EventTypes.BalanceTransfer({
-            fromAccountId: fromAccountId,  // Account A
-            toAccountId: toAccountId,      // Account B
-            amount: amount,
-            tokenHash: tokenHash,
-            isFromAccountId: true,         // Debit from Account A
-            transferType: 3,               // INTERNAL_TRANSFER (not rebate)
-            transferId: transferId
+            accountId: 0x9ff99a5d6cb71a3ef897b0fff5f5801af6dc5f72d8f1608e61409b8fc965bd68,
+            amount: 1231245125,
+            tokenHash: 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa,
+            isFromAccountId: true,
+            transferType: 1
         });
 
-        // Second event: credit to receiver account B
         EventTypes.BalanceTransfer memory b2 = EventTypes.BalanceTransfer({
-            fromAccountId: fromAccountId,  // Account A (source)
-            toAccountId: toAccountId,      // Account B (destination)
-            amount: amount,
-            tokenHash: tokenHash,
-            isFromAccountId: false,        // Credit to Account B
-            transferType: 3,               // INTERNAL_TRANSFER (same as debit)
-            transferId: transferId         // Same transferId to link the pair
+            accountId: 0x9ff99a5d6cb71a3ef897b0fff5f5801af6dc5f72d8f1608e61409b8fc965bd68,
+            amount: 1231245125,
+            tokenHash: 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa,
+            isFromAccountId: false,
+            transferType: 2
         });
 
         EventTypes.EventUploadData[] memory events = new EventTypes.EventUploadData[](2);
@@ -940,308 +925,15 @@ contract SignatureTest is Test {
 
         EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
             events: events,
-            r: 0x7a1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcd,
-            s: 0x8b1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcd,
-            v: 0x1b,
+            r: 0x41a4b5ee5fbf586b64309c6c4e93168696fa046ce948dc793c3cb17c47dd60ab,
+            s: 0x2531a258045014dd96636bf31456ac8146a8ee2c2b33ae50d783b7415974806a,
+            v: 0x1c,
             count: 2,
             batchId: 7888
         });
 
-        // Generate the expected hash and signature
-        bytes memory encodedData = Signature.eventsUploadEncodeHash(e1);
-        bytes32 messageHash = ECDSA.toEthSignedMessageHash(keccak256(encodedData));
-        
-        // Sign with test private key
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(PRIVATE_KEY, messageHash);
-        e1.r = r;
-        e1.s = s;
-        e1.v = v;
-
         bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
         assertEq(succ, true);
-    }
-
-    function test_eventUploadEncodeHash_balanceTransfer_multipleTypes() public {
-        // Test multiple transfer types in one batch
-        bytes32 account1 = 0x9ff99a5d6cb71a3ef897b0fff5f5801af6dc5f72d8f1608e61409b8fc965bd68;
-        bytes32 account2 = 0xaff99a5d6cb71a3ef897b0fff5f5801af6dc5f72d8f1608e61409b8fc965bd68;
-        bytes32 account3 = 0xbff99a5d6cb71a3ef897b0fff5f5801af6dc5f72d8f1608e61409b8fc965bd68;
-        bytes32 tokenHash = 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa;
-
-        EventTypes.EventUploadData[] memory events = new EventTypes.EventUploadData[](6);
-
-        // Internal transfer: account1 -> account2 (100 tokens)
-        events[0] = EventTypes.EventUploadData({
-            bizType: 12,
-            eventId: 1000,
-            data: abi.encode(EventTypes.BalanceTransfer({
-                fromAccountId: account1,
-                toAccountId: account2,
-                amount: 100e6,
-                tokenHash: tokenHash,
-                isFromAccountId: true,
-                transferType: 3, // INTERNAL_TRANSFER
-                transferId: 1001
-            }))
-        });
-
-        events[1] = EventTypes.EventUploadData({
-            bizType: 12,
-            eventId: 1001,
-            data: abi.encode(EventTypes.BalanceTransfer({
-                fromAccountId: account1,
-                toAccountId: account2,
-                amount: 100e6,
-                tokenHash: tokenHash,
-                isFromAccountId: false,
-                transferType: 3, // INTERNAL_TRANSFER
-                transferId: 1001
-            }))
-        });
-
-        // Broker fee: account2 -> account3 (50 tokens)
-        events[2] = EventTypes.EventUploadData({
-            bizType: 12,
-            eventId: 1002,
-            data: abi.encode(EventTypes.BalanceTransfer({
-                fromAccountId: account2,
-                toAccountId: account3,
-                amount: 50e6,
-                tokenHash: tokenHash,
-                isFromAccountId: true,
-                transferType: 0, // BROKER_FEE
-                transferId: 1002
-            }))
-        });
-
-        events[3] = EventTypes.EventUploadData({
-            bizType: 12,
-            eventId: 1003,
-            data: abi.encode(EventTypes.BalanceTransfer({
-                fromAccountId: account2,
-                toAccountId: account3,
-                amount: 50e6,
-                tokenHash: tokenHash,
-                isFromAccountId: false,
-                transferType: 0, // BROKER_FEE
-                transferId: 1002
-            }))
-        });
-
-        // SP Liquidation fee: account3 -> account1 (25 tokens)
-        events[4] = EventTypes.EventUploadData({
-            bizType: 12,
-            eventId: 1004,
-            data: abi.encode(EventTypes.BalanceTransfer({
-                fromAccountId: account3,
-                toAccountId: account1,
-                amount: 25e6,
-                tokenHash: tokenHash,
-                isFromAccountId: true,
-                transferType: 5, // SP_LIQUIDATION_FEE
-                transferId: 1003
-            }))
-        });
-
-        events[5] = EventTypes.EventUploadData({
-            bizType: 12,
-            eventId: 1005,
-            data: abi.encode(EventTypes.BalanceTransfer({
-                fromAccountId: account3,
-                toAccountId: account1,
-                amount: 25e6,
-                tokenHash: tokenHash,
-                isFromAccountId: false,
-                transferType: 5, // SP_LIQUIDATION_FEE
-                transferId: 1003
-            }))
-        });
-
-        EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
-            events: events,
-            r: 0x0,
-            s: 0x0,
-            v: 0x0,
-            count: 6,
-            batchId: 8000
-        });
-
-        // Generate signature
-        bytes memory encodedData = Signature.eventsUploadEncodeHash(e1);
-        bytes32 messageHash = ECDSA.toEthSignedMessageHash(keccak256(encodedData));
-        
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(PRIVATE_KEY, messageHash);
-        e1.r = r;
-        e1.s = s;
-        e1.v = v;
-
-        bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
-        assertEq(succ, true);
-    }
-
-    function test_eventUploadEncodeHash_balanceTransfer_documentationExample() public {
-        // Test two-account transfer: Account C -> Account A
-        // This demonstrates real inter-account balance transfer
-        
-        bytes32 accountC = 0xcff99a5d6cb71a3ef897b0fff5f5801af6dc5f72d8f1608e61409b8fc965bd68; // Account C
-        bytes32 accountA = 0x9ff99a5d6cb71a3ef897b0fff5f5801af6dc5f72d8f1608e61409b8fc965bd68; // Account A
-        
-        EventTypes.BalanceTransfer memory b1 = EventTypes.BalanceTransfer({
-            fromAccountId: accountC,        // Source: Account C
-            toAccountId: accountA,          // Destination: Account A
-            amount: 1231245125,
-            tokenHash: 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa,
-            isFromAccountId: true,          // Debit from Account C
-            transferType: 1,                // REFEREE_REBATE
-            transferId: 123
-        });
-
-        EventTypes.BalanceTransfer memory b2 = EventTypes.BalanceTransfer({
-            fromAccountId: accountC,        // Source: Account C
-            toAccountId: accountA,          // Destination: Account A  
-            amount: 1231245125,
-            tokenHash: 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa,
-            isFromAccountId: false,         // Credit to Account A
-            transferType: 1,                // REFEREE_REBATE (same as debit)
-            transferId: 123 // Same transferId to link the pair
-        });
-
-        EventTypes.EventUploadData[] memory events = new EventTypes.EventUploadData[](2);
-        events[0] = EventTypes.EventUploadData({bizType: 12, eventId: 1274, data: abi.encode(b1)});
-        events[1] = EventTypes.EventUploadData({bizType: 12, eventId: 1277, data: abi.encode(b2)});
-
-        EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
-            events: events,
-            r: 0x0,
-            s: 0x0,
-            v: 0x0,
-            count: 2,
-            batchId: 7888
-        });
-
-        // Generate and verify the encoding matches expected
-        bytes memory encodedData = Signature.eventsUploadEncodeHash(e1);
-        bytes32 messageHash = ECDSA.toEthSignedMessageHash(keccak256(encodedData));
-        
-        // The expected hash from documentation is 0x92c11b388417e4ab714ba85436e8b00faf94ad24a36fae9c103c2d08860c6585
-        // But this was for the PR's structure, so we calculate our own
-        
-        // Sign with the private key from documentation
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(PRIVATE_KEY, messageHash);
-        e1.r = r;
-        e1.s = s;
-        e1.v = v;
-
-        // Verify signature
-        bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
-        assertEq(succ, true);
-        
-        // Also verify that the signer address matches the expected address from documentation
-        address recoveredSigner = ECDSA.recover(messageHash, v, r, s);
-        assertEq(recoveredSigner, addr);
-    }
-
-    function test_eventUploadEncodeHash_balanceTransfer_threeAccounts() public {
-        // Test complex three-account transfer scenario: A -> B -> C
-        // This demonstrates sequential transfers between different accounts
-        
-        bytes32 accountA = 0x1111111111111111111111111111111111111111111111111111111111111111;
-        bytes32 accountB = 0x2222222222222222222222222222222222222222222222222222222222222222;
-        bytes32 accountC = 0x3333333333333333333333333333333333333333333333333333333333333333;
-        bytes32 tokenHash = 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa;
-        
-        EventTypes.EventUploadData[] memory events = new EventTypes.EventUploadData[](4);
-        
-        // Transfer 1: A -> B (500 USDC)
-        uint256 transferId1 = uint256(keccak256(abi.encodePacked("transfer_A_to_B", block.timestamp)));
-        
-        // Event 1: Debit from Account A
-        events[0] = EventTypes.EventUploadData({
-            bizType: 12,
-            eventId: 2001,
-            data: abi.encode(EventTypes.BalanceTransfer({
-                fromAccountId: accountA,     // Source: Account A
-                toAccountId: accountB,       // Destination: Account B
-                amount: 500e6,               // 500 USDC
-                tokenHash: tokenHash,
-                isFromAccountId: true,       // Debit from Account A
-                transferType: 3,             // INTERNAL_TRANSFER
-                transferId: transferId1
-            }))
-        });
-        
-        // Event 2: Credit to Account B
-        events[1] = EventTypes.EventUploadData({
-            bizType: 12,
-            eventId: 2002,
-            data: abi.encode(EventTypes.BalanceTransfer({
-                fromAccountId: accountA,     // Source: Account A
-                toAccountId: accountB,       // Destination: Account B
-                amount: 500e6,               // 500 USDC
-                tokenHash: tokenHash,
-                isFromAccountId: false,      // Credit to Account B
-                transferType: 3,             // INTERNAL_TRANSFER
-                transferId: transferId1      // Same transferId
-            }))
-        });
-        
-        // Transfer 2: B -> C (300 USDC)
-        uint256 transferId2 = uint256(keccak256(abi.encodePacked("transfer_B_to_C", block.timestamp)));
-        
-        // Event 3: Debit from Account B
-        events[2] = EventTypes.EventUploadData({
-            bizType: 12,
-            eventId: 2003,
-            data: abi.encode(EventTypes.BalanceTransfer({
-                fromAccountId: accountB,     // Source: Account B
-                toAccountId: accountC,       // Destination: Account C
-                amount: 300e6,               // 300 USDC
-                tokenHash: tokenHash,
-                isFromAccountId: true,       // Debit from Account B
-                transferType: 3,             // INTERNAL_TRANSFER
-                transferId: transferId2
-            }))
-        });
-        
-        // Event 4: Credit to Account C
-        events[3] = EventTypes.EventUploadData({
-            bizType: 12,
-            eventId: 2004,
-            data: abi.encode(EventTypes.BalanceTransfer({
-                fromAccountId: accountB,     // Source: Account B
-                toAccountId: accountC,       // Destination: Account C
-                amount: 300e6,               // 300 USDC
-                tokenHash: tokenHash,
-                isFromAccountId: false,      // Credit to Account C
-                transferType: 3,             // INTERNAL_TRANSFER
-                transferId: transferId2      // Same transferId
-            }))
-        });
-
-        EventTypes.EventUpload memory e1 = EventTypes.EventUpload({
-            events: events,
-            r: 0x0, // Placeholder: will be replaced with actual signature
-            s: 0x0, // Placeholder: will be replaced with actual signature
-            v: 0x0, // Placeholder: will be replaced with actual signature
-            count: 4,
-            batchId: 9999
-        });
-
-        // DYNAMIC SIGNATURE GENERATION: Generate ECDSA signature using vm.sign()
-        bytes memory encodedData = Signature.eventsUploadEncodeHash(e1);
-        bytes32 messageHash = ECDSA.toEthSignedMessageHash(keccak256(encodedData));
-        
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(PRIVATE_KEY, messageHash);
-        e1.r = r; // ECDSA r component
-        e1.s = s; // ECDSA s component
-        e1.v = v; // Recovery identifier
-
-        bool succ = Signature.eventsUploadEncodeHashVerify(e1, addr);
-        assertEq(succ, true);
-        
-        // Additional verification: ensure signer recovery works
-        address recoveredSigner = ECDSA.recover(messageHash, v, r, s);
-        assertEq(recoveredSigner, addr);
     }
 
     function test_eventUploadEncodeHash_swapUpload() public {

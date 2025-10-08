@@ -13,18 +13,19 @@ import "./library/Signature.sol";
 import "./library/typesHelper/AccountTypeHelper.sol";
 import "./library/typesHelper/AccountTypePositionHelper.sol";
 import "./library/typesHelper/SafeCastHelper.sol";
+import "./interface/ILedgerCrossChainManagerV2.sol";
 import "./interface/ILedgerImplA.sol";
 import "./interface/ILedgerImplB.sol";
 import "./interface/ILedgerImplC.sol";
 import "./interface/ILedgerImplD.sol";
 import "./library/Version.sol";
-
+import "./oz5Revised/AccessControlRevised.sol";
 /// @title Ledger contract
 /// @author Orderly_Rubick
 /// @notice Ledger is responsible for saving traders' Account (balance, perpPosition, and other meta)
 /// and global state (e.g. futuresUploadBatchId)
 /// This contract should only have one in main-chain (e.g. OP orderly L2)
-contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, Version {
+contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, AccessControlRevised, Version {
     using AccountTypeHelper for AccountTypes.Account;
     using AccountTypePositionHelper for AccountTypes.PerpPosition;
     using SafeCastHelper for *;
@@ -41,10 +42,20 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, Version {
     // keccak256(abi.encode(uint256(keccak256("orderly.Ledger")) - 1)) & ~bytes32(uint256(0xff))
     bytes32 private constant LedgerStorageLocation = 0x220427b0bfdd3e8fe9a4c85265eee2c38bb3f4591655846e819d36b613b63200;
 
+    /* ================ Role ================ */
+    bytes32 public constant SYMBOL_MANAGER_ROLE = keccak256("ORDERLY_MANAGER_SYMBOL_MANAGER_ROLE");
+    bytes32 public constant BROKER_MANAGER_ROLE = keccak256("ORDERLY_MANAGER_BROKER_MANAGER_ROLE");
+
     function _getLedgerStorage() private pure returns (LedgerStorage storage $) {
         assembly {
             $.slot := LedgerStorageLocation
         }
+    }
+
+    /// @notice check if the caller is the owner or has the role
+    modifier onlyOwnerOrRole(bytes32 role) {
+        if (!hasRole(role, msg.sender) && msg.sender != owner()) revert AccessControlUnauthorizedAccount(msg.sender, role);
+        _;
     }
 
     /// @notice require operator
@@ -102,8 +113,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, Version {
         emit ChangeLedgerImplD(_getLedgerStorage().ledgerImplD, _ledgerImplD);
         _getLedgerStorage().ledgerImplD = _ledgerImplD;
     }
-    
-    
+
     /// @notice Set the address of operatorManager contract
     /// @param _operatorManagerAddress new operatorManagerAddress
     function setOperatorManagerAddress(address _operatorManagerAddress)
@@ -262,44 +272,6 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, Version {
         bytes32[] memory symbols = vaultManager.getAllAllowedSymbol();
         return batchGetUserLedger(accountIds, tokens, symbols);
     }
-
-    function getUserTokenBalance(bytes32 accountId, bytes32 tokenHash)
-        external
-        view
-        override
-        returns (int128)
-    {
-        return userLedger[accountId].getBalance(tokenHash);
-    }
-
-    function getUserEscrowBalance(bytes32 accountId, bytes32 tokenHash)
-        external
-        view
-        override
-        returns (uint128)
-    {
-        return escrowBalances[accountId][tokenHash];
-    }
-
-    function getUserTotalFrozenBalance(bytes32 accountId, bytes32 tokenHash)
-        external
-        view
-        override
-        returns (uint128)
-    {
-        return userLedger[accountId].getFrozenTotalBalance(tokenHash);
-    }
-
-    function getBalanceTransferState(uint256 transferId)
-        external
-        view
-        override
-        returns (EventTypes.InternalTransferTrack memory)
-    {
-        return transfers[transferId];
-    }
-
-  
 
     /// Interface implementation
 
@@ -549,6 +521,53 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, Version {
             abi.encodeWithSelector(ILedgerImplD.executeSwapResultUpload.selector, swapResultUpload, eventId),
             _getLedgerStorage().ledgerImplD
         );
+    }
+
+    /// @notice Initiates cross-chain broker status modification to multiple vault chains
+    /// @dev Only callable by owner, triggers cross-contract calls to VaultManager and LedgerCrossChainManager
+    /// @param chainIds Array of destination chain IDs where broker status should be modified
+    /// @param brokerHash Hash of the broker to be modified
+    /// @param allowed true to add broker, false to remove broker
+    function setBrokerFromLedger(
+        uint256[] calldata chainIds, 
+        bytes32 brokerHash, 
+        uint16 brokerIndex,
+        bool allowed
+    ) external override onlyOwnerOrRole(BROKER_MANAGER_ROLE) {
+        // Validate input parameters
+        require(chainIds.length > 0, "Ledger: empty chainIds");
+        
+        // Step 1: Update local VaultManager state for the broker
+        // This updates the broker status in the local Ledger chain
+        vaultManager.setBrokerFromLedger(brokerHash, allowed);
+        
+        // Step 2: Trigger cross-chain messages
+        // Call LedgerCrossChainManager to send messages to vault chains
+        ILedgerCrossChainManager(crossChainManagerAddress).setBrokerCrossChain(
+            chainIds, 
+            brokerHash, 
+            allowed
+        );
+
+        // Step 3: Set broker hash and its index number when first time allowed
+        if (allowed) {
+            ILedgerCrossChainManagerV2(crossChainManagerV2Address).setBrokerFromLedger(msg.sender, brokerHash, brokerIndex);
+        }
+
+        
+        emit SetBrokerFromLedgerInitiated(chainIds, brokerHash, allowed);
+    }
+
+    /* ================ Override AccessControlRevised To Simplify Access Control ================ */
+
+    /// @notice Override grantRole
+    function grantRole(bytes32 role, address account) public override onlyOwner {
+        _grantRole(role, account);
+    }
+
+    /// @notice Override revokeRole
+    function revokeRole(bytes32 role, address account) public override onlyOwner {
+        _revokeRole(role, account);
     }
 
     // inner function for delegatecall

@@ -11,7 +11,7 @@ import "forge-std/console.sol";
 
 contract VaultUpgradeTest is Test {
     // Base RPC URL for forking
-    string constant BASE_RPC_URL = "https://base-rpc.publicnode.com";
+    string constant BASE_RPC_URL = "https://mainnet.base.org";
     
     // Variables to store contract references
     Vault vault;
