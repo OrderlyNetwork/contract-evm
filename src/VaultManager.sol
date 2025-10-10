@@ -158,7 +158,7 @@ contract VaultManager is IVaultManager, LedgerComponent, AccessControlRevised, V
     }
 
     /// @notice Set the status for a token given the tokenHash and chainId
-    function setAllowedChainToken(bytes32 _tokenHash, uint256 _chainId, bool _allowed) public override onlyOwnerOrRole(SYMBOL_MANAGER_ROLE) {
+    function setAllowedChainToken(bytes32 _tokenHash, uint256 _chainId, bool _allowed) public override onlyOwner {
         allowedChainToken[_tokenHash][_chainId] = _allowed;
         emit SetAllowedChainToken(_tokenHash, _chainId, _allowed);
     }
@@ -201,7 +201,7 @@ contract VaultManager is IVaultManager, LedgerComponent, AccessControlRevised, V
     }
 
     /// @notice Set the status for a token given the tokenHash
-    function setAllowedToken(bytes32 _tokenHash, bool _allowed) public override onlyOwnerOrRole(SYMBOL_MANAGER_ROLE) {
+    function setAllowedToken(bytes32 _tokenHash, bool _allowed) public override onlyOwner {
         bool succ = false;
         if (_allowed) {
             succ = allowedTokenSet.add(_tokenHash);
