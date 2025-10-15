@@ -232,11 +232,11 @@ forge script script/vaultV2/DeployProxyVault.s.sol -f $RPC_URL_BSC --verifier-ur
 
 ```shell
 # arb sepolia
-forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_ARBITRUMSEPOLIA --verifier-url https://api-sepolia.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_ARBITRUMSEPOLIA --verifier-url https://api.etherscan.io/v2/api\?chainid\=421614  --broadcast --verify --etherscan-api-key $ETHERSCAN_API_KEY
 # arb mainnet
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_ARBITRUM --verifier-url https://api.arbiscan.io/api --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY
 # op sepolia
-forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_OPSEPOLIA --verifier-url https://api-sepolia-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_OPSEPOLIA --verifier-url https://api.etherscan.io/v2/api\?chainid\=11155420 --broadcast --verify --etherscan-api-key $ETHERSCAN_API_KEY
 # op mainnet
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_OP --verifier-url https://api-optimistic.etherscan.io/api --broadcast --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
 # polygon amoy
@@ -244,7 +244,7 @@ forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_POLYGONAMOY --verif
 # polygon mainnet
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_POLYGON --verifier-url https://api.polygonscan.com/api --broadcast --verify --etherscan-api-key $POLYGON_ETHERSCAN_API_KEY
 # base sepolia
-forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_BASESEPOLIA --verifier-url https://api-sepolia.basescan.org/api --broadcast --verify --etherscan-api-key $BASE_ETHERSCAN_API_KEY
+forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_BASESEPOLIA --verifier-url https://api.etherscan.io/v2/api\?chainid\=84532 --broadcast --verify --etherscan-api-key $ETHERSCAN_API_KEY
 # base mainnet
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_BASE --verifier-url https://api.basescan.org/api --broadcast --verify --etherscan-api-key $BASE_ETHERSCAN_API_KEY
 # mantle sepolia
