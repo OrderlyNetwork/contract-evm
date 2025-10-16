@@ -11,8 +11,8 @@ import "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import "openzeppelin-contracts/contracts/utils/math/SafeCast.sol";
 import "openzeppelin-contracts/contracts/utils/Address.sol";
-import "../interface/cctp/ITokenMessenger.sol";
-import "../interface/cctp/IMessageTransmitter.sol";
+import "../interface/cctpv2/ITokenMessengerV2.sol";
+import "../interface/cctpv2/IMessageTransmitterV2.sol";
 import "../interface/IProtocolVault.sol";
 import "../library/DelegateSwapSignature.sol";
 import "../oz5Revised/ReentrancyGuardRevised.sol";
@@ -84,6 +84,11 @@ contract Vault is
     // Swap Signer Address
     address public swapSigner;
 
+
+    /*=============== CCTP Config ===============*/
+    uint256 public cctpMaxFee;
+    uint32 public cctpFinalityThreshold;
+    
 
     /* ================ Role ================ */
 
@@ -577,6 +582,12 @@ contract Vault is
         messageTransmitterContract = _rebalanceMessengerContract;
     }
 
+    function setCCTPConfig(uint256 _maxFee, uint32 _finalityThreshold) public onlyOwner {
+        
+        cctpMaxFee = _maxFee;
+        cctpFinalityThreshold = _finalityThreshold;
+    }
+
     function rebalanceBurn(RebalanceTypes.RebalanceBurnCCData calldata data) external override onlyCrossChainManager {
         /// Check if the token is allowed to be burned
         address burnToken = allowedToken[data.tokenHash];
@@ -585,8 +596,8 @@ contract Vault is
 
         /// Approve the token to be burned
         IERC20(burnToken).approve(tokenMessengerContract, data.amount);
-        try ITokenMessenger(tokenMessengerContract).depositForBurn(
-            data.amount, data.dstDomain, Utils.toBytes32(data.dstVaultAddress), burnToken
+        try ITokenMessengerV2(tokenMessengerContract).depositForBurn(
+            data.amount, data.dstDomain, Utils.toBytes32(data.dstVaultAddress), burnToken, Utils.toBytes32(data.dstVaultAddress), cctpMaxFee,cctpFinalityThreshold
         ) {
             // send succ cross-chain tx to ledger
             // rebalanceId, amount, tokenHash, burnChainId, mintChainId | true
@@ -617,7 +628,7 @@ contract Vault is
     }
 
     function rebalanceMint(RebalanceTypes.RebalanceMintCCData calldata data) external override onlyCrossChainManager {
-        try IMessageTransmitter(messageTransmitterContract).receiveMessage(data.messageBytes, data.messageSignature) {
+        try IMessageTransmitterV2(messageTransmitterContract).receiveMessage(data.messageBytes, data.messageSignature) {
             // send succ cross-chain tx to ledger
             // rebalanceId, amount, tokenHash, burnChainId, mintChainId | true
             IVaultCrossChainManager(crossChainManagerAddress).mintFinish(
