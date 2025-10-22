@@ -37,11 +37,11 @@ contract LedgerDataLayout {
     
     /// @dev Mapping from accountId => tokenHash => escrow balance
     /// @notice Tracks amounts that have been credited but not yet finalized
-    mapping(bytes32 => mapping(bytes32 => uint128)) public escrowBalances;
+    mapping(bytes32 => mapping(bytes32 => uint128)) internal escrowBalances;
     
     /// @dev Mapping from transferId => InternalTransferTrack
     /// @notice Tracks the state of each internal transfer
-    mapping(uint256 => EventTypes.InternalTransferTrack) public transfers;
+    mapping(uint256 => EventTypes.InternalTransferTrack) internal transfers;
 
     // The storage gap to prevent overwriting by proxy
     uint256[39] private __gap;

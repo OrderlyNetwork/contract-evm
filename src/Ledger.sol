@@ -274,6 +274,44 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, AccessControlR
         return batchGetUserLedger(accountIds, tokens, symbols);
     }
 
+    function getUserTokenBalance(bytes32 accountId, bytes32 tokenHash)
+        external
+        view
+        override
+        returns (int128)
+    {
+        return userLedger[accountId].getBalance(tokenHash);
+    }
+
+    function getUserEscrowBalance(bytes32 accountId, bytes32 tokenHash)
+        external
+        view
+        override
+        returns (uint128)
+    {
+        return escrowBalances[accountId][tokenHash];
+    }
+
+    function getUserTotalFrozenBalance(bytes32 accountId, bytes32 tokenHash)
+        external
+        view
+        override
+        returns (uint128)
+    {
+        return userLedger[accountId].getFrozenTotalBalance(tokenHash);
+    }
+
+    function getBalanceTransferState(uint256 transferId)
+        external
+        view
+        override
+        returns (EventTypes.InternalTransferTrack memory)
+    {
+        return transfers[transferId];
+    }
+
+  
+
     /// Interface implementation
 
     /// @notice The cross chain manager will call this function to notify the deposit event to the Ledger contract
