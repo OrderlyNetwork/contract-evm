@@ -113,8 +113,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, AccessControlR
         emit ChangeLedgerImplD(_getLedgerStorage().ledgerImplD, _ledgerImplD);
         _getLedgerStorage().ledgerImplD = _ledgerImplD;
     }
-    
-    
+
     /// @notice Set the address of operatorManager contract
     /// @param _operatorManagerAddress new operatorManagerAddress
     function setOperatorManagerAddress(address _operatorManagerAddress)
@@ -273,44 +272,6 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, AccessControlR
         bytes32[] memory symbols = vaultManager.getAllAllowedSymbol();
         return batchGetUserLedger(accountIds, tokens, symbols);
     }
-
-    function getUserTokenBalance(bytes32 accountId, bytes32 tokenHash)
-        external
-        view
-        override
-        returns (int128)
-    {
-        return userLedger[accountId].getBalance(tokenHash);
-    }
-
-    function getUserEscrowBalance(bytes32 accountId, bytes32 tokenHash)
-        external
-        view
-        override
-        returns (uint128)
-    {
-        return escrowBalances[accountId][tokenHash];
-    }
-
-    function getUserTotalFrozenBalance(bytes32 accountId, bytes32 tokenHash)
-        external
-        view
-        override
-        returns (uint128)
-    {
-        return userLedger[accountId].getFrozenTotalBalance(tokenHash);
-    }
-
-    function getBalanceTransferState(uint256 transferId)
-        external
-        view
-        override
-        returns (EventTypes.InternalTransferTrack memory)
-    {
-        return transfers[transferId];
-    }
-
-  
 
     /// Interface implementation
 

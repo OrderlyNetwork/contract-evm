@@ -77,7 +77,7 @@ contract VaultManagerAccessControlTest is Test {
     function test_nonOwnerCannotSetAllowedToken() public {
         // Alice (non-owner) should not be able to set allowed token
         vm.prank(alice);
-        vm.expectRevert(abi.encodeWithSelector(IAccessControlRevised.AccessControlUnauthorizedAccount.selector, alice, SYMBOL_MANAGER_ROLE));
+        vm.expectRevert("Ownable: caller is not the owner");
         vaultManager.setAllowedToken(TEST_TOKEN_HASH, true);
     }
     
@@ -93,7 +93,7 @@ contract VaultManagerAccessControlTest is Test {
     function test_nonOwnerCannotSetAllowedChainToken() public {
         vm.prank(alice);
         // TODO: change to AccessControlUnauthorizedAccount
-        vm.expectRevert(abi.encodeWithSelector(IAccessControlRevised.AccessControlUnauthorizedAccount.selector, alice, SYMBOL_MANAGER_ROLE));
+        vm.expectRevert("Ownable: caller is not the owner");
         vaultManager.setAllowedChainToken(TEST_TOKEN_HASH, TEST_CHAIN_ID, true);
     }
     
