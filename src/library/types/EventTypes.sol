@@ -167,12 +167,30 @@ library EventTypes {
         uint256 clientId;
     }
 
+    /// @dev Balance transfer event structure for tracking inter-account transfers
     struct BalanceTransfer {
-        bytes32 accountId;
-        uint128 amount;
-        bytes32 tokenHash;
-        bool isFromAccountId;
-        uint8 transferType;
+        bytes32 fromAccountId;   /// @dev Source account ID
+        bytes32 toAccountId;     /// @dev Destination account ID
+        uint128 amount;          /// @dev Transfer amount
+        bytes32 tokenHash;       /// @dev Token hash identifier
+        bool isFromAccountId;    /// @dev true: debit event, false: credit event
+        uint8 transferType;      /// @dev Transfer type - see ILedgerEvent.BalanceTransfer for full enumeration
+        uint256 transferId;      /// @dev Unique identifier to link debit/credit pairs
+    }
+
+    /// @dev Enum to track which side of the transfer has been processed
+    enum TransferSide { 
+        None,   /// @dev No events processed yet
+        Debit,  /// @dev Only debit event processed
+        Credit, /// @dev Only credit event processed
+        Both    /// @dev Both debit and credit events processed
+    }
+    
+    /// @dev Track the state of an internal transfer
+    struct InternalTransferTrack {
+        TransferSide side;   /// @dev Which side(s) have been processed
+        bytes32 tokenHash;   /// @dev Token being transferred
+        uint128 amount;      /// @dev Amount being transferred
     }
 
     struct SwapResult {

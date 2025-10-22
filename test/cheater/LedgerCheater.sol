@@ -22,6 +22,10 @@ contract LedgerCheater is Ledger {
         account.perpPositions[symbolHash] = position;
     }
 
+    function cheatGetUserEscrowBalance(bytes32 accountId, bytes32 tokenHash) public view returns (uint128) {
+        return escrowBalances[accountId][tokenHash];
+    }
+
     // get userLedger balance
     function getUserLedgerBalance(bytes32 accountId, bytes32 tokenHash) public view returns (int128) {
         return userLedger[accountId].getBalance(tokenHash);
