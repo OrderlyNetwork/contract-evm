@@ -37,6 +37,7 @@ interface IError {
     error ZeroDelegateSigner();
     error ZeroDelegateContract();
     error WithdrawBalanceNotEnough(int128 balance, uint128 withdrawAmount);
+    error WithdrawEscrowBalanceNotEnough(int128 availableBalance, uint128 withdrawAmount);
     error WithdrawVaultBalanceNotEnough(uint128 balance, uint128 withdrawAmount);
     error WithdrawFeeTooLarge(uint128 maxFee, uint128 withdrawFee);
     error WithdrawToAddressZero();

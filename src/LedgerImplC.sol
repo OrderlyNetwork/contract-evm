@@ -83,6 +83,9 @@ contract LedgerImplC is ILedgerImplC, OwnableUpgradeable, LedgerDataLayout, Vers
             } else if (account.balances[tokenHash] < withdraw.tokenAmount.toInt128()) {
                 // require balance enough
                 revert WithdrawBalanceNotEnough(account.balances[tokenHash], withdraw.tokenAmount);
+            } else if (account.balances[tokenHash] - escrowBalances[withdraw.accountId][tokenHash].toInt128() < withdraw.tokenAmount.toInt128()) {
+                /// @dev Check available balance (balance - escrow) to prevent withdrawal of in-flight transfer funds
+                state = 9;
             } else if (vaultManager.getBalance(tokenHash, withdraw.chainId) < withdraw.tokenAmount - withdraw.fee) {
                 // require chain has enough balance
                 revert WithdrawVaultBalanceNotEnough(
@@ -155,21 +158,108 @@ contract LedgerImplC is ILedgerImplC, OwnableUpgradeable, LedgerDataLayout, Vers
         external
         override
     {
-        AccountTypes.Account storage userAccount = userLedger[balanceTransfer.accountId];
-        if (balanceTransfer.isFromAccountId) {
-            userAccount.subBalance(balanceTransfer.tokenHash, balanceTransfer.amount);
+        require(balanceTransfer.amount > 0, "ZERO_AMT");
+        
+        EventTypes.InternalTransferTrack storage transferTrack = transfers[balanceTransfer.transferId];
+        
+        // Initialize transfer track if this is the first event for this transfer
+        if (transferTrack.side == EventTypes.TransferSide.None) {
+            transferTrack.tokenHash = balanceTransfer.tokenHash;
+            transferTrack.amount = balanceTransfer.amount;
         } else {
-            userAccount.addBalance(balanceTransfer.tokenHash, balanceTransfer.amount);
+            // Validate that transfer parameters match
+            require(
+                transferTrack.tokenHash == balanceTransfer.tokenHash && 
+                transferTrack.amount == balanceTransfer.amount,
+                "PARAM_MISMATCH"
+            );
         }
-        userAccount.lastEngineEventId = eventId;
-        // emit event
+        
+        if (balanceTransfer.isFromAccountId) {
+            _applyDebit(balanceTransfer.fromAccountId, balanceTransfer.tokenHash, balanceTransfer.amount, transferTrack, eventId);
+        } else {
+            _applyCredit(balanceTransfer.toAccountId, balanceTransfer.tokenHash, balanceTransfer.amount, transferTrack, eventId);
+        }
+        
+        // Emit balance transfer event for each processed event
         emit BalanceTransfer(
             _newGlobalEventId(),
-            balanceTransfer.accountId,
+            balanceTransfer.transferId,
+            balanceTransfer.fromAccountId,
+            balanceTransfer.toAccountId,
             balanceTransfer.amount,
             balanceTransfer.tokenHash,
             balanceTransfer.isFromAccountId,
             balanceTransfer.transferType
+        );
+        
+        if (transferTrack.side == EventTypes.TransferSide.Both) {
+            _finalizeTransfer(balanceTransfer.transferId, balanceTransfer.toAccountId, balanceTransfer.tokenHash, balanceTransfer.amount);
+        }
+    }
+    
+    function _applyDebit(
+        bytes32 fromAccountId,
+        bytes32 tokenHash,
+        uint128 amount,
+        EventTypes.InternalTransferTrack storage transferTrack,
+        uint64 eventId
+    ) private {
+        require(
+            transferTrack.side != EventTypes.TransferSide.Debit && 
+            transferTrack.side != EventTypes.TransferSide.Both,
+            "DEBIT_DUP"
+        );
+        
+        AccountTypes.Account storage fromAccount = userLedger[fromAccountId];
+        fromAccount.subBalance(tokenHash, amount);
+        fromAccount.lastEngineEventId = eventId;
+        
+        transferTrack.side = (transferTrack.side == EventTypes.TransferSide.None)
+            ? EventTypes.TransferSide.Debit
+            : EventTypes.TransferSide.Both;
+    }
+    
+    function _applyCredit(
+        bytes32 toAccountId,
+        bytes32 tokenHash,
+        uint128 amount,
+        EventTypes.InternalTransferTrack storage transferTrack,
+        uint64 eventId
+    ) private {
+        require(
+            transferTrack.side != EventTypes.TransferSide.Credit && 
+            transferTrack.side != EventTypes.TransferSide.Both,
+            "CREDIT_DUP"
+        );
+        
+        AccountTypes.Account storage toAccount = userLedger[toAccountId];
+        escrowBalances[toAccountId][tokenHash] += amount;
+        toAccount.addBalance(tokenHash, amount);
+        toAccount.lastEngineEventId = eventId;
+        
+        transferTrack.side = (transferTrack.side == EventTypes.TransferSide.None)
+            ? EventTypes.TransferSide.Credit
+            : EventTypes.TransferSide.Both;
+    }
+    
+    function _finalizeTransfer(
+        uint256 transferId,
+        bytes32 toAccountId,
+        bytes32 tokenHash,
+        uint128 amount
+    ) private {
+        uint128 escrowBalance = escrowBalances[toAccountId][tokenHash];
+        require(escrowBalance >= amount, "ESCROW_INCONSISTENT");
+        escrowBalances[toAccountId][tokenHash] = escrowBalance - amount;
+        delete transfers[transferId];
+        
+        emit InternalTransferFinalised(
+            _newGlobalEventId(),
+            transferId,
+            toAccountId,
+            tokenHash,
+            amount
         );
     }
 
