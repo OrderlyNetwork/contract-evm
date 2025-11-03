@@ -9,12 +9,12 @@ import "./interface/ILedgerCrossChainManager.sol";
 import "./library/Utils.sol";
 import "./library/typesHelper/AccountTypeHelper.sol";
 import "./library/typesHelper/SafeCastHelper.sol";
-import "./library/Version.sol";
+
 
 /// @title Ledger contract, implementation part D contract, for resolve EIP170 limit
 /// @notice This contract is designed for contract withdraw
 /// @author Orderly_Zibin
-contract LedgerImplD is ILedgerImplD, OwnableUpgradeable, LedgerDataLayout, Version {
+contract LedgerImplD is ILedgerImplD, OwnableUpgradeable, LedgerDataLayout {
     using AccountTypeHelper for AccountTypes.Account;
     using SafeCast for uint256;
     using SafeCastHelper for uint128;
@@ -35,11 +35,6 @@ contract LedgerImplD is ILedgerImplD, OwnableUpgradeable, LedgerDataLayout, Vers
             revert TokenNotAllowed(tokenHash, withdraw.chainId);
         }
         {
-            address protocolVault = vaultManager.getProtocolVaultAddress();
-
-            if (!Utils.validateExtendedAccountId(protocolVault, withdraw.accountId, brokerHash, withdraw.sender)) {
-                revert AccountIdInvalid();
-            }
             if (withdraw.receiver == address(0)) revert WithdrawToAddressZero();
 
             if (withdraw.vaultType == EventTypes.VaultEnum.Ceffu) {
@@ -47,8 +42,13 @@ contract LedgerImplD is ILedgerImplD, OwnableUpgradeable, LedgerDataLayout, Vers
                     revert InvalidPrimeWallet();
                 }
             } else if (withdraw.vaultType == EventTypes.VaultEnum.ProtocolVault) {
-                if (withdraw.receiver != protocolVault) {
-                    revert ProtocolVaultAddressMismatch(address(protocolVault), withdraw.receiver);
+                if (
+                    !Utils.validateExtendedAccountId(withdraw.receiver, withdraw.accountId, brokerHash, withdraw.sender)
+                ) {
+                    revert AccountIdInvalid();
+                }
+                if (!isValidVault[withdraw.receiver]) {
+                    revert InvalidVault();
                 }
             } else {
                 revert NotImplemented();
@@ -108,7 +108,10 @@ contract LedgerImplD is ILedgerImplD, OwnableUpgradeable, LedgerDataLayout, Vers
         ILedgerCrossChainManager(crossChainManagerAddress).withdraw2Contract(withdraw);
     }
 
-    function executeSwapResultUpload(EventTypes.SwapResult calldata swapResultUpload, uint64 eventId) external override {
+    function executeSwapResultUpload(EventTypes.SwapResult calldata swapResultUpload, uint64 eventId)
+        external
+        override
+    {
         AccountTypes.Account storage userAccount = userLedger[swapResultUpload.accountId];
         userAccount.applyDelta(swapResultUpload.buyTokenHash, swapResultUpload.buyQuantity);
         userAccount.applyDelta(swapResultUpload.sellTokenHash, swapResultUpload.sellQuantity);
@@ -116,8 +119,12 @@ contract LedgerImplD is ILedgerImplD, OwnableUpgradeable, LedgerDataLayout, Vers
 
         // if on-chain success, update the balance on the vault contract
         if (swapResultUpload.swapStatus == 1) {
-            vaultManager.applyDeltaBalance(swapResultUpload.buyTokenHash, swapResultUpload.chainId, swapResultUpload.buyQuantity);
-            vaultManager.applyDeltaBalance(swapResultUpload.sellTokenHash, swapResultUpload.chainId, swapResultUpload.sellQuantity);
+            vaultManager.applyDeltaBalance(
+                swapResultUpload.buyTokenHash, swapResultUpload.chainId, swapResultUpload.buyQuantity
+            );
+            vaultManager.applyDeltaBalance(
+                swapResultUpload.sellTokenHash, swapResultUpload.chainId, swapResultUpload.sellQuantity
+            );
         }
 
         emit SwapResultUploaded(

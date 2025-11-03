@@ -17,7 +17,6 @@ import "../interface/IProtocolVault.sol";
 import "../library/DelegateSwapSignature.sol";
 import "../oz5Revised/ReentrancyGuardRevised.sol";
 import "../oz5Revised/AccessControlRevised.sol";
-import "../library/Version.sol";
 /// @title Vault contract
 /// @author Orderly_Rubick, Orderly_Zion
 /// @notice Vault is responsible for saving user's erc20 token.
@@ -30,8 +29,7 @@ contract Vault is
     PausableUpgradeable,
     OwnableUpgradeable,
     ReentrancyGuardRevised,
-    AccessControlRevised,
-    Version
+    AccessControlRevised
 {
     using EnumerableSet for EnumerableSet.Bytes32Set;
     using SafeERC20 for IERC20;
@@ -84,11 +82,14 @@ contract Vault is
     // Swap Signer Address
     address public swapSigner;
 
-
     /*=============== CCTP Config ===============*/
     uint256 public cctpMaxFee;
     uint32 public cctpFinalityThreshold;
-    
+
+    // EnumerableSet for disabled deposit tokens
+    EnumerableSet.Bytes32Set private disabledDepositTokenSet;
+    // Vault Adapter Address
+    address public vaultAdapter;
 
     /* ================ Role ================ */
 
@@ -146,9 +147,9 @@ contract Vault is
     function setBrokerFromLedger(EventTypes.SetBrokerData calldata data) external override onlyCrossChainManager {
         // Chain ID validation (defense in depth) - using Solidity's built-in block.chainid
         require(data.dstChainId == block.chainid, "Vault: dstChainId mismatch");
-        
+
         bool currentStatus = allowedBrokerSet.contains(data.brokerHash);
-        
+
         if (data.allowed) {
             // Add broker operation
             if (currentStatus) {
@@ -168,7 +169,7 @@ contract Vault is
             // Remove the broker using EnumerableSet
             allowedBrokerSet.remove(data.brokerHash);
         }
-        
+
         emit SetBrokerFromLedgerSuccess(data.brokerHash, data.dstChainId, data.allowed);
     }
 
@@ -235,7 +236,11 @@ contract Vault is
     }
 
     /// @notice Add the hash value for an allowed brokerId
-    function setAllowedBroker(bytes32 _brokerHash, bool _allowed) external override onlyRoleOrOwner(BROKER_MANAGER_ROLE) {
+    function setAllowedBroker(bytes32 _brokerHash, bool _allowed)
+        external
+        override
+        onlyRoleOrOwner(BROKER_MANAGER_ROLE)
+    {
         bool succ = false;
         if (_allowed) {
             succ = allowedBrokerSet.add(_brokerHash);
@@ -252,7 +257,10 @@ contract Vault is
     }
 
     /// @notice Set native token deposit limit
-    function setNativeTokenDepositLimit(uint256 _nativeTokenDepositLimit) external override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE)
+    function setNativeTokenDepositLimit(uint256 _nativeTokenDepositLimit)
+        external
+        override
+        onlyRoleOrOwner(SYMBOL_MANAGER_ROLE)
     {
         nativeTokenDepositLimit = _nativeTokenDepositLimit;
     }
@@ -380,7 +388,8 @@ contract Vault is
         if (nativeDepositAmount < data.tokenAmount) revert NativeTokenDepositAmountMismatch();
         // check native token deposit limit
         if (
-            nativeTokenDepositLimit != 0 && (data.tokenAmount + address(this).balance - nativeDepositAmount) > nativeTokenDepositLimit
+            nativeTokenDepositLimit != 0
+                && (data.tokenAmount + address(this).balance - nativeDepositAmount) > nativeTokenDepositLimit
         ) {
             revert DepositExceedLimit();
         }
@@ -405,14 +414,17 @@ contract Vault is
     }
 
     /// @notice The function to validate deposit data
-    function _validateDeposit(address receiver, VaultTypes.VaultDepositFE calldata data) internal view
-    {
+    function _validateDeposit(address receiver, VaultTypes.VaultDepositFE calldata data) internal view {
         // check if tokenHash and brokerHash are allowed
         if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
-        // check if accountId = keccak256(abi.encodePacked(brokerHash, receiver))
-        if (!Utils.validateExtendedAccountId(address(protocolVault), data.accountId, data.brokerHash, receiver)) {
-            revert AccountIdInvalid();
+
+        // check accountId validation based on caller
+        if (msg.sender != vaultAdapter) {
+            // Regular users can only use legacy account ID validation
+            if (!Utils.validateAccountId(data.accountId, data.brokerHash, receiver)) {
+                revert AccountIdInvalid();
+            }
         }
 
         // check if tokenAmount > 0
@@ -501,7 +513,8 @@ contract Vault is
                 // because we check type at the beginning, so we can safely check the type here
                 if (data.vaultType == VaultTypes.VaultEnum.ProtocolVault) {
                     tokenAddress.safeApprove(data.receiver, amount);
-                    protocolVault.depositFromStrategy(data.clientId, address(tokenAddress), amount);
+                    IProtocolVault(data.receiver)
+                        .depositFromStrategy(data.clientId, data.brokerHash, address(tokenAddress), amount);
                 } else if (data.vaultType == VaultTypes.VaultEnum.Ceffu) {
                     tokenAddress.safeTransfer(data.receiver, amount);
                 }
@@ -583,7 +596,6 @@ contract Vault is
     }
 
     function setCCTPConfig(uint256 _maxFee, uint32 _finalityThreshold) public onlyOwner {
-        
         cctpMaxFee = _maxFee;
         cctpFinalityThreshold = _finalityThreshold;
     }
@@ -596,34 +608,43 @@ contract Vault is
 
         /// Approve the token to be burned
         IERC20(burnToken).approve(tokenMessengerContract, data.amount);
-        try ITokenMessengerV2(tokenMessengerContract).depositForBurn(
-            data.amount, data.dstDomain, Utils.toBytes32(data.dstVaultAddress), burnToken, Utils.toBytes32(data.dstVaultAddress), cctpMaxFee,cctpFinalityThreshold
-        ) {
+        try ITokenMessengerV2(tokenMessengerContract)
+            .depositForBurn(
+                data.amount,
+                data.dstDomain,
+                Utils.toBytes32(data.dstVaultAddress),
+                burnToken,
+                Utils.toBytes32(data.dstVaultAddress),
+                cctpMaxFee,
+                cctpFinalityThreshold
+            ) {
             // send succ cross-chain tx to ledger
             // rebalanceId, amount, tokenHash, burnChainId, mintChainId | true
-            IVaultCrossChainManager(crossChainManagerAddress).burnFinish(
-                RebalanceTypes.RebalanceBurnCCFinishData({
-                    rebalanceId: data.rebalanceId,
-                    amount: data.amount,
-                    tokenHash: data.tokenHash,
-                    burnChainId: data.burnChainId,
-                    mintChainId: data.mintChainId,
-                    success: true
-                })
-            );
+            IVaultCrossChainManager(crossChainManagerAddress)
+                .burnFinish(
+                    RebalanceTypes.RebalanceBurnCCFinishData({
+                        rebalanceId: data.rebalanceId,
+                        amount: data.amount,
+                        tokenHash: data.tokenHash,
+                        burnChainId: data.burnChainId,
+                        mintChainId: data.mintChainId,
+                        success: true
+                    })
+                );
         } catch {
             // send fail cross-chain tx to ledger
             // rebalanceId, amount, tokenHash, burnChainId, mintChainId | false
-            IVaultCrossChainManager(crossChainManagerAddress).burnFinish(
-                RebalanceTypes.RebalanceBurnCCFinishData({
-                    rebalanceId: data.rebalanceId,
-                    amount: data.amount,
-                    tokenHash: data.tokenHash,
-                    burnChainId: data.burnChainId,
-                    mintChainId: data.mintChainId,
-                    success: false
-                })
-            );
+            IVaultCrossChainManager(crossChainManagerAddress)
+                .burnFinish(
+                    RebalanceTypes.RebalanceBurnCCFinishData({
+                        rebalanceId: data.rebalanceId,
+                        amount: data.amount,
+                        tokenHash: data.tokenHash,
+                        burnChainId: data.burnChainId,
+                        mintChainId: data.mintChainId,
+                        success: false
+                    })
+                );
         }
     }
 
@@ -631,16 +652,17 @@ contract Vault is
         try IMessageTransmitterV2(messageTransmitterContract).receiveMessage(data.messageBytes, data.messageSignature) {
             // send succ cross-chain tx to ledger
             // rebalanceId, amount, tokenHash, burnChainId, mintChainId | true
-            IVaultCrossChainManager(crossChainManagerAddress).mintFinish(
-                RebalanceTypes.RebalanceMintCCFinishData({
-                    rebalanceId: data.rebalanceId,
-                    amount: data.amount,
-                    tokenHash: data.tokenHash,
-                    burnChainId: data.burnChainId,
-                    mintChainId: data.mintChainId,
-                    success: true
-                })
-            );
+            IVaultCrossChainManager(crossChainManagerAddress)
+                .mintFinish(
+                    RebalanceTypes.RebalanceMintCCFinishData({
+                        rebalanceId: data.rebalanceId,
+                        amount: data.amount,
+                        tokenHash: data.tokenHash,
+                        burnChainId: data.burnChainId,
+                        mintChainId: data.mintChainId,
+                        success: true
+                    })
+                );
         } catch Error(string memory reason) {
             // The method `receiveMessage` is permissionless, so it may fail due to others call it first
             // So if the reason is "Nonce already used", we treat it as success
@@ -648,16 +670,17 @@ contract Vault is
             /// But those corner cases are rare, and we can finally fix it
             string memory expectedReason = "Nonce already used";
             bool success = keccak256(abi.encodePacked(reason)) == keccak256(abi.encodePacked(expectedReason));
-            IVaultCrossChainManager(crossChainManagerAddress).mintFinish(
-                RebalanceTypes.RebalanceMintCCFinishData({
-                    rebalanceId: data.rebalanceId,
-                    amount: data.amount,
-                    tokenHash: data.tokenHash,
-                    burnChainId: data.burnChainId,
-                    mintChainId: data.mintChainId,
-                    success: success
-                })
-            );
+            IVaultCrossChainManager(crossChainManagerAddress)
+                .mintFinish(
+                    RebalanceTypes.RebalanceMintCCFinishData({
+                        rebalanceId: data.rebalanceId,
+                        amount: data.amount,
+                        tokenHash: data.tokenHash,
+                        burnChainId: data.burnChainId,
+                        mintChainId: data.mintChainId,
+                        success: success
+                    })
+                );
         }
     }
 
@@ -675,6 +698,12 @@ contract Vault is
         swapSigner = _swapSigner;
     }
 
+    /// @notice Set the vault adapter address
+    function setVaultAdapter(address _vaultAdapter) public onlyOwner nonZeroAddress(_vaultAdapter) {
+        vaultAdapter = _vaultAdapter;
+
+        emit VaultAdapterSet(vaultAdapter);
+    }
 
     /// @notice Get all submitted swaps
     function getSubmittedSwaps() public view returns (bytes32[] memory) {

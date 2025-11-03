@@ -11,12 +11,12 @@ import "./interface/ILedgerCrossChainManagerV2.sol";
 import "./library/Utils.sol";
 import "./library/Signature.sol";
 import "./library/typesHelper/SafeCastHelper.sol";
-import "./library/Version.sol";
+
 
 /// @title Ledger contract, implementation part C contract, for resolve EIP170 limit
 /// @notice This contract is designed for Solana connection
 /// @author Orderly_Rubick
-contract LedgerImplC is ILedgerImplC, OwnableUpgradeable, LedgerDataLayout, Version {
+contract LedgerImplC is ILedgerImplC, OwnableUpgradeable, LedgerDataLayout {
     using AccountTypeHelper for AccountTypes.Account;
     using SafeCast for uint256;
     using SafeCastHelper for uint128;

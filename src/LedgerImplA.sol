@@ -14,11 +14,11 @@ import "./library/Signature.sol";
 import "./library/typesHelper/AccountTypeHelper.sol";
 import "./library/typesHelper/AccountTypePositionHelper.sol";
 import "./library/typesHelper/SafeCastHelper.sol";
-import "./library/Version.sol";
+
 
 /// @title Ledger contract, implementation part A contract, for resolve EIP170 limit
 /// @author Orderly_Rubick
-contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout, Version {
+contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
     using AccountTypeHelper for AccountTypes.Account;
     using AccountTypePositionHelper for AccountTypes.PerpPosition;
     using SafeCastHelper for *;
@@ -38,11 +38,6 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout, Vers
         if (!vaultManager.getAllowedChainToken(data.tokenHash, data.srcChainId)) {
             revert TokenNotAllowed(data.tokenHash, data.srcChainId);
         }
-        if (
-            !Utils.validateExtendedAccountId(
-                vaultManager.getProtocolVaultAddress(), data.accountId, data.brokerHash, data.userAddress
-            )
-        ) revert AccountIdInvalid();
 
         // a not registerd account can still deposit, because of the consistency
         AccountTypes.Account storage account = userLedger[data.accountId];
