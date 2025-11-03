@@ -3,13 +3,13 @@ pragma solidity ^0.8.18;
 
 import "./interface/IFeeManager.sol";
 import "./LedgerComponent.sol";
-import "./library/Version.sol";
+
 import "./oz5Revised/AccessControlRevised.sol";
 
 /// @title FeeManager component for Ledger contract
 /// @author Orderly_Rubick
 /// @notice FeeManager saves FeeCollector accountId, both getter and setter
-contract FeeManager is IFeeManager, LedgerComponent, AccessControlRevised, Version {
+contract FeeManager is IFeeManager, LedgerComponent, AccessControlRevised {
     // accountId
     bytes32 public withdrawFeeCollector;
     // accountId

@@ -73,6 +73,8 @@ interface IVault {
     event SetProtocolVaultAddress(address _oldProtocolVaultAddress, address _newProtocolVaultAddress);
     event SetCeffuAddress(address _oldCeffuAddress, address _newCeffuAddress);
 
+    event VaultAdapterSet(address adapter);
+
     // SetBroker from ledger events
     event SetBrokerFromLedgerAlreadySet(bytes32 indexed brokerHash, uint256 dstChainId, bool allowed);
     event SetBrokerFromLedgerSuccess(bytes32 indexed brokerHash, uint256 dstChainId, bool allowed);
