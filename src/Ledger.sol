@@ -20,6 +20,7 @@ import "./interface/ILedgerImplC.sol";
 import "./interface/ILedgerImplD.sol";
 import "./library/Version.sol";
 import "./oz5Revised/AccessControlRevised.sol";
+
 /// @title Ledger contract
 /// @author Orderly_Rubick
 /// @notice Ledger is responsible for saving traders' Account (balance, perpPosition, and other meta)
@@ -54,7 +55,9 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, AccessControlR
 
     /// @notice check if the caller is the owner or has the role
     modifier onlyOwnerOrRole(bytes32 role) {
-        if (!hasRole(role, msg.sender) && msg.sender != owner()) revert AccessControlUnauthorizedAccount(msg.sender, role);
+        if (!hasRole(role, msg.sender) && msg.sender != owner()) {
+            revert AccessControlUnauthorizedAccount(msg.sender, role);
+        }
         _;
     }
 
@@ -113,8 +116,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, AccessControlR
         emit ChangeLedgerImplD(_getLedgerStorage().ledgerImplD, _ledgerImplD);
         _getLedgerStorage().ledgerImplD = _ledgerImplD;
     }
-    
-    
+
     /// @notice Set the address of operatorManager contract
     /// @param _operatorManagerAddress new operatorManagerAddress
     function setOperatorManagerAddress(address _operatorManagerAddress)
@@ -190,10 +192,11 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, AccessControlR
         emit PrimeWalletSet(id, _primeWallet);
     }
 
-    function setValidVault (address vault, bool isValid) external onlyOwner {
+    function setValidVault(address vault, bool isValid) external onlyOwner {
         isValidVault[vault] = isValid;
         emit VaultSet(vault, isValid);
     }
+
     /// @notice Get the amount of a token frozen balance for a given account and the corresponding withdrawNonce
     /// @param accountId accountId to query
     /// @param withdrawNonce withdrawNonce to query
@@ -278,30 +281,15 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, AccessControlR
         return batchGetUserLedger(accountIds, tokens, symbols);
     }
 
-    function getUserTokenBalance(bytes32 accountId, bytes32 tokenHash)
-        external
-        view
-        override
-        returns (int128)
-    {
+    function getUserTokenBalance(bytes32 accountId, bytes32 tokenHash) external view override returns (int128) {
         return userLedger[accountId].getBalance(tokenHash);
     }
 
-    function getUserEscrowBalance(bytes32 accountId, bytes32 tokenHash)
-        external
-        view
-        override
-        returns (uint128)
-    {
+    function getUserEscrowBalance(bytes32 accountId, bytes32 tokenHash) external view override returns (uint128) {
         return escrowBalances[accountId][tokenHash];
     }
 
-    function getUserTotalFrozenBalance(bytes32 accountId, bytes32 tokenHash)
-        external
-        view
-        override
-        returns (uint128)
-    {
+    function getUserTotalFrozenBalance(bytes32 accountId, bytes32 tokenHash) external view override returns (uint128) {
         return userLedger[accountId].getFrozenTotalBalance(tokenHash);
     }
 
@@ -314,7 +302,10 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, AccessControlR
         return transfers[transferId];
     }
 
-  
+    function getLedgerImpl() external view returns (address, address, address, address) {
+        LedgerStorage storage $ = _getLedgerStorage();
+        return ($.ledgerImplA, $.ledgerImplB, $.ledgerImplC, $.ledgerImplD);
+    }
 
     /// Interface implementation
 
@@ -326,11 +317,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, AccessControlR
         );
     }
 
-    function accountDepositSol(AccountTypes.AccountDepositSol calldata data)
-        external
-        override
-        onlyCrossChainManagerV2
-    {
+    function accountDepositSol(AccountTypes.AccountDepositSol calldata data) external override onlyCrossChainManagerV2 {
         _delegatecall(
             abi.encodeWithSelector(ILedgerImplC.accountDepositSol.selector, data), _getLedgerStorage().ledgerImplC
         );
@@ -483,17 +470,18 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, AccessControlR
         (uint32 dstDomain, address dstVaultAddress) = vaultManager.executeRebalanceBurn(data);
         // send cc message with:
         // rebalanceId, amount, tokenHash, burnChainId, mintChainId | dstDomain, dstVaultAddress
-        ILedgerCrossChainManager(crossChainManagerAddress).burn(
-            RebalanceTypes.RebalanceBurnCCData({
-                dstDomain: dstDomain,
-                rebalanceId: data.rebalanceId,
-                amount: data.amount,
-                tokenHash: data.tokenHash,
-                burnChainId: data.burnChainId,
-                mintChainId: data.mintChainId,
-                dstVaultAddress: dstVaultAddress
-            })
-        );
+        ILedgerCrossChainManager(crossChainManagerAddress)
+            .burn(
+                RebalanceTypes.RebalanceBurnCCData({
+                    dstDomain: dstDomain,
+                    rebalanceId: data.rebalanceId,
+                    amount: data.amount,
+                    tokenHash: data.tokenHash,
+                    burnChainId: data.burnChainId,
+                    mintChainId: data.mintChainId,
+                    dstVaultAddress: dstVaultAddress
+                })
+            );
     }
 
     function rebalanceBurnFinish(RebalanceTypes.RebalanceBurnCCFinishData calldata data)
@@ -512,17 +500,18 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, AccessControlR
         vaultManager.executeRebalanceMint(data);
         // send cc Message with:
         // rebalanceId, amount, tokenHash, burnChainId, mintChainId | messageBytes, messageSignature
-        ILedgerCrossChainManager(crossChainManagerAddress).mint(
-            RebalanceTypes.RebalanceMintCCData({
-                rebalanceId: data.rebalanceId,
-                amount: data.amount,
-                tokenHash: data.tokenHash,
-                burnChainId: data.burnChainId,
-                mintChainId: data.mintChainId,
-                messageBytes: data.messageBytes,
-                messageSignature: data.messageSignature
-            })
-        );
+        ILedgerCrossChainManager(crossChainManagerAddress)
+            .mint(
+                RebalanceTypes.RebalanceMintCCData({
+                    rebalanceId: data.rebalanceId,
+                    amount: data.amount,
+                    tokenHash: data.tokenHash,
+                    burnChainId: data.burnChainId,
+                    mintChainId: data.mintChainId,
+                    messageBytes: data.messageBytes,
+                    messageSignature: data.messageSignature
+                })
+            );
     }
 
     function rebalanceMintFinish(RebalanceTypes.RebalanceMintCCFinishData calldata data)
@@ -571,33 +560,28 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, AccessControlR
     /// @param chainIds Array of destination chain IDs where broker status should be modified
     /// @param brokerHash Hash of the broker to be modified
     /// @param allowed true to add broker, false to remove broker
-    function setBrokerFromLedger(
-        uint256[] calldata chainIds, 
-        bytes32 brokerHash, 
-        uint16 brokerIndex,
-        bool allowed
-    ) external override onlyOwnerOrRole(BROKER_MANAGER_ROLE) {
+    function setBrokerFromLedger(uint256[] calldata chainIds, bytes32 brokerHash, uint16 brokerIndex, bool allowed)
+        external
+        override
+        onlyOwnerOrRole(BROKER_MANAGER_ROLE)
+    {
         // Validate input parameters
         require(chainIds.length > 0, "Ledger: empty chainIds");
-        
+
         // Step 1: Update local VaultManager state for the broker
         // This updates the broker status in the local Ledger chain
         vaultManager.setBrokerFromLedger(brokerHash, allowed);
-        
+
         // Step 2: Trigger cross-chain messages
         // Call LedgerCrossChainManager to send messages to vault chains
-        ILedgerCrossChainManager(crossChainManagerAddress).setBrokerCrossChain(
-            chainIds, 
-            brokerHash, 
-            allowed
-        );
+        ILedgerCrossChainManager(crossChainManagerAddress).setBrokerCrossChain(chainIds, brokerHash, allowed);
 
         // Step 3: Set broker hash and its index number when first time allowed
         if (allowed) {
-            ILedgerCrossChainManagerV2(crossChainManagerV2Address).setBrokerFromLedger(msg.sender, brokerHash, brokerIndex);
+            ILedgerCrossChainManagerV2(crossChainManagerV2Address)
+                .setBrokerFromLedger(msg.sender, brokerHash, brokerIndex);
         }
 
-        
         emit SetBrokerFromLedgerInitiated(chainIds, brokerHash, allowed);
     }
 
