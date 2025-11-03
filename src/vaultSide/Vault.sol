@@ -17,7 +17,6 @@ import "../interface/IProtocolVault.sol";
 import "../library/DelegateSwapSignature.sol";
 import "../oz5Revised/ReentrancyGuardRevised.sol";
 import "../oz5Revised/AccessControlRevised.sol";
-import "../library/Version.sol";
 /// @title Vault contract
 /// @author Orderly_Rubick, Orderly_Zion
 /// @notice Vault is responsible for saving user's erc20 token.
@@ -30,8 +29,7 @@ contract Vault is
     PausableUpgradeable,
     OwnableUpgradeable,
     ReentrancyGuardRevised,
-    AccessControlRevised,
-    Version
+    AccessControlRevised
 {
     using EnumerableSet for EnumerableSet.Bytes32Set;
     using SafeERC20 for IERC20;
