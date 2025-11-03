@@ -88,7 +88,12 @@ contract Vault is
     /*=============== CCTP Config ===============*/
     uint256 public cctpMaxFee;
     uint32 public cctpFinalityThreshold;
-    
+
+
+    // EnumerableSet for disabled deposit tokens
+    EnumerableSet.Bytes32Set private disabledDepositTokenSet;
+    // Vault Adapter Address
+    address public vaultAdapter;
 
     /* ================ Role ================ */
 
@@ -410,9 +415,13 @@ contract Vault is
         // check if tokenHash and brokerHash are allowed
         if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
-        // check if accountId = keccak256(abi.encodePacked(brokerHash, receiver))
-        if (!Utils.validateExtendedAccountId(address(protocolVault), data.accountId, data.brokerHash, receiver)) {
-            revert AccountIdInvalid();
+
+        // check accountId validation based on caller
+        if (msg.sender != vaultAdapter) {
+            // Regular users can only use legacy account ID validation
+            if (!Utils.validateAccountId(data.accountId, data.brokerHash, receiver)) {
+                revert AccountIdInvalid();
+            }
         }
 
         // check if tokenAmount > 0
@@ -501,7 +510,7 @@ contract Vault is
                 // because we check type at the beginning, so we can safely check the type here
                 if (data.vaultType == VaultTypes.VaultEnum.ProtocolVault) {
                     tokenAddress.safeApprove(data.receiver, amount);
-                    protocolVault.depositFromStrategy(data.clientId, address(tokenAddress), amount);
+                    IProtocolVault(data.receiver).depositFromStrategy(data.clientId, address(tokenAddress), amount);
                 } else if (data.vaultType == VaultTypes.VaultEnum.Ceffu) {
                     tokenAddress.safeTransfer(data.receiver, amount);
                 }
@@ -675,6 +684,12 @@ contract Vault is
         swapSigner = _swapSigner;
     }
 
+    /// @notice Set the vault adapter address
+    function setVaultAdapter(address _vaultAdapter) public onlyOwner nonZeroAddress(_vaultAdapter) {
+        vaultAdapter = _vaultAdapter;
+
+        emit VaultAdapterSet(vaultAdapter);
+    }
 
     /// @notice Get all submitted swaps
     function getSubmittedSwaps() public view returns (bytes32[] memory) {

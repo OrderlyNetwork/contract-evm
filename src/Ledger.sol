@@ -190,6 +190,10 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, AccessControlR
         emit PrimeWalletSet(id, _primeWallet);
     }
 
+    function setValidVault (address vault, bool isValid) external onlyOwner {
+        isValidVault[vault] = isValid;
+        emit VaultSet(vault, isValid);
+    }
     /// @notice Get the amount of a token frozen balance for a given account and the corresponding withdrawNonce
     /// @param accountId accountId to query
     /// @param withdrawNonce withdrawNonce to query
