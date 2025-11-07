@@ -87,6 +87,7 @@ contract Vault is
     uint32 public cctpFinalityThreshold;
 
     // EnumerableSet for disabled deposit tokens
+    // If a tokenHash is in this set, users cannot deposit this token, but user can still withdraw this token from Orderly
     EnumerableSet.Bytes32Set private disabledDepositTokenSet;
     // Vault Adapter Address
     address public vaultAdapter;
@@ -122,6 +123,15 @@ contract Vault is
     /// @notice check non-zero address
     modifier nonZeroAddress(address _address) {
         if (_address == address(0)) revert AddressZero();
+        _;
+    }
+
+    /// @notice Check if the token is supported and not disabled
+    modifier checkDepositToken(bytes32 _tokenHash) {
+        if (!allowedTokenSet.contains(_tokenHash)) revert TokenNotAllowed();
+        if (disabledDepositTokenSet.contains(_tokenHash)) revert DepositTokenDisabled();
+        // check the token address if the token is not native token
+        if (_tokenHash != nativeTokenHash && allowedToken[_tokenHash] == address(0)) revert InvalidTokenAddress();
         _;
     }
 
@@ -218,6 +228,22 @@ contract Vault is
         }
         if (!succ) revert EnumerableSetError();
         emit SetAllowedToken(_tokenHash, _allowed);
+    }
+
+    function disableDepositToken(bytes32 _tokenHash) external override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE) {
+        if (!allowedTokenSet.contains(_tokenHash)) revert TokenNotAllowed();
+        disabledDepositTokenSet.add(_tokenHash);
+        emit DisableDepositToken(_tokenHash);
+    }
+
+    function enableDepositToken(bytes32 _tokenHash) external override onlyOwner {
+        if (!disabledDepositTokenSet.contains(_tokenHash)) revert TokenNotDisabled();
+        disabledDepositTokenSet.remove(_tokenHash);
+        emit EnableDepositToken(_tokenHash);
+    }
+
+    function getDisabledDepositToken() external view returns (bytes32[] memory) {
+        return disabledDepositTokenSet.values();
     }
 
     function setRebalanceEnableToken(bytes32 _tokenHash, bool _allowed) external override onlyOwner {
@@ -414,9 +440,12 @@ contract Vault is
     }
 
     /// @notice The function to validate deposit data
-    function _validateDeposit(address receiver, VaultTypes.VaultDepositFE calldata data) internal view {
-        // check if tokenHash and brokerHash are allowed
-        if (!allowedTokenSet.contains(data.tokenHash)) revert TokenNotAllowed();
+    function _validateDeposit(address receiver, VaultTypes.VaultDepositFE calldata data)
+        internal
+        view
+        checkDepositToken(data.tokenHash)
+    {
+        // check if brokerHash are allowed
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
 
         // check accountId validation based on caller
