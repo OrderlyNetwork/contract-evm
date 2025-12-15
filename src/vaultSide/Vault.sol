@@ -225,6 +225,10 @@ contract Vault is
             succ = allowedTokenSet.add(_tokenHash);
         } else {
             succ = allowedTokenSet.remove(_tokenHash);
+            if (disabledDepositTokenSet.contains(_tokenHash)) {
+                // if the token is already disabled, remove it
+                disabledDepositTokenSet.remove(_tokenHash); 
+            }
         }
         if (!succ) revert EnumerableSetError();
         emit SetAllowedToken(_tokenHash, _allowed);
@@ -232,13 +236,15 @@ contract Vault is
 
     function disableDepositToken(bytes32 _tokenHash) external override onlyRoleOrOwner(SYMBOL_MANAGER_ROLE) {
         if (!allowedTokenSet.contains(_tokenHash)) revert TokenNotAllowed();
-        disabledDepositTokenSet.add(_tokenHash);
+        bool succ = disabledDepositTokenSet.add(_tokenHash);
+        if (!succ) revert EnumerableSetError();
         emit DisableDepositToken(_tokenHash);
     }
 
     function enableDepositToken(bytes32 _tokenHash) external override onlyOwner {
         if (!disabledDepositTokenSet.contains(_tokenHash)) revert TokenNotDisabled();
-        disabledDepositTokenSet.remove(_tokenHash);
+        bool succ = disabledDepositTokenSet.remove(_tokenHash);
+        if (!succ) revert EnumerableSetError();
         emit EnableDepositToken(_tokenHash);
     }
 
@@ -445,7 +451,7 @@ contract Vault is
         view
         checkDepositToken(data.tokenHash)
     {
-        // check if brokerHash are allowed
+        // check if the brokerHash is allowed
         if (!allowedBrokerSet.contains(data.brokerHash)) revert BrokerNotAllowed();
 
         // check accountId validation based on caller
