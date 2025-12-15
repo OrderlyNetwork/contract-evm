@@ -9,6 +9,8 @@ interface IVault {
     error OnlyCrossChainManagerCanCall();
     error AccountIdInvalid();
     error TokenNotAllowed();
+    error TokenNotDisabled();
+    error DepositTokenDisabled();
     error InvalidTokenAddress();
     error BrokerNotAllowed();
     error BalanceNotEnough(uint256 balance, uint128 amount);
@@ -24,6 +26,7 @@ interface IVault {
     error SwapAlreadySubmitted();
     error InvalidSwapSignature();
     error CeffuAddressMismatch(address want, address got);
+    error SwapExpired(uint256 expirationTimestamp, uint256 currentTimestamp);
 
     // @deprecated
     event AccountDeposit(
@@ -34,10 +37,21 @@ interface IVault {
         uint128 tokenAmount
     );
 
+
+    // deprecated
     event AccountDepositTo(
         bytes32 indexed accountId,
         address indexed userAddress,
         uint64 indexed depositNonce,
+        bytes32 tokenHash,
+        uint128 tokenAmount
+    );
+
+    event AccountDepositTo(
+        bytes32 indexed accountId,
+        bytes32 indexed brokerHash,
+        address indexed userAddress,
+        uint64  depositNonce,
         bytes32 tokenHash,
         uint128 tokenAmount
     );
@@ -63,6 +77,8 @@ interface IVault {
 
     event SetAllowedToken(bytes32 indexed _tokenHash, bool _allowed);
     event SetAllowedBroker(bytes32 indexed _brokerHash, bool _allowed);
+    event DisableDepositToken(bytes32 indexed _tokenHash);
+    event EnableDepositToken(bytes32 indexed _tokenHash);
     event ChangeTokenAddressAndAllow(bytes32 indexed _tokenHash, address _tokenAddress);
     event ChangeCrossChainManager(address oldAddress, address newAddress);
     event ChangeDepositLimit(address indexed _tokenAddress, uint256 _limit);
@@ -104,6 +120,8 @@ interface IVault {
 
     // whitelist
     function setAllowedToken(bytes32 _tokenHash, bool _allowed) external;
+    function disableDepositToken(bytes32 _tokenHash) external;
+    function enableDepositToken(bytes32 _tokenHash) external;
     function setAllowedBroker(bytes32 _brokerHash, bool _allowed) external;
     function setNativeTokenHash(bytes32 _nativeTokenHash) external;
     function setNativeTokenDepositLimit(uint256 _nativeTokenDepositLimit) external;
