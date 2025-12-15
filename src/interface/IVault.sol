@@ -26,6 +26,7 @@ interface IVault {
     error SwapAlreadySubmitted();
     error InvalidSwapSignature();
     error CeffuAddressMismatch(address want, address got);
+    error SwapExpired(uint256 expirationTimestamp, uint256 currentTimestamp);
 
     // @deprecated
     event AccountDeposit(

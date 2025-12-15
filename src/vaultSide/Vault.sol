@@ -777,13 +777,25 @@ contract Vault is
         onlySwapOperator
         nonReentrant
     {
+        _internalDelegateSwap(data);
+    }
+
+    /// @notice Delegate swap with expiration check
+    function delegateSwapWithExpiration(VaultTypes.DelegateSwap calldata data, uint256 expirationTimestamp)
+        external
+        whenNotPaused
+        onlySwapOperator
+        nonReentrant
+    {
+        if (block.timestamp > expirationTimestamp) revert SwapExpired(expirationTimestamp, block.timestamp);
+        _internalDelegateSwap(data);
+    }
+
+    function _internalDelegateSwap(VaultTypes.DelegateSwap calldata data) internal {
         _validateSwap(data);
         _submittedSwapSet.add(data.tradeId);
 
-        // Execute the transaction
-        // Verify that the owner has enough tokens
         if (data.inTokenHash != nativeTokenHash) {
-            // Approve the token to be spent
             address tokenAddress = allowedToken[data.inTokenHash];
             IERC20 token = IERC20(tokenAddress);
             token.safeApprove(data.to, data.inTokenAmount);
@@ -794,7 +806,6 @@ contract Vault is
             value = data.value;
         }
 
-        // Execute the transaction
         (bool success, bytes memory result) = data.to.call{value: value}(data.swapCalldata);
         if (!success) {
             assembly {
@@ -802,7 +813,6 @@ contract Vault is
             }
         }
 
-        // Revoke the approval
         if (data.inTokenHash != nativeTokenHash) {
             address tokenAddress = allowedToken[data.inTokenHash];
             IERC20 token = IERC20(tokenAddress);
