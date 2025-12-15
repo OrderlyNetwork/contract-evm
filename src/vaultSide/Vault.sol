@@ -227,8 +227,7 @@ contract Vault is
             succ = allowedTokenSet.remove(_tokenHash);
             if (disabledDepositTokenSet.contains(_tokenHash)) {
                 // if the token is already disabled, remove it
-                disabledDepositTokenSet.remove(_tokenHash);
-                
+                disabledDepositTokenSet.remove(_tokenHash); 
             }
         }
         if (!succ) revert EnumerableSetError();
