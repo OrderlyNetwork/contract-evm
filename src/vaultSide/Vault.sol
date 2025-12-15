@@ -239,7 +239,6 @@ contract Vault is
         bool succ = disabledDepositTokenSet.add(_tokenHash);
         if (!succ) revert EnumerableSetError();
         emit DisableDepositToken(_tokenHash);
-       
     }
 
     function enableDepositToken(bytes32 _tokenHash) external override onlyOwner {
