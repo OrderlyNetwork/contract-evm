@@ -10,112 +10,249 @@ contract AccountTypePositionHelperTest is Test {
     AccountTypes.PerpPosition position;
 
     function test_halfUp16_8() public {
+        // quotien = 0 case
         {
-            int128 a = AccountTypePositionHelper.halfUp16_8(10, 11);
+            int128 a0 = AccountTypePositionHelper.halfUp16_8(0, 10);
+            assertEq(a0, 0);
+            int128 b0 = AccountTypePositionHelper.halfUp16_8(0, -10);
+            assertEq(b0, 0);
+        }
+            
+        // quotient = 1 or -1 case
+        {
+            int128 a = AccountTypePositionHelper.halfUp16_8(10, 10);
             assertEq(a, 1);
-            int128 b = AccountTypePositionHelper.halfUp16_8(12, 11);
-            assertEq(b, 1);
-            int128 c = AccountTypePositionHelper.halfUp16_8(17, 11);
-            assertEq(c, 2);
-            int128 d = AccountTypePositionHelper.halfUp16_8(21, 11);
-            assertEq(d, 2);
-            int128 e = AccountTypePositionHelper.halfUp16_8(22, 11);
-            assertEq(e, 2);
-        }
-        {
-            int128 a = AccountTypePositionHelper.halfUp16_8(4, 10);
-            assertEq(a, 0);
-            int128 b = AccountTypePositionHelper.halfUp16_8(5, 10);
-            assertEq(b, 1);
-            int128 c = AccountTypePositionHelper.halfUp16_8(6, 10);
-            assertEq(c, 1);
-            int128 d = AccountTypePositionHelper.halfUp16_8(14, 10);
-            assertEq(d, 1);
-            int128 e = AccountTypePositionHelper.halfUp16_8(15, 10);
-            assertEq(e, 2);
-            int128 f = AccountTypePositionHelper.halfUp16_8(16, 10);
-            assertEq(f, 2);
-        }
-        {
-            int128 a = AccountTypePositionHelper.halfUp16_8(-10, 11);
-            assertEq(a, -1);
-            int128 b = AccountTypePositionHelper.halfUp16_8(-12, 11);
+            int128 b = AccountTypePositionHelper.halfUp16_8(-10, 10);
             assertEq(b, -1);
-            int128 c = AccountTypePositionHelper.halfUp16_8(-17, 11);
-            assertEq(c, -2);
-            int128 d = AccountTypePositionHelper.halfUp16_8(-21, 11);
-            assertEq(d, -2);
-            int128 e = AccountTypePositionHelper.halfUp16_8(-22, 11);
-            assertEq(e, -2);
+            int128 c = AccountTypePositionHelper.halfUp16_8(10, -10);
+            assertEq(c, -1);
+            int128 d = AccountTypePositionHelper.halfUp16_8(-10, -10);
+            assertEq(d, 1);
         }
+
+        // quotient in (-1, 1) case
         {
-            int128 a = AccountTypePositionHelper.halfUp16_8(-4, 10);
-            assertEq(a, 0);
+            int128 a = AccountTypePositionHelper.halfUp16_8(5, 10);
+            assertEq(a, 1);
             int128 b = AccountTypePositionHelper.halfUp16_8(-5, 10);
             assertEq(b, -1);
-            int128 c = AccountTypePositionHelper.halfUp16_8(-6, 10);
+            int128 c = AccountTypePositionHelper.halfUp16_8(5, -10);
             assertEq(c, -1);
-            int128 d = AccountTypePositionHelper.halfUp16_8(-14, 10);
-            assertEq(d, -1);
-            int128 e = AccountTypePositionHelper.halfUp16_8(-15, 10);
-            assertEq(e, -2);
-            int128 f = AccountTypePositionHelper.halfUp16_8(-16, 10);
+            int128 d = AccountTypePositionHelper.halfUp16_8(-5, -10);
+            assertEq(d, 1);
+
+            int128 e = AccountTypePositionHelper.halfUp16_8(4, 10);
+            assertEq(e, 0);
+            int128 f = AccountTypePositionHelper.halfUp16_8(-4, 10);
+            assertEq(f, 0);
+            int128 g = AccountTypePositionHelper.halfUp16_8(4, -10);
+            assertEq(g, 0);
+            int128 h = AccountTypePositionHelper.halfUp16_8(-4, -10);
+            assertEq(h, 0);
+
+            int128 i = AccountTypePositionHelper.halfUp16_8(6, 10);
+            assertEq(i, 1);
+            int128 j = AccountTypePositionHelper.halfUp16_8(-6, 10);
+            assertEq(j, -1);
+            int128 k = AccountTypePositionHelper.halfUp16_8(6, -10);
+            assertEq(k, -1);
+            int128 l = AccountTypePositionHelper.halfUp16_8(-6, -10);
+            assertEq(l, 1);
+        }
+
+        // quotien > 1 or < -1 case
+        {
+            int128 a = AccountTypePositionHelper.halfUp16_8(15, 10);
+            assertEq(a, 2);
+            int128 b = AccountTypePositionHelper.halfUp16_8(-15, 10);
+            assertEq(b, -2);
+            int128 c = AccountTypePositionHelper.halfUp16_8(15, -10);
+            assertEq(c, -2);
+            int128 d = AccountTypePositionHelper.halfUp16_8(-15, -10);
+            assertEq(d, 2);
+
+            int128 e = AccountTypePositionHelper.halfUp16_8(24, 10);
+            assertEq(e, 2);
+            int128 f = AccountTypePositionHelper.halfUp16_8(-24, 10);
             assertEq(f, -2);
+            int128 g = AccountTypePositionHelper.halfUp16_8(24, -10);
+            assertEq(g, -2);
+            int128 h = AccountTypePositionHelper.halfUp16_8(-24, -10);
+            assertEq(h, 2);
+
+            int128 i = AccountTypePositionHelper.halfUp16_8(36, 10);
+            assertEq(i, 4);
+            int128 j = AccountTypePositionHelper.halfUp16_8(-36, 10);
+            assertEq(j, -4);
+            int128 k = AccountTypePositionHelper.halfUp16_8(36, -10);
+            assertEq(k, -4);
+            int128 l = AccountTypePositionHelper.halfUp16_8(-36, -10);
+            assertEq(l, 4);
         }
     }
 
     function test_halfDown16_8() public {
+        // quotien = 0 case
         {
-            int128 a = AccountTypePositionHelper.halfDown16_8(10, 11);
+            int128 a0 = AccountTypePositionHelper.halfDown16_8(0, 10);
+            assertEq(a0, 0);
+            int128 b0 = AccountTypePositionHelper.halfDown16_8(0, -10);
+            assertEq(b0, 0);
+        }
+            
+        // quotient = 1 or -1 case
+        {
+            int128 a = AccountTypePositionHelper.halfDown16_8(10, 10);
             assertEq(a, 1);
-            int128 b = AccountTypePositionHelper.halfDown16_8(12, 11);
-            assertEq(b, 1);
-            int128 c = AccountTypePositionHelper.halfDown16_8(17, 11);
-            assertEq(c, 2);
-            int128 d = AccountTypePositionHelper.halfDown16_8(21, 11);
-            assertEq(d, 2);
-            int128 e = AccountTypePositionHelper.halfDown16_8(22, 11);
-            assertEq(e, 2);
-        }
-        {
-            int128 a = AccountTypePositionHelper.halfDown16_8(4, 10);
-            assertEq(a, 0);
-            int128 b = AccountTypePositionHelper.halfDown16_8(5, 10);
-            assertEq(b, 0);
-            int128 c = AccountTypePositionHelper.halfDown16_8(6, 10);
-            assertEq(c, 1);
-            int128 d = AccountTypePositionHelper.halfDown16_8(14, 10);
-            assertEq(d, 1);
-            int128 e = AccountTypePositionHelper.halfDown16_8(15, 10);
-            assertEq(e, 1);
-            int128 f = AccountTypePositionHelper.halfDown16_8(16, 10);
-            assertEq(f, 2);
-        }
-        {
-            int128 a = AccountTypePositionHelper.halfDown16_8(-10, 11);
-            assertEq(a, -1);
-            int128 b = AccountTypePositionHelper.halfDown16_8(-12, 11);
+            int128 b = AccountTypePositionHelper.halfDown16_8(-10, 10);
             assertEq(b, -1);
-            int128 c = AccountTypePositionHelper.halfDown16_8(-17, 11);
-            assertEq(c, -2);
-            int128 d = AccountTypePositionHelper.halfDown16_8(-21, 11);
-            assertEq(d, -2);
-            int128 e = AccountTypePositionHelper.halfDown16_8(-22, 11);
-            assertEq(e, -2);
+            int128 c = AccountTypePositionHelper.halfDown16_8(10, -10);
+            assertEq(c, -1);
+            int128 d = AccountTypePositionHelper.halfDown16_8(-10, -10);
+            assertEq(d, 1);
         }
+
+        // quotient in (-1, 1) case
         {
-            int128 a = AccountTypePositionHelper.halfDown16_8(-4, 10);
+            int128 a = AccountTypePositionHelper.halfDown16_8(5, 10);
             assertEq(a, 0);
             int128 b = AccountTypePositionHelper.halfDown16_8(-5, 10);
             assertEq(b, 0);
-            int128 c = AccountTypePositionHelper.halfDown16_8(-6, 10);
+            int128 c = AccountTypePositionHelper.halfDown16_8(5, -10);
+            assertEq(c, 0);
+            int128 d = AccountTypePositionHelper.halfDown16_8(-5, -10);
+            assertEq(d, 0);
+
+            int128 e = AccountTypePositionHelper.halfDown16_8(4, 10);
+            assertEq(e, 0);
+            int128 f = AccountTypePositionHelper.halfDown16_8(-4, 10);
+            assertEq(f, 0);
+            int128 g = AccountTypePositionHelper.halfDown16_8(4, -10);
+            assertEq(g, 0);
+            int128 h = AccountTypePositionHelper.halfDown16_8(-4, -10);
+            assertEq(h, 0);
+
+            int128 i = AccountTypePositionHelper.halfDown16_8(6, 10);
+            assertEq(i, 1);
+            int128 j = AccountTypePositionHelper.halfDown16_8(-6, 10);
+            assertEq(j, -1);
+            int128 k = AccountTypePositionHelper.halfDown16_8(6, -10);
+            assertEq(k, -1);
+            int128 l = AccountTypePositionHelper.halfDown16_8(-6, -10);
+            assertEq(l, 1);
+        }
+
+        // quotien > 1 or < -1 case
+        {
+            int128 a = AccountTypePositionHelper.halfDown16_8(15, 10);
+            assertEq(a, 1);
+            int128 b = AccountTypePositionHelper.halfDown16_8(-15, 10);
+            assertEq(b, -1);
+            int128 c = AccountTypePositionHelper.halfDown16_8(15, -10);
             assertEq(c, -1);
-            int128 d = AccountTypePositionHelper.halfDown16_8(-14, 10);
-            assertEq(d, -1);
-            int128 e = AccountTypePositionHelper.halfDown16_8(-15, 10);
-            assertEq(e, -1);
-            int128 f = AccountTypePositionHelper.halfDown16_8(-16, 10);
+            int128 d = AccountTypePositionHelper.halfDown16_8(-15, -10);
+            assertEq(d, 1);
+
+            int128 e = AccountTypePositionHelper.halfDown16_8(24, 10);
+            assertEq(e, 2);
+            int128 f = AccountTypePositionHelper.halfDown16_8(-24, 10);
             assertEq(f, -2);
+            int128 g = AccountTypePositionHelper.halfDown16_8(24, -10);
+            assertEq(g, -2);
+            int128 h = AccountTypePositionHelper.halfDown16_8(-24, -10);
+            assertEq(h, 2);
+
+            int128 i = AccountTypePositionHelper.halfDown16_8(36, 10);
+            assertEq(i, 4);
+            int128 j = AccountTypePositionHelper.halfDown16_8(-36, 10);
+            assertEq(j, -4);
+            int128 k = AccountTypePositionHelper.halfDown16_8(36, -10);
+            assertEq(k, -4);
+            int128 l = AccountTypePositionHelper.halfDown16_8(-36, -10);
+            assertEq(l, 4);
+        }
+    }
+
+    function test_halfUp16_8_i256() public {
+          
+        // quotien = 0 case
+        {
+            int256 a0 = AccountTypePositionHelper.halfUp16_8_i256(0, 10);
+            assertEq(a0, 0);
+            int256 b0 = AccountTypePositionHelper.halfUp16_8_i256(0, -10);
+            assertEq(b0, 0);
+        }
+            
+        // quotient = 1 or -1 case
+        {
+            int256 a = AccountTypePositionHelper.halfUp16_8_i256(10, 10);
+            assertEq(a, 1);
+            int256 b = AccountTypePositionHelper.halfUp16_8_i256(-10, 10);
+            assertEq(b, -1);
+            int256 c = AccountTypePositionHelper.halfUp16_8_i256(10, -10);
+            assertEq(c, -1);
+            int256 d = AccountTypePositionHelper.halfUp16_8_i256(-10, -10);
+            assertEq(d, 1);
+        }
+
+        // quotient in (-1, 1) case
+        {
+            int256 a = AccountTypePositionHelper.halfUp16_8_i256(5, 10);
+            assertEq(a, 1);
+            int256 b = AccountTypePositionHelper.halfUp16_8_i256(-5, 10);
+            assertEq(b, -1);
+            int256 c = AccountTypePositionHelper.halfUp16_8_i256(5, -10);
+            assertEq(c, -1);
+            int256 d = AccountTypePositionHelper.halfUp16_8_i256(-5, -10);
+            assertEq(d, 1);
+
+            int256 e = AccountTypePositionHelper.halfUp16_8_i256(4, 10);
+            assertEq(e, 0);
+            int256 f = AccountTypePositionHelper.halfUp16_8_i256(-4, 10);
+            assertEq(f, 0);
+            int256 g = AccountTypePositionHelper.halfUp16_8_i256(4, -10);
+            assertEq(g, 0);
+            int256 h = AccountTypePositionHelper.halfUp16_8_i256(-4, -10);
+            assertEq(h, 0);
+
+            int256 i = AccountTypePositionHelper.halfUp16_8_i256(6, 10);
+            assertEq(i, 1);
+            int256 j = AccountTypePositionHelper.halfUp16_8_i256(-6, 10);
+            assertEq(j, -1);
+            int256 k = AccountTypePositionHelper.halfUp16_8_i256(6, -10);
+            assertEq(k, -1);
+            int256 l = AccountTypePositionHelper.halfUp16_8_i256(-6, -10);
+            assertEq(l, 1);
+        }
+
+        // quotien > 1 or < -1 case
+        {
+            int256 a = AccountTypePositionHelper.halfUp16_8_i256(15, 10);
+            assertEq(a, 2);
+            int256 b = AccountTypePositionHelper.halfUp16_8_i256(-15, 10);
+            assertEq(b, -2);
+            int256 c = AccountTypePositionHelper.halfUp16_8_i256(15, -10);
+            assertEq(c, -2);
+            int256 d = AccountTypePositionHelper.halfUp16_8_i256(-15, -10);
+            assertEq(d, 2);
+
+            int256 e = AccountTypePositionHelper.halfUp16_8_i256(24, 10);
+            assertEq(e, 2);
+            int256 f = AccountTypePositionHelper.halfUp16_8_i256(-24, 10);
+            assertEq(f, -2);
+            int256 g = AccountTypePositionHelper.halfUp16_8_i256(24, -10);
+            assertEq(g, -2);
+            int256 h = AccountTypePositionHelper.halfUp16_8_i256(-24, -10);
+            assertEq(h, 2);
+
+            int256 i = AccountTypePositionHelper.halfUp16_8_i256(36, 10);
+            assertEq(i, 4);
+            int256 j = AccountTypePositionHelper.halfUp16_8_i256(-36, 10);
+            assertEq(j, -4);
+            int256 k = AccountTypePositionHelper.halfUp16_8_i256(36, -10);
+            assertEq(k, -4);
+            int256 l = AccountTypePositionHelper.halfUp16_8_i256(-36, -10);
+            assertEq(l, 4);
         }
     }
 
