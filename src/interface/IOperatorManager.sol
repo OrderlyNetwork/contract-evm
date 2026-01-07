@@ -11,6 +11,7 @@ import "./IOperatorManagerEvent.sol";
 
 interface IOperatorManager is IError, IOperatorManagerEvent {
     function initialize() external;
+    function initBizTypeToSelector() external;
 
     // operator call futures trade upload
     function futuresTradeUpload(PerpTypes.FuturesTradeUploadData calldata data) external;

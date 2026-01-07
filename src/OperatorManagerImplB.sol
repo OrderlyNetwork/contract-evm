@@ -42,53 +42,45 @@ contract OperatorManagerImplB is IOperatorManagerImplB, OwnableUpgradeable, Oper
 
     /// @notice Cross-Contract call to Ledger contract to process each event upload according to the event type
     function _processEventUpload(EventTypes.EventUploadData calldata data) internal {
-        uint8 bizType = data.bizType;
-        if (bizType == 1) {
-            // withdraw
-            ledger.executeWithdrawAction(abi.decode(data.data, (EventTypes.WithdrawData)), data.eventId);
-        } else if (bizType == 2) {
-            // settlement
-            ledger.executeSettlement(abi.decode(data.data, (EventTypes.Settlement)), data.eventId);
-        } else if (bizType == 3) {
-            // adl
-            ledger.executeAdl(abi.decode(data.data, (EventTypes.Adl)), data.eventId);
-        } else if (bizType == 4) {
-            // liquidation
-            ledger.executeLiquidation(abi.decode(data.data, (EventTypes.Liquidation)), data.eventId);
-        } else if (bizType == 5) {
-            // fee disuribution
-            ledger.executeFeeDistribution(abi.decode(data.data, (EventTypes.FeeDistribution)), data.eventId);
-        } else if (bizType == 6) {
-            // delegate signer
-            ledger.executeDelegateSigner(abi.decode(data.data, (EventTypes.DelegateSigner)), data.eventId);
-        } else if (bizType == 7) {
-            // delegate withdraw
-            ledger.executeDelegateWithdrawAction(abi.decode(data.data, (EventTypes.WithdrawData)), data.eventId);
-        } else if (bizType == 8) {
-            // adl v2
-            ledger.executeAdlV2(abi.decode(data.data, (EventTypes.AdlV2)), data.eventId);
-        } else if (bizType == 9) {
-            // liquidation v2
-            ledger.executeLiquidationV2(abi.decode(data.data, (EventTypes.LiquidationV2)), data.eventId);
-        } else if (bizType == 10) {
-            // withdraw sol
-            ledger.executeWithdrawSolAction(abi.decode(data.data, (EventTypes.WithdrawDataSol)), data.eventId);
-        } else if (bizType == 11) {
-            // withdraw to external account
-            ledger.executeWithdraw2Contract(abi.decode(data.data, (EventTypes.Withdraw2Contract)), data.eventId);
-        } else if (bizType == 12) {
-            // balance transfer
-            ledger.executeBalanceTransfer(abi.decode(data.data, (EventTypes.BalanceTransfer)), data.eventId);
-        } else if (bizType == 13) {
-            // swap result upload
-            ledger.executeSwapResultUpload(abi.decode(data.data, (EventTypes.SwapResult)), data.eventId);
-        } else {
-            revert InvalidBizType(bizType);
+        bytes4 selector = bizTypeToSelectors[data.bizType];
+        if (selector == bytes4(0))  revert InvalidBizType(data.bizType);
+
+        uint256 dataOffset = 0;
+        if (_isDynamicBizType(data.bizType)) {
+            dataOffset = 32;
         }
+        
+        require(data.data.length >= dataOffset, "Data too short");
+        bytes memory dataWithoutOffset = abi.encodePacked(data.data[dataOffset:]);
+        uint256 eventOffset = 64;   // 0x40 for eventOffset + eventId
+        // encode schema for static or dynamic event types
+        bytes memory encodedCalldata = dataOffset == 0
+        ? abi.encodePacked(selector, dataWithoutOffset, abi.encode(data.eventId))
+        : abi.encodePacked(selector, abi.encode(eventOffset), abi.encode(data.eventId), dataWithoutOffset);
+        (bool success, bytes memory returnData) = address(ledger).call(encodedCalldata);
+        
+        if (!success) {
+            if (returnData.length == 0) revert("Ledger call failed");
+            assembly {
+                revert(add(32, returnData), mload(returnData))
+            }
+        }        
     }
 
     /// @notice Function to update last operator interaction timestamp
     function _innerPing() internal {
         lastOperatorInteraction = block.timestamp;
     }
+
+    // @dev Check if the bizType has a dynamic abi.encode schema
+    function _isDynamicBizType(uint8 bizType) internal pure returns (bool) {
+        return
+            bizType == uint8(Signature.BizType.Withdraw) ||
+            bizType == uint8(Signature.BizType.Settlement) ||
+            bizType == uint8(Signature.BizType.Liquidation) ||
+            bizType == uint8(Signature.BizType.DelegateWithdraw) ||
+            bizType == uint8(Signature.BizType.LiquidationV2) ||
+            bizType == uint8(Signature.BizType.WithdrawSol);
+    }
+    
 }

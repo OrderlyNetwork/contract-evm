@@ -42,6 +42,7 @@ interface IError {
     error WithdrawToAddressZero();
     error InvalidPrimeWallet();
     error NotImplemented();
+    error UnsupportChainType();
     error InvalidVault();
 
     // OperatorManager Error

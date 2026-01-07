@@ -44,7 +44,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, AccessControlR
     bytes32 private constant LedgerStorageLocation = 0x220427b0bfdd3e8fe9a4c85265eee2c38bb3f4591655846e819d36b613b63200;
 
     /* ================ Role ================ */
-    bytes32 public constant SYMBOL_MANAGER_ROLE = keccak256("ORDERLY_MANAGER_SYMBOL_MANAGER_ROLE");
+    // bytes32 public constant SYMBOL_MANAGER_ROLE = keccak256("ORDERLY_MANAGER_SYMBOL_MANAGER_ROLE");
     bytes32 public constant BROKER_MANAGER_ROLE = keccak256("ORDERLY_MANAGER_BROKER_MANAGER_ROLE");
 
     function _getLedgerStorage() private pure returns (LedgerStorage storage $) {
@@ -192,7 +192,16 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, AccessControlR
         emit PrimeWalletSet(id, _primeWallet);
     }
 
-    function setValidVault(address vault, bool isValid) external onlyOwner {
+    /// @notice Set the address of prime wallet on Solana for a given accountId
+    /// @param _id accountId or spId
+    /// @param _solanaPrimeWallet address of the prime wallet
+    function setSolanaPrimeWallet(bytes32 _id, bytes32 _solanaPrimeWallet) external onlyOwner {
+        require(_solanaPrimeWallet != bytes32(0), "Zero Solana Prime Wallet");
+        idToSolanaPrimeWallet[_id] = _solanaPrimeWallet;
+        emit SolanaPrimeWalletSet(_id, _solanaPrimeWallet);
+    }
+
+     function setValidVault(address vault, bool isValid) external onlyOwner {
         isValidVault[vault] = isValid;
         emit VaultSet(vault, isValid);
     }
@@ -555,33 +564,52 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, AccessControlR
         );
     }
 
+    function executeWithdraw2ContractV2(EventTypes.Withdraw2ContractV2 calldata withdraw2ContractV2, uint64 eventId)
+        external
+        override
+        onlyOperatorManager
+    {
+        _delegatecall(
+            abi.encodeWithSelector(ILedgerImplD.executeWithdraw2ContractV2.selector, withdraw2ContractV2, eventId),
+            _getLedgerStorage().ledgerImplD
+        );
+    }
+
     /// @notice Initiates cross-chain broker status modification to multiple vault chains
     /// @dev Only callable by owner, triggers cross-contract calls to VaultManager and LedgerCrossChainManager
     /// @param chainIds Array of destination chain IDs where broker status should be modified
     /// @param brokerHash Hash of the broker to be modified
-    /// @param allowed true to add broker, false to remove broker
-    function setBrokerFromLedger(uint256[] calldata chainIds, bytes32 brokerHash, uint16 brokerIndex, bool allowed)
-        external
-        override
-        onlyOwnerOrRole(BROKER_MANAGER_ROLE)
-    {
+    /// @param allowed true to add broker, false to remove broker 
+    /// @param setBrokerIndex true to set broker index, false otherwise
+    /// @param brokerIndex Index number to assign to the broker if setBrokerIndex is true
+    function setBrokerFromLedger(
+        uint256[] calldata chainIds, 
+        bytes32 brokerHash, 
+        bool allowed,
+        bool setBrokerIndex,
+        uint16 brokerIndex
+    ) external override onlyOwnerOrRole(BROKER_MANAGER_ROLE) {
         // Validate input parameters
         require(chainIds.length > 0, "Ledger: empty chainIds");
-
+        
         // Step 1: Update local VaultManager state for the broker
         // This updates the broker status in the local Ledger chain
         vaultManager.setBrokerFromLedger(brokerHash, allowed);
-
+        
         // Step 2: Trigger cross-chain messages
         // Call LedgerCrossChainManager to send messages to vault chains
-        ILedgerCrossChainManager(crossChainManagerAddress).setBrokerCrossChain(chainIds, brokerHash, allowed);
+        ILedgerCrossChainManager(crossChainManagerAddress).setBrokerCrossChain(
+            chainIds, 
+            brokerHash, 
+            allowed
+        );
 
-        // Step 3: Set broker hash and its index number when first time allowed
-        if (allowed) {
-            ILedgerCrossChainManagerV2(crossChainManagerV2Address)
-                .setBrokerFromLedger(msg.sender, brokerHash, brokerIndex);
+        // Step 3: Set broker hash and its index number if this broker should be supported on Solana chain
+        if (setBrokerIndex) {
+            ILedgerCrossChainManagerV2(crossChainManagerV2Address).setBrokerFromLedger(msg.sender, brokerHash, brokerIndex);
         }
 
+        
         emit SetBrokerFromLedgerInitiated(chainIds, brokerHash, allowed);
     }
 
