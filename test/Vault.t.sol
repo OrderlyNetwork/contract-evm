@@ -30,6 +30,7 @@ contract VaultTest is Test {
     bytes32 constant ACCOUNT_ID = 0x89bf2019fe60f13ec6c3f8de8c10156c2691ba5e743260dbcd81c2c66e87cba0;
     bytes32 constant BROKER_HASH = 0x083098c593f395bea1de45dda552d9f14e8fcb0be3faaa7a1903c5477d7ba7fd; // woofi_dex
     bytes32 constant TOKEN_HASH = 0xd6aca1be9729c13d677335161321649cccae6a591554772516700f986f942eaa; // USDC
+    bytes32 constant ETH_TOKEN_HASH = 0xaaaebeba3810b1e6b70781f14b2d72c1cb89c0b2b320c43bb67ff79f562f5ff4;
     VaultTypes.VaultDepositFE depositData = VaultTypes.VaultDepositFE({
         accountId: ACCOUNT_ID,
         brokerHash: BROKER_HASH,
@@ -80,6 +81,8 @@ contract VaultTest is Test {
         vaultCrossChainManager = new VaultCrossChainManagerMock();
         vault.setCrossChainManager(address(vaultCrossChainManager));
         ledgerCrossChainManager = new LedgerCrossChainManagerMock();
+
+        vault.setNativeTokenHash(ETH_TOKEN_HASH);
 
         // setup ledger
         IOperatorManager operatorManagerImpl = new OperatorManager();
@@ -246,6 +249,54 @@ contract VaultTest is Test {
         assertEq(tUSDC.balanceOf(address(vault)), 0);
     }
 
+    function test_withdrawETH() public {
+        vm.deal(address(vault), 1 ether);
+        VaultTypes.VaultWithdraw memory ethWithdraw1 = VaultTypes.VaultWithdraw({
+        accountId: ACCOUNT_ID,
+        sender: SENDER,
+        receiver: SENDER,
+        brokerHash: BROKER_HASH,
+        tokenHash: ETH_TOKEN_HASH,
+        tokenAmount: 0.5 ether,
+        fee: 0,
+        withdrawNonce: 0
+        });
+
+        vm.startPrank(address(vaultCrossChainManager));
+        vault.withdraw(ethWithdraw1);
+        vm.stopPrank();
+        assertEq(SENDER.balance, 0.5 ether);
+
+        assertEq(address(vault).balance, 0.5 ether);
+
+
+        // test contract can't receive ETH
+        TestContract testContract = new TestContract();
+
+        VaultTypes.VaultWithdraw memory ethWithdraw2 = VaultTypes.VaultWithdraw({
+        accountId: ACCOUNT_ID,
+        sender: SENDER,
+        receiver: address(testContract),
+        brokerHash: BROKER_HASH,
+        tokenHash: ETH_TOKEN_HASH,
+        tokenAmount: 0.5 ether,
+        fee: 0,
+        withdrawNonce: 0
+        });
+
+        vm.startPrank(address(vaultCrossChainManager));
+        vault.withdraw(ethWithdraw2);
+        vm.stopPrank();
+        assertEq(address(testContract).balance, 0);
+        assertEq(address(vault).balance, 0.5 ether); 
+    }
+
+    function testRevert_OnlyThis() public {
+        vm.deal(address(vault), 1 ether);
+        vm.expectRevert("Only this contract can call");
+        vault.attemptTransferETH(address(1), 1 ether);
+    }
+
     function testRevert_withdrawInsufficientBalance() public {
         vm.startPrank(SENDER);
         tUSDC.mint(SENDER, AMOUNT);
@@ -375,7 +426,6 @@ contract VaultTest is Test {
         vm.stopPrank();
     }
 
-
     function test_setBrokerFromLedger() public {
         bytes32 brokerHash = keccak256("zion1");
         EventTypes.SetBrokerData memory data = EventTypes.SetBrokerData(
@@ -410,4 +460,13 @@ contract VaultTest is Test {
         vault.setBrokerFromLedger(data);
     }
     
+}
+
+
+contract TestContract {
+    constructor() {}
+
+    function getAddress() public view returns (address) {
+        return address(this);
+    }
 }

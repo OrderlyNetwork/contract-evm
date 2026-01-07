@@ -45,6 +45,9 @@ contract LedgerDataLayout {
 
     mapping(address vault => bool) public isValidVault;
 
+    // Id(accountId or spId) => Ceffu Prime Wallet on Solana
+    mapping(bytes32 => bytes32) public idToSolanaPrimeWallet;
+
     // The storage gap to prevent overwriting by proxy
-    uint256[38] private __gap;
+    uint256[37] private __gap;
 }

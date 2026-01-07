@@ -92,6 +92,10 @@ contract Vault is
     // Vault Adapter Address
     address public vaultAdapter;
 
+    // CCTP V2 model constants
+    uint32 public constant CCTP_V2_FAST_MODEL = 1000;
+    uint32 public constant CCTP_V2_NORMAL_MODEL = 2000;
+
     /* ================ Role ================ */
 
     bytes32 public constant SYMBOL_MANAGER_ROLE = keccak256("ORDERLY_MANAGER_SYMBOL_MANAGER_ROLE");
@@ -364,7 +368,6 @@ contract Vault is
         public
         view
         override
-        whenNotPaused
         returns (uint256)
     {
         _validateDeposit(receiver, data);
@@ -440,6 +443,7 @@ contract Vault is
                 msg.sender, depositData
             );
         } else {
+            require(crossChainFee == 0, "ethDeposit: crossChainFee should be zero when deposit fee is disabled");
             IVaultCrossChainManager(crossChainManagerAddress).deposit(depositData);
         }
         emit AccountDepositTo(data.accountId, data.brokerHash, receiver, depositId, data.tokenHash, data.tokenAmount);
@@ -482,7 +486,12 @@ contract Vault is
         uint128 amount = data.tokenAmount - data.fee;
 
         if (data.tokenHash == nativeTokenHash) {
-            _ethWithdraw(data.receiver, amount);
+            try this.attemptTransferETH(data.receiver, amount) {
+                // do nothing
+            } catch {
+                // emit event to indicate withdraw fail, where zero address means native token
+                emit WithdrawFailed(address(0), data.receiver, amount);
+            }
         } else {
             // avoid reentrancy, so `transfer` token at the end
             IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
@@ -534,7 +543,13 @@ contract Vault is
         uint128 amount = data.tokenAmount - data.fee;
 
         if (data.tokenHash == nativeTokenHash) {
-            _ethWithdraw(data.receiver, amount);
+            // _ethWithdraw(data.receiver, amount);
+            try this.attemptTransferETH(data.receiver, amount) {
+                // do nothing
+            } catch {
+                // emit event to indicate withdraw fail, where zero address means native token
+                emit WithdrawFailed(address(0), data.receiver, amount);
+            }
         } else {
             // avoid reentrancy, so `transfer` token at the end
             IERC20 tokenAddress = IERC20(allowedToken[data.tokenHash]);
@@ -632,6 +647,10 @@ contract Vault is
 
     function setCCTPConfig(uint256 _maxFee, uint32 _finalityThreshold) public onlyOwner {
         cctpMaxFee = _maxFee;
+        require(
+            _finalityThreshold == CCTP_V2_FAST_MODEL || _finalityThreshold == CCTP_V2_NORMAL_MODEL,
+            "setCCTPConfig: invalid finality threshold"
+        );
         cctpFinalityThreshold = _finalityThreshold;
     }
 
@@ -684,20 +703,34 @@ contract Vault is
     }
 
     function rebalanceMint(RebalanceTypes.RebalanceMintCCData calldata data) external override onlyCrossChainManager {
+
+        address mintToken = allowedToken[data.tokenHash];
+        if (mintToken == address(0)) revert AddressZero();
+        if (!_rebalanceEnableTokenSet.contains(data.tokenHash)) revert NotRebalanceEnableToken();
+
+        uint256 balanceBeforeMint = IERC20(mintToken).balanceOf(address(this));
         try IMessageTransmitterV2(messageTransmitterContract).receiveMessage(data.messageBytes, data.messageSignature) {
+
+            uint256 balanceAfterMint = IERC20(mintToken).balanceOf(address(this));
+            uint256 mintedAmount = balanceAfterMint - balanceBeforeMint;
+
+            // check the minted amount for normal finality model
+            if (cctpFinalityThreshold == CCTP_V2_NORMAL_MODEL){
+                require(mintedAmount == data.amount, "rebalanceMint: minted amount less than expected");
+            }
+            
             // send succ cross-chain tx to ledger
             // rebalanceId, amount, tokenHash, burnChainId, mintChainId | true
-            IVaultCrossChainManager(crossChainManagerAddress)
-                .mintFinish(
-                    RebalanceTypes.RebalanceMintCCFinishData({
-                        rebalanceId: data.rebalanceId,
-                        amount: data.amount,
-                        tokenHash: data.tokenHash,
-                        burnChainId: data.burnChainId,
-                        mintChainId: data.mintChainId,
-                        success: true
-                    })
-                );
+            IVaultCrossChainManager(crossChainManagerAddress).mintFinish(
+                RebalanceTypes.RebalanceMintCCFinishData({
+                    rebalanceId: data.rebalanceId,
+                    amount: mintedAmount.toUint128(),
+                    tokenHash: data.tokenHash,
+                    burnChainId: data.burnChainId,
+                    mintChainId: data.mintChainId,
+                    success: true
+                })
+            );
         } catch Error(string memory reason) {
             // The method `receiveMessage` is permissionless, so it may fail due to others call it first
             // So if the reason is "Nonce already used", we treat it as success
@@ -717,6 +750,13 @@ contract Vault is
                     })
                 );
         }
+    }
+
+    // ============= Only THIS Function  ===============
+    // add only this contract can call this function for try/catch use
+    function attemptTransferETH(address _to, uint256 _amount) external {
+        require(msg.sender == address(this), "Only this contract can call");
+        payable(_to).sendValue(_amount);
     }
 
     /*=================================================
