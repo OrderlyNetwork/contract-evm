@@ -259,6 +259,25 @@ library Signature {
         uint256 clientId;
     }
 
+    // the index number for BizType
+    enum BizType {
+        PLACEHOLDER,                // 0: place holder
+        Withdraw,                   // 1
+        Settlement,                 // 2
+        Adl,                        // 3
+        Liquidation,                // 4
+        FeeDistribution,            // 5
+        DelegateSigner,             // 6
+        DelegateWithdraw,           // 7
+        AdlV2,                      // 8
+        LiquidationV2,              // 9
+        WithdrawSol,                // 10
+        Withdraw2Contract,          // 11
+        BalanceTransfer,            // 12
+        SwapResult,                 // 13
+        Withdraw2ContractV2         // 14
+    }
+
     /// @dev Signature structure for balance transfer events
     /// @notice Used for signature verification of balance transfer operations
     struct BalanceTransferSignature {
@@ -283,6 +302,24 @@ library Signature {
         uint8 swapStatus;
     }
 
+    struct Withdraw2ContractV2Signature {
+        uint64 eventId;
+        uint128 tokenAmount;
+        uint128 fee;
+        EventTypes.ChainType senderChainType;
+        EventTypes.ChainType receiverChainType;
+        uint256 chainId; // target withdraw chain
+        bytes32 accountId;
+        EventTypes.VaultEnum vaultType;
+        bytes32 sender; // Support Solana account and EVM address
+        uint64 withdrawNonce;
+        bytes32 receiver;
+        uint64 timestamp;
+        bytes32 brokerHash;
+        bytes32 tokenHash;
+        uint256 clientId;
+    }
+
     struct EventUploadSignature {
         uint64 batchId;
         WithdrawDataSignature[] withdraws;
@@ -297,6 +334,7 @@ library Signature {
         Withdraw2ContractSignature[] withdraw2Contracts;
         BalanceTransferSignature[] balanceTransfers;
         SwapUploadSignature[] swapUploads;
+        Withdraw2ContractV2Signature[] withdraw2ContractV2s;
     }
 
     error UnsupportedBizType(uint8 bizType);
@@ -309,11 +347,12 @@ library Signature {
         // 0: withdraws + delegate, 1: settlements, 2: adls, 3: liquidations
         // 4: feeDistributions, 5: delegateSigners, 6: null, 7: adlV2s, 8: liquidationV2s
         // 9: withdrawSol, 10: withdraw2Contract, 11: balanceTransfer, 12: swapUploads
-        uint8[] memory countArray = new uint8[](13);
-        uint8[] memory countArray2 = new uint8[](13);
+        // 13: withdraw2ContractV2
+        uint8[] memory countArray = new uint8[](14);
+        uint8[] memory countArray2 = new uint8[](14);
         uint256 len = data.events.length;
         for (uint256 i = 0; i < len; i++) {
-            if (data.events[i].bizType > 13) {
+            if (data.events[i].bizType > 14) {
                 revert UnsupportedBizType(data.events[i].bizType);
             }
             countArray[data.events[i].bizType - 1]++;
@@ -331,12 +370,13 @@ library Signature {
             withdrawSols: new WithdrawSolDataSignature[](countArray[9]),
             withdraw2Contracts: new Withdraw2ContractSignature[](countArray[10]),
             balanceTransfers: new BalanceTransferSignature[](countArray[11]),
-            swapUploads: new SwapUploadSignature[](countArray[12])
+            swapUploads: new SwapUploadSignature[](countArray[12]),
+            withdraw2ContractV2s: new Withdraw2ContractV2Signature[](countArray[13])
         });
 
         for (uint256 i = 0; i < len; i++) {
             EventTypes.EventUploadData memory eventUploadData = data.events[i];
-            if (eventUploadData.bizType == 1 || eventUploadData.bizType == 7) {
+            if (eventUploadData.bizType == uint8(BizType.Withdraw) || eventUploadData.bizType == uint8(BizType.DelegateWithdraw)) {
                 EventTypes.WithdrawData memory withdrawData =
                     abi.decode(eventUploadData.data, (EventTypes.WithdrawData));
                 WithdrawDataSignature memory withdrawDataSignature = WithdrawDataSignature({
@@ -354,7 +394,7 @@ library Signature {
                 });
                 eventUploadSignature.withdraws[countArray2[0]] = withdrawDataSignature;
                 countArray2[0]++;
-            } else if (eventUploadData.bizType == 2) {
+            } else if (eventUploadData.bizType == uint8(BizType.Settlement)) {
                 EventTypes.Settlement memory settlement = abi.decode(eventUploadData.data, (EventTypes.Settlement));
                 SettlementSignature memory settlementSignature = SettlementSignature({
                     eventId: eventUploadData.eventId,
@@ -368,7 +408,7 @@ library Signature {
                 });
                 eventUploadSignature.settlements[countArray2[1]] = settlementSignature;
                 countArray2[1]++;
-            } else if (eventUploadData.bizType == 3) {
+            } else if (eventUploadData.bizType == uint8(BizType.Adl)) {
                 EventTypes.Adl memory adl = abi.decode(eventUploadData.data, (EventTypes.Adl));
                 AdlSignature memory adlSignature = AdlSignature({
                     eventId: eventUploadData.eventId,
@@ -383,7 +423,7 @@ library Signature {
                 });
                 eventUploadSignature.adls[countArray2[2]] = adlSignature;
                 countArray2[2]++;
-            } else if (eventUploadData.bizType == 4) {
+            } else if (eventUploadData.bizType == uint8(BizType.Liquidation)) {
                 EventTypes.Liquidation memory liquidation = abi.decode(eventUploadData.data, (EventTypes.Liquidation));
                 LiquidationSignature memory liquidationSignature = LiquidationSignature({
                     eventId: eventUploadData.eventId,
@@ -396,7 +436,7 @@ library Signature {
                 });
                 eventUploadSignature.liquidations[countArray2[3]] = liquidationSignature;
                 countArray2[3]++;
-            } else if (eventUploadData.bizType == 5) {
+            } else if (eventUploadData.bizType == uint8(BizType.FeeDistribution)) {
                 EventTypes.FeeDistribution memory feeDistribution =
                     abi.decode(eventUploadData.data, (EventTypes.FeeDistribution));
                 FeeDistributionSignature memory feeDistributionSignature = FeeDistributionSignature({
@@ -408,7 +448,7 @@ library Signature {
                 });
                 eventUploadSignature.feeDistributions[countArray2[4]] = feeDistributionSignature;
                 countArray2[4]++;
-            } else if (eventUploadData.bizType == 6) {
+            } else if (eventUploadData.bizType == uint8(BizType.DelegateSigner)) {
                 EventTypes.DelegateSigner memory delegateSigner =
                     abi.decode(eventUploadData.data, (EventTypes.DelegateSigner));
                 DelegeteSignerSignature memory delegeteSignerSignature = DelegeteSignerSignature({
@@ -420,7 +460,7 @@ library Signature {
                 });
                 eventUploadSignature.delegateSigners[countArray2[5]] = delegeteSignerSignature;
                 countArray2[5]++;
-            } else if (eventUploadData.bizType == 8) {
+            } else if (eventUploadData.bizType == uint8(BizType.AdlV2)) {
                 EventTypes.AdlV2 memory adlV2 = abi.decode(eventUploadData.data, (EventTypes.AdlV2));
                 AdlV2Signature memory adlV2Signature = AdlV2Signature({
                     eventId: eventUploadData.eventId,
@@ -435,7 +475,7 @@ library Signature {
                 });
                 eventUploadSignature.adlV2s[countArray2[7]] = adlV2Signature;
                 countArray2[7]++;
-            } else if (eventUploadData.bizType == 9) {
+            } else if (eventUploadData.bizType == uint8(BizType.LiquidationV2)) {
                 EventTypes.LiquidationV2 memory liquidationV2 =
                     abi.decode(eventUploadData.data, (EventTypes.LiquidationV2));
                 LiquidationV2Signature memory liquidationV2Signature = LiquidationV2Signature({
@@ -449,7 +489,7 @@ library Signature {
                 });
                 eventUploadSignature.liquidationV2s[countArray2[8]] = liquidationV2Signature;
                 countArray2[8]++;
-            } else if (eventUploadData.bizType == 10) {
+            } else if (eventUploadData.bizType == uint8(BizType.WithdrawSol)) {
                 EventTypes.WithdrawDataSol memory withdrawSolData =
                     abi.decode(eventUploadData.data, (EventTypes.WithdrawDataSol));
                 WithdrawSolDataSignature memory withdrawSolDataSignature = WithdrawSolDataSignature({
@@ -467,7 +507,7 @@ library Signature {
                 });
                 eventUploadSignature.withdrawSols[countArray2[9]] = withdrawSolDataSignature;
                 countArray2[9]++;
-            } else if (eventUploadData.bizType == 11) {
+            } else if (eventUploadData.bizType == uint8(BizType.Withdraw2Contract)) {
                 EventTypes.Withdraw2Contract memory withdraw2Contract =
                     abi.decode(eventUploadData.data, (EventTypes.Withdraw2Contract));
                 Withdraw2ContractSignature memory withdraw2ContractSignature = Withdraw2ContractSignature({
@@ -487,7 +527,7 @@ library Signature {
                 });
                 eventUploadSignature.withdraw2Contracts[countArray2[10]] = withdraw2ContractSignature;
                 countArray2[10]++;
-            } else if (eventUploadData.bizType == 12) {
+            } else if (eventUploadData.bizType == uint8(BizType.BalanceTransfer)) {
                 EventTypes.BalanceTransfer memory balanceTransfer =
                     abi.decode(eventUploadData.data, (EventTypes.BalanceTransfer));
                 BalanceTransferSignature memory balanceTransferSignature = BalanceTransferSignature({
@@ -502,7 +542,7 @@ library Signature {
                 });
                 eventUploadSignature.balanceTransfers[countArray2[11]] = balanceTransferSignature;
                 countArray2[11]++;
-            } else if (eventUploadData.bizType == 13) {
+            } else if (eventUploadData.bizType == uint8(BizType.SwapResult)) {
                 EventTypes.SwapResult memory swap = abi.decode(eventUploadData.data, (EventTypes.SwapResult));
                 SwapUploadSignature memory swapSignature = SwapUploadSignature({
                     eventId: eventUploadData.eventId,
@@ -516,13 +556,55 @@ library Signature {
                 });
                 eventUploadSignature.swapUploads[countArray2[12]] = swapSignature;
                 countArray2[12]++;
+            } else if (eventUploadData.bizType == uint8(BizType.Withdraw2ContractV2)) {
+                EventTypes.Withdraw2ContractV2 memory withdraw2ContractV2 =
+                    abi.decode(eventUploadData.data, (EventTypes.Withdraw2ContractV2));
+                Withdraw2ContractV2Signature memory withdraw2ContractV2Signature = Withdraw2ContractV2Signature({
+                    eventId: eventUploadData.eventId,
+                    tokenAmount: withdraw2ContractV2.tokenAmount,
+                    fee: withdraw2ContractV2.fee,
+                    senderChainType: withdraw2ContractV2.senderChainType,
+                    receiverChainType: withdraw2ContractV2.receiverChainType,
+                    chainId: withdraw2ContractV2.chainId,
+                    accountId: withdraw2ContractV2.accountId,
+                    vaultType: withdraw2ContractV2.vaultType,
+                    sender: withdraw2ContractV2.sender,
+                    withdrawNonce: withdraw2ContractV2.withdrawNonce,
+                    receiver: withdraw2ContractV2.receiver,
+                    timestamp: withdraw2ContractV2.timestamp,
+                    brokerHash: withdraw2ContractV2.brokerHash,
+                    tokenHash: withdraw2ContractV2.tokenHash,
+                    clientId: withdraw2ContractV2.clientId
+                });
+                eventUploadSignature.withdraw2ContractV2s[countArray2[13]] = withdraw2ContractV2Signature;
+                countArray2[13]++;
             } else {
                 // should never happen
                 revert UnsupportedBizType(eventUploadData.bizType);
             }
         }
         bytes memory encoded;
-        if (eventUploadSignature.swapUploads.length > 0) {
+        if (eventUploadSignature.withdraw2ContractV2s.length > 0) {
+            // v9 signature, only support [v8, withdraw2ContractV2s]
+            // @dev abi.encode function with 14 parameters here will cause "Stack too deep" error, so we split it into two steps.
+            // @dev cefi should adjust its encode schema to this change.
+            bytes memory p1 = abi.encode(
+                eventUploadSignature.batchId,
+                eventUploadSignature.withdraws,
+                eventUploadSignature.settlements,
+                eventUploadSignature.adls,
+                eventUploadSignature.liquidations,
+                eventUploadSignature.feeDistributions,
+                eventUploadSignature.delegateSigners,
+                eventUploadSignature.adlV2s,
+                eventUploadSignature.liquidationV2s,
+                eventUploadSignature.withdrawSols,
+                eventUploadSignature.withdraw2Contracts,
+                eventUploadSignature.balanceTransfers,
+                eventUploadSignature.swapUploads
+            );
+            encoded = abi.encode(p1, eventUploadSignature.withdraw2ContractV2s);
+        } else if (eventUploadSignature.swapUploads.length > 0) {
             // v8 signature, only support [v7, swapUploads]
             encoded = abi.encode(
                 eventUploadSignature.batchId,

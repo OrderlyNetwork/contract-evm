@@ -10,5 +10,6 @@ interface ILedgerCrossChainManagerV2 {
     /// @notice Approves a cross-chain withdrawal from the ledger to the vault.
     /// @param data Struct containing withdrawal data.
     function withdraw(EventTypes.WithdrawDataSol memory data) external;
+    function withdraw2ContractV2(EventTypes.Withdraw2ContractV2 memory data) external;
     function setBrokerFromLedger(address brokerManager, bytes32 brokerHash, uint16 brokerIndex) external;
 }

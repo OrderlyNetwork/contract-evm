@@ -35,4 +35,11 @@ contract UtilsTest is Test {
             hex"0000000000000000000000005B38Da6a701c568545dCfcB03FcB875f56beddC4"
         );
     }
+
+    function test_bytes32_to_address() public {
+        assertEq(
+            Utils.bytes32ToAddress(hex"0000000000000000000000005B38Da6a701c568545dCfcB03FcB875f56beddC4"), 
+            address(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4)
+        );
+    }
 }

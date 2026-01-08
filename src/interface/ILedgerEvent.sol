@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.18;
+import { EventTypes } from "../library/types/EventTypes.sol";
 
 interface ILedgerEvent {
     event AccountRegister(bytes32 indexed accountId, bytes32 indexed brokerId, address indexed userAddress);
@@ -171,7 +172,7 @@ interface ILedgerEvent {
     event ChangeLedgerImplB(address oldAddress, address newAddress);
     event ChangeLedgerImplC(address oldAddress, address newAddress);
     event ChangeLedgerImplD(address oldAddress, address newAddress);
-    
+
     // for Solana
     event AccountRegister(bytes32 indexed accountId, bytes32 indexed brokerId, bytes32 indexed pubkey);
     event AccountDepositSol(
@@ -185,6 +186,7 @@ interface ILedgerEvent {
         uint64 srcChainDepositNonce,
         bytes32 brokerHash
     );
+    // used for normal withdrawal to Solana
     event AccountWithdrawSolApprove(
         bytes32 indexed accountId,
         uint64 indexed withdrawNonce,
@@ -197,10 +199,42 @@ interface ILedgerEvent {
         uint128 tokenAmount,
         uint128 fee
     );
+    // used for Ceffu withdrawals to Solana
+    event AccountWithdrawSolApprove(
+        bytes32 indexed accountId,
+        uint64 indexed withdrawNonce,
+        uint64 indexed eventId,
+        EventTypes.ChainType senderChainType,
+        EventTypes.ChainType receiverChainType,
+        bytes32 brokerHash,
+        bytes32 sender,
+        bytes32 receiver,
+        uint256 chainId,
+        bytes32 tokenHash,
+        uint128 tokenAmount,
+        uint128 fee
+    );
+    // used for normal withdrawal to Solana
     event AccountWithdrawSolFail(
         bytes32 indexed accountId,
         uint64 indexed withdrawNonce,
         uint64 indexed eventId,
+        bytes32 brokerHash,
+        bytes32 sender,
+        bytes32 receiver,
+        uint256 chainId,
+        bytes32 tokenHash,
+        uint128 tokenAmount,
+        uint128 fee,
+        uint8 failReason
+    );
+    // used for Ceffu withdrawals to Solana
+    event AccountWithdrawSolFail(
+        bytes32 indexed accountId,
+        uint64 indexed withdrawNonce,
+        uint64 indexed eventId,
+        EventTypes.ChainType senderChainType,
+        EventTypes.ChainType receiverChainType,
         bytes32 brokerHash,
         bytes32 sender,
         bytes32 receiver,
@@ -264,6 +298,7 @@ interface ILedgerEvent {
     );
 
     event PrimeWalletSet(bytes32 id, address primeWallet);
+    event SolanaPrimeWalletSet(bytes32 id, bytes32 solanaPrimeWallet);
 
     event SwapResultUploaded(
         uint64 indexed eventId,

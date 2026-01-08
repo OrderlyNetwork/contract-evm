@@ -38,7 +38,6 @@ contract LedgerImplA is ILedgerImplA, OwnableUpgradeable, LedgerDataLayout {
         if (!vaultManager.getAllowedChainToken(data.tokenHash, data.srcChainId)) {
             revert TokenNotAllowed(data.tokenHash, data.srcChainId);
         }
-
         // a not registerd account can still deposit, because of the consistency
         AccountTypes.Account storage account = userLedger[data.accountId];
         if (account.userAddress == address(0)) {

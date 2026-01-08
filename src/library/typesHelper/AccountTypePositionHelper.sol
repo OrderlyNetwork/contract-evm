@@ -202,42 +202,36 @@ library AccountTypePositionHelper {
     /// -2.5 -> -3
     /// -5.5 -> -6
     function halfUp16_8(int128 dividend, int128 divisor) internal pure returns (int128) {
+        require(divisor != 0, "Division by zero");
         int128 quotient = dividend / divisor;
         int128 remainder = dividend % divisor;
         if (remainder.abs() * 2 >= divisor.abs()) {
-            if (quotient > 0) {
+            bool positive = (dividend > 0) == (divisor > 0);
+
+            if (positive) {
                 quotient += 1;
-            } else if (quotient < 0) {
-                quotient -= 1;
             } else {
-                // case quotient == 0
-                if (dividend > 0) {
-                    quotient = 1;
-                } else {
-                    quotient = -1;
-                }
+                quotient -= 1;
             }
         }
         return quotient;
     }
 
     function halfUp16_8_i256(int256 dividend, int128 divisor) internal pure returns (int128) {
+        require(divisor != 0, "Division by zero");
         int256 quotient = dividend / divisor;
         int256 remainder = dividend % divisor;
-        if (remainder.abs_i256() * 2 >= divisor.abs()) {
-            if (quotient >= 0) {
+
+        if (remainder.abs_i256() * 2 >= (divisor).abs()) {
+            bool positive = (dividend > 0) == (divisor > 0);
+
+            if (positive) {
                 quotient += 1;
-            } else if (quotient < 0) {
-                quotient -= 1;
             } else {
-                // case quotient == 0
-                if (dividend > 0) {
-                    quotient = 1;
-                } else {
-                    quotient = -1;
-                }
+                quotient -= 1;
             }
         }
+
         return SafeCast.toInt128(quotient);
     }
 
@@ -258,20 +252,16 @@ library AccountTypePositionHelper {
     /// -2.5 -> -2
     /// -5.5 -> -5
     function halfDown16_8(int128 dividend, int128 divisor) internal pure returns (int128) {
+        require(divisor != 0, "Division by zero");
         int128 quotient = dividend / divisor;
         int128 remainder = dividend % divisor;
         if (remainder.abs() * 2 > divisor.abs()) {
-            if (quotient > 0) {
+            bool positive = (dividend > 0) == (divisor > 0);
+
+            if (positive) {
                 quotient += 1;
-            } else if (quotient < 0) {
-                quotient -= 1;
             } else {
-                // case quotient == 0
-                if (dividend > 0) {
-                    quotient = 1;
-                } else {
-                    quotient = -1;
-                }
+                quotient -= 1;
             }
         }
         return quotient;

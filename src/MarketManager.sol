@@ -46,7 +46,7 @@ contract MarketManager is IMarketManager, LedgerComponent, OperatorManagerCompon
             MarketTypes.SumUnitaryFunding calldata sumUnitaryFunding = data.sumUnitaryFundings[i];
             MarketTypes.PerpMarketCfg storage cfg = perpMarketCfg[sumUnitaryFunding.symbolHash];
             cfg.setSumUnitaryFundings(sumUnitaryFunding.sumUnitaryFunding);
-            cfg.setLastMarkPriceUpdated(sumUnitaryFunding.timestamp);
+            cfg.setLastFundingUpdated(sumUnitaryFunding.timestamp);
         }
         emit FundingData(data.maxTimestamp);
     }

@@ -2,6 +2,7 @@
 pragma solidity 0.8.26;
 
 import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
+import "./interface/ILedger.sol";
 import "./dataLayout/OperatorManagerDataLayout.sol";
 import "./interface/IOperatorManager.sol";
 import "./interface/IOperatorManagerImplA.sol";
@@ -245,5 +246,28 @@ contract OperatorManager is IOperatorManager, OwnableUpgradeable, OperatorManage
                 revert DelegatecallFail();
             }
         }
+    }
+
+    // @dev function to init the function selector for each bizType
+    function initBizTypeToSelector() public onlyOwner {
+        bizTypeToSelectors[uint8(Signature.BizType.Withdraw)] =  ILedger.executeWithdrawAction.selector;
+        bizTypeToSelectors[uint8(Signature.BizType.Settlement)] =  ILedger.executeSettlement.selector;
+        bizTypeToSelectors[uint8(Signature.BizType.Adl)] =  ILedger.executeAdl.selector;
+        bizTypeToSelectors[uint8(Signature.BizType.Liquidation)] =  ILedger.executeLiquidation.selector;
+        bizTypeToSelectors[uint8(Signature.BizType.FeeDistribution)] =  ILedger.executeFeeDistribution.selector;
+        bizTypeToSelectors[uint8(Signature.BizType.DelegateSigner)] =  ILedger.executeDelegateSigner.selector;
+        bizTypeToSelectors[uint8(Signature.BizType.DelegateWithdraw)] =  ILedger.executeDelegateWithdrawAction.selector;
+        bizTypeToSelectors[uint8(Signature.BizType.AdlV2)] =  ILedger.executeAdlV2.selector;
+        bizTypeToSelectors[uint8(Signature.BizType.LiquidationV2)] =  ILedger.executeLiquidationV2.selector;
+        bizTypeToSelectors[uint8(Signature.BizType.WithdrawSol)] =  ILedger.executeWithdrawSolAction.selector;
+        bizTypeToSelectors[uint8(Signature.BizType.Withdraw2Contract)] =  ILedger.executeWithdraw2Contract.selector;
+        bizTypeToSelectors[uint8(Signature.BizType.BalanceTransfer)] =  ILedger.executeBalanceTransfer.selector;            
+        bizTypeToSelectors[uint8(Signature.BizType.SwapResult)] =  ILedger.executeSwapResultUpload.selector;
+        bizTypeToSelectors[uint8(Signature.BizType.Withdraw2ContractV2)] =  ILedger.executeWithdraw2ContractV2.selector;
+    }
+
+    function getOperatorManagerImpl() external view returns (address, address) {
+        OperatorManagerStorage storage $ = _getOperatorManagerStorage();
+        return ($.operatorManagerImplA, $.operatorManagerImplB);
     }
 }
