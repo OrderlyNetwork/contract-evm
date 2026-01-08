@@ -294,7 +294,7 @@ contract VaultTest is Test {
     function testRevert_OnlyThis() public {
         vm.deal(address(vault), 1 ether);
         vm.expectRevert("Only this contract can call");
-        vault.attemptTransferETH(address(1), 1 ether);
+        vault.attemptTransferNative(address(1), 1 ether);
     }
 
     function testRevert_withdrawInsufficientBalance() public {

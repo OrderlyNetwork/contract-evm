@@ -443,7 +443,6 @@ contract Vault is
                 msg.sender, depositData
             );
         } else {
-            require(crossChainFee == 0, "ethDeposit: crossChainFee should be zero when deposit fee is disabled");
             IVaultCrossChainManager(crossChainManagerAddress).deposit(depositData);
         }
         emit AccountDepositTo(data.accountId, data.brokerHash, receiver, depositId, data.tokenHash, data.tokenAmount);
@@ -486,7 +485,7 @@ contract Vault is
         uint128 amount = data.tokenAmount - data.fee;
 
         if (data.tokenHash == nativeTokenHash) {
-            try this.attemptTransferETH(data.receiver, amount) {
+            try this.attemptTransferNative(data.receiver, amount) {
                 // do nothing
             } catch {
                 // emit event to indicate withdraw fail, where zero address means native token
@@ -544,7 +543,7 @@ contract Vault is
 
         if (data.tokenHash == nativeTokenHash) {
             // _ethWithdraw(data.receiver, amount);
-            try this.attemptTransferETH(data.receiver, amount) {
+            try this.attemptTransferNative(data.receiver, amount) {
                 // do nothing
             } catch {
                 // emit event to indicate withdraw fail, where zero address means native token
@@ -754,7 +753,7 @@ contract Vault is
 
     // ============= Only THIS Function  ===============
     // add only this contract can call this function for try/catch use
-    function attemptTransferETH(address _to, uint256 _amount) external {
+    function attemptTransferNative(address _to, uint256 _amount) external {
         require(msg.sender == address(this), "Only this contract can call");
         payable(_to).sendValue(_amount);
     }

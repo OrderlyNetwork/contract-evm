@@ -605,7 +605,7 @@ contract Ledger is ILedger, OwnableUpgradeable, LedgerDataLayout, AccessControlR
         );
 
         // Step 3: Set broker hash and its index number if this broker should be supported on Solana chain
-        if (setBrokerIndex) {
+        if (allowed && setBrokerIndex) {
             ILedgerCrossChainManagerV2(crossChainManagerV2Address).setBrokerFromLedger(msg.sender, brokerHash, brokerIndex);
         }
 
