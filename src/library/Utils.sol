@@ -68,6 +68,10 @@ library Utils {
         return bytes32(abi.encode(addr));
     }
 
+    function bytes32ToAddress(bytes32 _bytes32) internal pure returns (address) {
+        return address(uint160(uint256(_bytes32)));
+    }
+
     function bytes32ToBytes(bytes32 _bytes32) internal pure returns (bytes memory) {
         return abi.encodePacked(_bytes32);
     }

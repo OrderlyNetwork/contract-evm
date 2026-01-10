@@ -152,6 +152,7 @@ forge script script/ledgerV2/DeployNewMarketManager.s.sol -f $RPC_URL_ORDERLYOP 
 forge script script/ledgerV2/DeployNewLedgerImplA.s.sol -f $RPC_URL_ORDERLYOP --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
 forge script script/ledgerV2/DeployNewLedgerImplB.s.sol -f $RPC_URL_ORDERLYOP --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
 forge script script/ledgerV2/DeployNewLedgerImplC.s.sol -f $RPC_URL_ORDERLYOP --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
+forge script script/ledgerV2/DeployNewLedgerImplD.s.sol -f $RPC_URL_ORDERLYOP --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
 forge script script/ledgerV2/DeployNewOperatorManagerImplA.s.sol -f $RPC_URL_ORDERLYOP --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
 forge script script/ledgerV2/DeployNewOperatorManagerImplB.s.sol -f $RPC_URL_ORDERLYOP --broadcast --verifier-url https://testnet-explorer.orderly.org/api\? --verifier blockscout --verify
 # orderly mainnet
@@ -251,6 +252,11 @@ forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_BASE --verifier-url
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_MANTLESEPOLIA --broadcast --verifier-url https://explorer.sepolia.mantle.xyz/api\? --verifier blockscout --verify --skip-simulation
 # mantle mainnet
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_MANTLE --verifier-url https://api.mantlescan.xyz/api --broadcast --verify --etherscan-api-key $MANTLE_ETHERSCAN_API_KEY --skip-simulation
+
+# sepolia 
+forge script script/vaultV2/DeployNewVault.s.sol -f https://ethereum-sepolia-rpc.publicnode.com --broadcast --verifier-url https://api.etherscan.io/v2/api\?chainid\=11155111  --verify --etherscan-api-key $ETHERSCAN_API_KEY
+# ethereum mainnet
+
 # sei
 forge script script/vaultV2/DeployNewVault.s.sol -f $RPC_URL_SEI --broadcast --legacy
 # story test

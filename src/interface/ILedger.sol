@@ -41,6 +41,7 @@ interface ILedger is IError, ILedgerEvent {
     function executeWithdraw2Contract(EventTypes.Withdraw2Contract calldata data, uint64 eventId) external;
     function executeBalanceTransfer(EventTypes.BalanceTransfer calldata balanceTransfer, uint64 eventId) external;
     function executeSwapResultUpload(EventTypes.SwapResult calldata swapResultUpload, uint64 eventId) external;
+    function executeWithdraw2ContractV2(EventTypes.Withdraw2ContractV2 calldata data, uint64 eventId) external;
 
     // view call
     function getFrozenWithdrawNonce(bytes32 accountId, uint64 withdrawNonce, bytes32 tokenHash)
@@ -80,12 +81,15 @@ interface ILedger is IError, ILedgerEvent {
     /// @notice Initiates cross-chain broker status modification to multiple vault chains
     /// @dev Only callable by owner, triggers cross-contract calls to VaultManager and LedgerCrossChainManager
     /// @param chainIds Array of destination chain IDs where broker status should be modified
-    /// @param brokerHash Hash of the broker to be modified
-    /// @param allowed true to add broker, false to remove broker
+    /// @param brokerHash The hash identifier of the broker
+    /// @param allowed Boolean indicating whether to allow or disallow the broker
+    /// @param setBrokerIndex Boolean indicating whether to set the broker index for Solana chain
+    /// @param brokerIndex The index to assign to the broker (used for Solana chain)
     function setBrokerFromLedger(
         uint256[] calldata chainIds, 
         bytes32 brokerHash, 
-        uint16 brokerIndex,
-        bool allowed
+        bool allowed,
+        bool setBrokerIndex,
+        uint16 brokerIndex
     ) external;
 }

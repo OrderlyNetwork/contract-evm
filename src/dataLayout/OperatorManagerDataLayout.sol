@@ -33,6 +33,8 @@ contract OperatorManagerDataLayout {
     // For OperatorManagerZip contract, which calldata is zipped to reduce L1 gas cost
     address public operatorManagerZipAddress;
 
+    mapping(uint8 => bytes4) public bizTypeToSelectors;
+
     // The storage gap to prevent overwriting by proxy
-    uint256[40] private __gap;
+    uint256[39] private __gap;
 }

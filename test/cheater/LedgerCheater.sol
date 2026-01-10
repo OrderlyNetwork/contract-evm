@@ -15,6 +15,20 @@ contract LedgerCheater is Ledger {
         account.lastDepositEventId = _newGlobalDepositId();
     }
 
+    function cheatSubVaultBalance(bytes32 tokenHash, uint128 deltaBalance, uint256 srcChainId) public {
+        vaultManager.subBalance(tokenHash, srcChainId, deltaBalance);
+    }
+
+    function cheatUserWithdrawNonce(bytes32 accountId, uint64 nonce) external {
+         AccountTypes.Account storage account = userLedger[accountId];
+         account.lastWithdrawNonce = nonce;
+    }
+
+    function cheatUserEscrowBalance(bytes32 accountId, bytes32 tokenHash, uint128 tokenAmount) external {
+        escrowBalances[accountId][tokenHash] = tokenAmount;
+    }
+
+
     function cheatSetUserPosition(bytes32 accountId, bytes32 symbolHash, AccountTypes.PerpPosition memory position)
         external
     {

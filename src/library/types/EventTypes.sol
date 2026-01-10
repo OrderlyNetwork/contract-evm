@@ -14,8 +14,24 @@ library EventTypes {
         uint64 batchId;
     }
 
+    // EventUploadData
+    // bizType: 
+    // 1 - withdraw
+    // 2 -settlement
+    // 3 - adl
+    // 4 - liquidation
+    // 5 - feeDistribution
+    // 6 - delegateSigner
+    // 7 - delegateWithdraw
+    // 8 - adlV2
+    // 9 - liquidationV2
+    // 10 - withdrawSol
+    // 11 - withdraw2Contract
+    // 12 - balanceTransfer
+    // 13 - swapResult
+    // 14 - withdraw2ContractV2
     struct EventUploadData {
-        uint8 bizType; // 1 - withdraw, 2 - settlement, 3 - adl, 4 - liquidation, 5 - fee distribution, 6 - delegate signer, 7 - delegate withdraw, 12 - balance transfer, 13 - swap result upload
+        uint8 bizType; 
         uint64 eventId;
         bytes data;
     }
@@ -194,13 +210,35 @@ library EventTypes {
     }
 
     struct SwapResult {
-      bytes32 accountId;
-      bytes32 buyTokenHash;
-      bytes32 sellTokenHash;
-      int128 buyQuantity;
-      int128 sellQuantity;
-      uint256 chainId;
-      uint8 swapStatus; // OFF_CHAIN_SUCCESS(0), ON_CHAIN_SUCCESS(1), ON_CHAIN_FAILED(2)
+        bytes32 accountId;
+        bytes32 buyTokenHash;
+        bytes32 sellTokenHash;
+        int128 buyQuantity;
+        int128 sellQuantity;
+        uint256 chainId;
+        uint8 swapStatus; // OFF_CHAIN_SUCCESS(0), ON_CHAIN_SUCCESS(1), ON_CHAIN_FAILED(2)
+    }
+
+    enum ChainType {
+        EVM,
+        SOL
+    }
+
+    struct Withdraw2ContractV2 {
+        uint128 tokenAmount;
+        uint128 fee;
+        ChainType senderChainType;
+        ChainType receiverChainType;
+        uint256 chainId; // target withdraw chain
+        bytes32 accountId;
+        VaultEnum vaultType;
+        bytes32 sender; // Support Solana account and EVM address
+        uint64 withdrawNonce;
+        bytes32 receiver;
+        uint64 timestamp;
+        bytes32 brokerHash;
+        bytes32 tokenHash;
+        uint256 clientId;
     }
 
     // SetBrokerData - for cross-chain broker addition or removal
