@@ -174,3 +174,6 @@ src/
 └── interface/                           # All interface definitions
 ```
 
+# License
+
+Apache-2.0
